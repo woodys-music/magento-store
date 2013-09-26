@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<config>
+	<menu>
+				<fisheyeall module="fisheyeall">
+					<title>Fisheye</title>
+					<sort_order>30</sort_order>
+				</fisheyeall>
+	</menu>
+
+
+	<acl>
+			<resources>
+				<all>
+					<title>Allow Everything</title>
+				</all>
+				<admin>
+					<children>
+						<system>
+							<children>
+								<config>
+									<children>
+										<fisheyeall>
+											<title>Fisheye Extension</title>
+										</fisheyeall>
+									</children>
+								</config>
+							</children>
+						</system>
+					</children>
+				</admin>
+			</resources>
+		</acl>
+ 
+</config>

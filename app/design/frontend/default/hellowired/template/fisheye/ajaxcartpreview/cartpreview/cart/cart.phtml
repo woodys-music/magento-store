@@ -1,0 +1,82 @@
+<?php echo $this->getMessagesBlock()->getGroupedHtml() ?>
+<?php echo $this->getChildHtml('form_before') ?>
+    
+<div class="cart fisheye_cart">
+	<h5>Shopping Cart Summary</h5>
+    
+    <form class="cartpreview_update_form" action="<?php echo $this->getUrl('checkout/cart/ajaxupdatePost') ?>" method="post">    
+        <div class="fisheye_cart_top">
+            <table id="shopping-cart-table" class="data-table cart-table" cellpadding="0" cellspacing="0">
+                <col width="0" />
+                <col />
+                <col width="0" />
+            <?php if ($this->helper('tax')->displayCartPriceExclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="0" />
+            <?php endif; ?>
+            <?php if ($this->helper('tax')->displayCartPriceInclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="0" />
+            <?php endif; ?>
+                <col width="0" />
+            <?php if ($this->helper('tax')->displayCartPriceExclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="0" />
+            <?php endif; ?>
+            <?php if ($this->helper('tax')->displayCartPriceInclTax() || $this->helper('tax')->displayCartBothPrices()): ?>
+                <col width="0" />
+            <?php endif; ?>
+                <col width="0" />
+    
+            <?php $mergedCells = ($this->helper('tax')->displayCartBothPrices() ? 2 : 1); ?>
+                <thead>
+                    <tr>
+                        <th rowspan="<?php echo $mergedCells; ?>">Product Image</th>
+                         <th rowspan="<?php echo $mergedCells; ?>"><span class="nobr"><?php echo $this->__('Product Name') ?></span></th>
+                        <th class="a-center" colspan="<?php echo $mergedCells; ?>"><span class="nobr"><?php echo $this->__('Unit Price') ?></span></th>
+                        <th rowspan="<?php echo $mergedCells; ?>" class="a-center"><?php echo $this->__('Qty') ?></th>
+                        <th class="a-center" colspan="<?php echo $mergedCells; ?>"><?php echo $this->__('Subtotal') ?></th>
+                        <th rowspan="<?php echo $mergedCells; ?>" class="a-center">&nbsp;</th>
+                    </tr>
+                    <?php if ($this->helper('tax')->displayCartBothPrices()): ?>
+                    <tr>
+                        <th class="a-right"><?php echo $this->helper('tax')->getIncExcTaxLabel(false) ?></th>
+                        <th><?php echo $this->helper('tax')->getIncExcTaxLabel(true) ?></th>
+                        <th class="a-right"><?php echo $this->helper('tax')->getIncExcTaxLabel(false) ?></th>
+                        <th><?php echo $this->helper('tax')->getIncExcTaxLabel(true) ?></th>
+                    </tr>
+                    <?php endif; ?>
+                </thead>
+                
+                <tbody>
+                    <?php foreach($this->getItems() as $_item): ?>
+                        <?php echo $this->getItemHtml($_item) ?>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div><!-- .fisheye_cart_top -->
+        
+        <table id="shopping-cart-table" class="data-table cart-table" cellpadding="0" cellspacing="0">
+          	<tfoot>
+                <tr>
+                    <td colspan="50" class="clearfix">
+						<span class="a-left"><button type="button" title="<?php echo $this->__('Update Shopping Cart') ?>" class="button btn-update"><span><span><?php echo $this->__('Update Shopping Cart') ?></span></span></button></span>
+						<span class="a-right"><button onclick="setLocation('<?php echo $this->getUrl('checkout/cart'); ?>');" class="button" title="Checkout" type="button"><span><span>Proceed to Checkout</span></span></button></span>
+					</td>
+				</tr>
+			</tfoot>
+        </table>
+        <script type="text/javascript">decorateTable('shopping-cart-table')</script>
+    </form>
+            
+    <div class="totals">
+        <?php echo $this->getChildHtml('totals'); ?>
+        
+		<?php if(!$this->hasError()): ?>
+            <ul class="checkout-types">
+                <?php foreach ($this->getMethods('methods') as $method): ?>
+                    <?php if ($methodHtml = $this->getMethodHtml($method)): ?>
+                    <li><?php echo $methodHtml; ?></li>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+</div><!-- .fisheye_cart -->

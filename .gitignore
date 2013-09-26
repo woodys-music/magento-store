@@ -1,0 +1,14 @@
+var/
+media/catalog/product/cache/
+stats/
+downloader/
+awstats-icon
+awstatsicons
+icon/
+media/js/
+sitemap.xml
+nbproject/
+app/etc/local.xml
+gremlin_cron.php
+gremlin.php
+

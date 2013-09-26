@@ -1,0 +1,340 @@
+<?xml version="1.0"?>
+<!--
+ * @category   fisheye
+ * @package    fisheye Google Adwords
+ * @author     Domagoj Potkoc, fisheye Team <domagoj.potkoc@surgeworks.com>
+-->
+<config>
+	<tabs>
+        <fisheye translate="label" module="fisheyeall">
+            <label>Fisheye Extensions</label>
+            <sort_order>299</sort_order>
+        </fisheye>
+    </tabs>  
+    
+     <sections>
+    <fisheyeall translate="label">
+      <label>Fisheye All Core</label>
+      <tab>fisheye</tab>
+      <frontend_type>text</frontend_type>
+      <sort_order>1000</sort_order>
+      <show_in_default>1</show_in_default>
+      <show_in_website>1</show_in_website>
+      <show_in_store>1</show_in_store>
+            
+             <groups>
+        <!-- New groups go here -->
+        <overview translate="label">
+          <label>Overview</label>
+          <frontend_type>text</frontend_type>
+          <sort_order>8</sort_order>
+          <show_in_default>1</show_in_default>
+                    <comment>
+                <![CDATA[This is a central configuration page for the Fisheye All Module. If you do not know what this module is then we do not recommend changing anything on this page. This page is 
+                mainly for Fisheye Webdesign developers.
+                <span class="notice">Changing things in this page can <u>seriously break</u> your store.</span>]]>
+              </comment>
+    
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>  
+          
+            <fields>
+            <!-- New fields go here -->
+            <licence translate="label comment">
+              <label>Licence Key</label>
+                 <comment>
+                <![CDATA[<span class="notice">You do not need a licence key for this version.</span>]]>
+              </comment>
+              <frontend_type>text</frontend_type>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </licence>
+            
+            
+            </fields>
+            </overview>
+      </groups>
+      
+      
+      
+      <groups>
+        <!-- New groups go here -->
+      
+        <js translate="label">
+          <label>Global Javascript</label>
+          <frontend_type>text</frontend_type>
+          <sort_order>100</sort_order>
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>  
+          <comment>
+                <![CDATA[Control the Javascript that the module will load into the site.
+                <span class="notice">Do not edit this unless you are sure what it does.</span>]]>
+              </comment>
+    
+        
+           <fields>
+            <!-- New fields go here -->
+            <jquery translate="label comment">
+              <label>jQuery Core 1.4.3</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </jquery>
+            
+                <jquery6 translate="label comment">
+              <label>jQuery Core 1.6.1</label>
+              <comment>
+                <![CDATA[<span style="color: red">Important: You should always have one of the above selected.</span>]]>
+              </comment>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </jquery6>
+            
+            
+                   <colorbox translate="label comment">
+              <label>Colorbox 1.3.17.1</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </colorbox>
+
+                <jcarosellite translate="label comment">
+              <label>jCarosel Lite</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </jcarosellite>
+            
+            
+                <jcarosel translate="label comment">
+              <label>jCarosel (None Lite)</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </jcarosel>
+            
+     
+
+            <showhide translate="label comment">
+              <label>Show / Hide 0.8</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </showhide>
+            
+              <passblur translate="label comment">
+              <label>Pass Blur 0.1</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </passblur>
+            
+            
+                 <placeholder translate="label comment">
+              <label>Placeholder 1.2</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </placeholder>
+            
+            
+                 <ui translate="label comment">
+              <label>jQuery UI 1.8.7</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </ui>
+                        
+                 <cloudzoom translate="label comment">
+              <label>Cloud Zoom 1.0.2</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </cloudzoom>
+            
+            
+               <selecthide translate="label comment">
+              <label>Select Hide 0.2</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </selecthide>
+            
+                <autocolumn translate="label comment">
+              <label>Autocolumn 1.4.0</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </autocolumn>
+            
+                <cycle translate="label comment">
+              <label>Cycle 1.0</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </cycle>
+            
+                <easing translate="label comment">
+              <label>Easing 1.3</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </easing>
+            
+                <swfobject translate="label comment">
+              <label>SWF Object 1.1.1</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </swfobject>
+            
+             <qtip translate="label comment">
+              <label>qTip 2</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </qtip>
+            
+              <mousewheel translate="label comment">
+              <label>Mouse Wheel 3.0.4</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </mousewheel>
+            
+                <hashchange translate="label comment">
+              <label>Hash Change 1.0</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>15</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </hashchange>
+            
+          </fields>
+            </js>
+               </groups>
+            
+            <groups>
+        <!-- New groups go here -->
+        <settings translate="label">
+          <label>Fish Developer Tools</label>
+          <frontend_type>text</frontend_type>
+          <sort_order>100</sort_order>
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>  
+
+           <fields>
+            <!-- New fields go here -->
+            <disector translate="label comment">
+              <label>Fisheye Disector</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </disector>
+
+            
+          </fields>
+            </settings>
+            
+            
+      </groups>
+
+
+<!-- To Come Shortly! 
+<groups>
+        
+        <general translate="label">
+          <label>General Configuration</label>
+          <frontend_type>text</frontend_type>
+          <sort_order>102</sort_order>
+          <show_in_default>1</show_in_default>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>  
+
+           <fields>
+            <jquery translate="label comment">
+              <label>Auto Update</label>
+              <comment>
+                <![CDATA[<span class="notice">Automatically update the Fisheye All module when a new version is available. <button type="button" onclick="checkVersion()" >Check Now</button></span>]]>
+              </comment>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </jquery>
+
+          </fields>
+            </general>
+      </groups>
+      -->
+      
+      
+      
+      </fisheyeall>
+  </sections>
+  
+  
+</config>

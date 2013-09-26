@@ -1,0 +1,55 @@
+/* AJAX CART PREVIEW - AUTHOR FISHEYE TEAM ============================================================= */
+
+/* cart notification - general */
+.ajaxcartpreview_pos									{ width:300px; position:fixed; top:45%; left:43%; z-index:10001; padding:10px; border:1px solid #F88613; border-radius:10px; background:#FFFFFF; }
+.ajaxcartpreview_pos p									{ margin:0; }
+.ajaxcartpreview_pos .title								{ text-align: center; text-transform:uppercase; color:#F88613; font-weight:bold; border-bottom:1px solid #ddd; padding:0 0 3px 0; margin:0 0 10px 0; }
+.ajaxcartpreview_pos .sub_title							{ /* font-size:11px; */  text-align:center; margin:0 0 10px 0; }
+.ajaxcartpreview_pos .loader							{ text-align:center; }
+
+.ajaxcartpreview_pos .button							{ display:block; border:1px solid #DE5400; background-color:#F18200; color:#fff; font-weight:bold; text-decoration:none; padding:1px 5px 1px 5px; cursor:pointer; }
+.ajaxcartpreview_pos .button.left						{ float:left; }
+.ajaxcartpreview_pos .button.right						{ float:right; }
+
+.ajaxcartpreview_hide 									{ display:none; }
+
+/* cart notification - adding */
+#fe_ajaxcartpreview_addingtocart						{}
+
+/* cart notification - failed */
+#fe_ajaxcartpreview_failedcart 							{}
+#fe_ajaxcartpreview_failedcart_msg						{ /* background-color:#FBEBD9; font-size:11px; */ text-align:center; padding:5px; }
+#fe_ajaxcartpreview_failedcart_close					{ background:url(http://www.woodys-music.co.uk/skin/frontend/default/default/images/fisheye/ajaxcartpreview/btn_remove.png) no-repeat; width:11px; height:11px; position:absolute; top:14px; right:10px; cursor:pointer; }
+
+/* cart notification - success */
+#fe_ajaxcartpreview_successcart							{}	
+#fe_ajaxcartpreview_successcart_msg						{ background-color:#FBEBD9; font-size:11px; text-align:center; padding:5px; margin:0 0 10px 0; }
+
+/* cart preview - container */
+.ui-tooltip-content										{  border:1px solid #DDDDDD; background:#FFFFFF; border-radius:10px; width: 550px; right: 200px;}
+
+/* cart preview - content */
+.fisheye_cart											{ padding:10px; /* font-size:11px; */ }
+.fisheye_cart h5										{ text-transform:uppercase; color:#F88613; font-weight:bold; border-bottom:1px solid #ddd; padding:0 0 3px 0; margin:0 0 10px 0; }
+.fisheye_cart .data-table								{ border:1px solid #ddd; border-right:none; }
+.fisheye_cart .data-table thead th						{ background:#EEEDED; padding:5px 8px 5px 8px; border-right:1px solid #ddd; border-bottom:1px solid #ddd !important; }
+.fisheye_cart .data-table tbody th, .fisheye_cart .data-table tbody td { border-right:1px solid #ddd; }
+.fisheye_cart .product-image							{}	
+.fisheye_cart .product-image img						{ border:1px solid #ddd; padding:2px; background-color:#fff; }
+.fisheye_cart .totals									{ background:none; border:0; }
+.fisheye_cart .totals .checkout-types					{ padding:0; }
+.fisheye_cart .totals table								{ margin:7px 0 0 0; }
+.fisheye_cart .btn-remove								{ cursor:pointer; }
+
+.fisheye_cart_top 										{ max-height:240px; overflow:auto; /* COMMENT OUT IF YOU DO NOT WISH TO HAVE A VERTICAL SCROLL BAR */ }
+
+/* cart preview - loading */
+.cartpreviewloading										{ display:block !important; position:absolute; background:#fff; height:100% !important; width:100% !important; text-align:center; z-index:10; }
+.cartpreviewloading .title								{ text-transform:uppercase; color:#F88613; font-weight:bold; padding:0 0 3px 0; margin:70px 0 20px 0; font-size:12px; }
+
+/* cart preview - no items */
+.noitemsajaxcart										{}
+.noitemsajaxcart .title									{ text-transform:uppercase; color:#F88613; font-weight:bold; margin:10px 0 10px 0; padding:0 10px 0 10px; }
+
+/* UI TOOLTIP WIDTH */
+.ui-tooltip												{ width:620px !important; /* WIDTH OF THE CART PREVIEW - CHANGE TO GET THE DESIRED STYLE */ }				

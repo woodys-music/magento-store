@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<config>
+  <!-- Module Declaration -->
+  <modules>
+    <Fisheye_Ajaxcartpreview>
+      <version>3.0.0</version>
+      <platform>ce</platform>
+    </Fisheye_Ajaxcartpreview>
+  </modules>
+  <!-- Frontend Layout Updates -->
+  <frontend>
+    <layout>
+      <updates>
+        <ajaxcartpreview module="Fisheye_Ajaxcartpreview">
+          <file>fisheye/ajaxcartpreview/ajaxcartpreview.xml</file>
+        </ajaxcartpreview>
+      </updates>
+    </layout>
+    <!-- Frontend Routing Control  -->
+    <routers>
+      <ajaxcartpreview>
+        <use>standard</use>
+        <args>
+          <module>Fisheye_Ajaxcartpreview</module>
+          <frontName>ajaxcartpreview</frontName>
+        </args>
+      </ajaxcartpreview>
+      <!-- Overload Checkout Module -->
+      <checkout>
+        <args>
+          <modules>
+            <Fisheye_Ajaxcartpreview after="Mage_Checkout">Fisheye_Ajaxcartpreview</Fisheye_Ajaxcartpreview>
+          </modules>
+        </args>
+      </checkout>
+    </routers>
+  </frontend>
+  <!-- Backend Routing Control -->
+  <admin>
+    <routers>
+      <ajaxcartpreview_admin>
+        <use>admin</use>
+        <args>
+          <module>Fisheye_Ajaxcartpreview</module>
+          <frontName>ajaxcartpreview_admin</frontName>
+        </args>
+      </ajaxcartpreview_admin>
+    </routers>
+  </admin>
+  <!-- Admin Layout Updates -->
+  <adminhtml>
+    <layout>
+      <updates>
+        <ajaxcartpreview>
+          <file>fisheye/ajaxcartpreview/ajaxcartpreview.xml</file>
+        </ajaxcartpreview>
+      </updates>
+    </layout>
+    <menu>
+      <fisheyeall>
+        <children>
+          <ajaxcartpreview module="ajaxcartpreview">
+            <title>Ajax Cart Preview Configuration</title>
+            <sort_order>0</sort_order>
+            <action>adminhtml/system_config/edit/section/ajaxcartpreview</action>
+          </ajaxcartpreview>
+        </children>
+      </fisheyeall>
+    </menu>
+  </adminhtml>
+  <global>
+    <!-- Models -->
+    <models>
+      <ajaxcartpreview>
+        <class>Fisheye_Ajaxcartpreview_Model</class>
+      </ajaxcartpreview>
+    </models>
+    <!-- Blocks -->
+    <blocks>
+      <ajaxcartpreview>
+        <class>Fisheye_Ajaxcartpreview_Block</class>
+      </ajaxcartpreview>
+    </blocks>
+    <!-- Helpers -->
+    <helpers>
+      <ajaxcartpreview>
+        <class>Fisheye_Ajaxcartpreview_Helper</class>
+      </ajaxcartpreview>
+    </helpers>
+    
+      <events>
+      <controller_action_layout_render_before_catalog_product_view>
+        <observers>
+          <convert_productpage_to_ajaxoutput>
+            <class>Fisheye_Ajaxcartpreview_Model_Observer_Product</class>
+            <method>setRootTemplate</method>
+          </convert_productpage_to_ajaxoutput>
+        </observers>
+      </controller_action_layout_render_before_catalog_product_view>
+      
+      <controller_action_layout_load_before>
+                <observers>
+                    <customcheckout_observer>
+                        <class>Fisheye_Ajaxcartpreview_Model_Observer_Product</class>
+                        <method>setCustomLayoutHandle</method>
+                    </customcheckout_observer>
+                </observers>
+            </controller_action_layout_load_before>
+            
+               
+    </events>
+    
+  
+    
+  </global>
+  <!-- Turns on jQuery and qTip -->
+  <default>
+    <fisheyeall>
+      <js>
+        <jquery6>1</jquery6>
+        <colorbox>1</colorbox>
+        <qtip>1</qtip>
+      </js>
+    </fisheyeall>
+    
+    <ajaxcartpreview>
+    
+    <ajaxcart>
+    <ajaxcart_enabled>1</ajaxcart_enabled>
+    <ajaxcart_hidecpreview>5000</ajaxcart_hidecpreview>
+    </ajaxcart>
+    
+    <cartpreview>
+    <cartpreview_enabled>1</cartpreview_enabled>
+    <cartpreview_showmsg>1</cartpreview_showmsg>
+    <cartpreview_target>.top-link-cart</cartpreview_target>
+    <cartpreview_showeffect>none</cartpreview_showeffect>
+    <cartpreview_showeffect_fadetime>1000</cartpreview_showeffect_fadetime>
+    <cartpreview_showeffect_slidepos>down</cartpreview_showeffect_slidepos>
+    <cartpreview_showeffect_slidetime>1000</cartpreview_showeffect_slidetime>
+    <cartpreview_hideeffect>none</cartpreview_hideeffect>
+    <cartpreview_hideeffect_fadetime>1000</cartpreview_hideeffect_fadetime>
+    <cartpreview_hideeffect_slidepos>up</cartpreview_hideeffect_slidepos>
+    <cartpreview_hideeffect_slidetime>1000</cartpreview_hideeffect_slidetime>
+    <cartpreview_hideeffect_delay>3000</cartpreview_hideeffect_delay>
+    <cartpreview_totalcart_price>sub</cartpreview_totalcart_price>
+    <cartpreview_preloadcart>0</cartpreview_preloadcart>
+    </cartpreview>
+    
+    </ajaxcartpreview>
+  </default>
+</config>

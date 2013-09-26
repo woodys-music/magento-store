@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout>
+  <default>
+    <!-- This will be loaded into the head of every frontend page -->
+    <reference name="head">
+      <action method="addItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/cartpreview.js</name>
+      </action>
+      <action method="addCss">
+        <stylesheet>css/fisheye/ajaxcartpreview/ajaxcart.css</stylesheet>
+        <params>media="screen"</params>
+      </action>
+      
+      <block type="core/template" name="ajaxcartpreview_system_variables" template="fisheye/ajaxcartpreview/config/configuration.phtml"/>
+    </reference>
+    <reference name="content">
+      <block type="core/template" name="ajaxcartpreview_ajaxcart_divs" template="fisheye/ajaxcartpreview/ajaxcart/divs.phtml"/>
+      <block type="core/template" name="ajaxcartpreview_cartpreview_divs" template="fisheye/ajaxcartpreview/cartpreview/divs.phtml"/>
+    </reference>
+  
+  </default>
+  
+<catalog_product_ajaxview>
+
+<reference name="head">
+ <action method="RemoveItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/ajaxcart_product.js</name>
+      </action>
+
+ <action method="RemoveItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/cartpreview.js</name>
+      </action>
+
+
+ <action method="addItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/ajaxcart_ajaxoptions.js</name>
+      </action>
+</reference>
+
+</catalog_product_ajaxview>
+
+
+
+<ajaxcartpreview_index_showcartpreview>
+
+    <reference name="root">
+    
+    <remove name="ajaxcartpreview_ajaxcart_divs"></remove>
+    <remove name="ajaxcartpreview_cartpreview_divs"></remove>
+    
+      <action method="setTemplate">
+        <template>fisheye/ajaxcartpreview/cartpreview/layout/ajaxLayout.phtml</template>
+      </action>
+    </reference>
+    
+<reference name="content">
+<block type="core/template" name="ajaxcartpreview_cartpreview_items" template="fisheye/ajaxcartpreview/cartpreview/cart/items.phtml"/>
+
+<remove name="right"/>
+<remove name="left"/>
+
+<block type="checkout/cart" name="checkout.cart">
+<action method="setCartTemplate"><value>fisheye/ajaxcartpreview/cartpreview/cart/cart.phtml</value></action>
+<action method="setEmptyTemplate"><value>fisheye/ajaxcartpreview/cartpreview/cart/noitems.phtml</value></action>
+<action method="chooseTemplate"/>
+<action method="addItemRender"><type>simple</type><block>checkout/cart_item_renderer</block><template>fisheye/ajaxcartpreview/cartpreview/cart/renderers/items.phtml</template></action>
+<action method="addItemRender"><type>grouped</type><block>checkout/cart_item_renderer_grouped</block><template>fisheye/ajaxcartpreview/cartpreview/cart/renderers/items.phtml</template></action>
+<action method="addItemRender"><type>configurable</type><block>checkout/cart_item_renderer_configurable</block><template>fisheye/ajaxcartpreview/cartpreview/cart/renderers/items.phtml</template></action>
+<block type="checkout/cart_totals" name="checkout.cart.totals" as="totals" template="checkout/cart/totals.phtml"/>
+</block>
+
+<block type="core/template" name="ajaxcartpreview_cartpreview_jsupdates" template="fisheye/ajaxcartpreview/cartpreview/updates.phtml"/>
+
+</reference>   
+
+</ajaxcartpreview_index_showcartpreview>
+  
+  
+  
+  <!-- Product Page -->
+  <catalog_product_view>
+    <reference name="head">
+      <action method="addItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/ajaxcart_product.js</name>
+      </action>
+    </reference>
+  </catalog_product_view>
+  
+  
+    <catalog_category_view>
+    <reference name="head">
+      <action method="addItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/ajaxcart_category.js</name>
+      </action>
+    </reference>
+
+    <reference name="content">
+
+      <block type="catalog/product_list" name="product_list2" template="fisheye/ajaxcartpreview/product/options_map.phtml"/>
+      
+    </reference>
+    
+  </catalog_category_view>
+  
+  
+  
+     <catalogsearch_result_index>
+    <reference name="head">
+      <action method="addItem">
+        <type>skin_js</type>
+        <name>js/fisheye/ajaxcartpreview/ajaxcart_category.js</name>
+      </action>
+    </reference>
+
+    <reference name="content">
+
+      <block type="catalog/product_list" name="product_list2" template="fisheye/ajaxcartpreview/product/options_map.phtml"/>
+      
+    </reference>
+    
+  </catalogsearch_result_index>
+  
+  
+</layout>

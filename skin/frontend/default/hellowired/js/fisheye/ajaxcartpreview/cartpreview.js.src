@@ -1,0 +1,221 @@
+var fisheye = fisheye || {}; 
+
+(function($) {
+
+	$(document).ready(function() {
+
+		fisheye.cpr = {
+
+			reloadCartPreview : function() {
+
+				if($('#fe_ajaxcartpreview_content').html() != "") {
+					$(FE_CARTPREVIEW_TARGET).qtip('option', 'content.text', $('#fe_ajaxcartpreview_cartpreviewloading').html() + $('#fe_ajaxcartpreview_content').html());
+				} else {
+					$(FE_CARTPREVIEW_TARGET).qtip('option', 'content.text', $('#fe_ajaxcartpreview_cartpreviewloading').html());
+				}
+
+				$.ajax({
+					url : FE_BASE_URL + 'ajaxcartpreview/index/showCartPreview',
+					success : function(response) {
+						$('#fe_ajaxcartpreview_content').html(response);
+						$(FE_CARTPREVIEW_TARGET).qtip('option', 'content.text', $('#fe_ajaxcartpreview_content').html());
+					}
+				});
+			},
+			init : function() {
+
+				$('.btn-update').live('click', function() {
+					$.ajax({
+						url : $('.cartpreview_update_form').attr('action'),
+						type : 'POST',
+						data : $('.cartpreview_update_form').serialize(),
+						success : function(response) {
+							fisheye.cpr.reloadCartPreview();
+						}
+					});
+
+				});
+
+				$('.btn-remove').live('click', function() {
+					$.ajax({
+						url : $(this).attr('data-url'),
+						success : function(response) {
+							callback = $.parseJSON(response);
+
+							if(callback.status == "S") {
+								fisheye.cpr.reloadCartPreview();
+							} else {
+								alert(callback.status_msg);
+							}
+						}
+					});
+				});
+				if(FE_CARTPREVIEW_INIT) {
+					fisheye.cpr.reloadCartPreview();
+				}
+
+				$(FE_CARTPREVIEW_TARGET).live('mouseover', function() {
+
+					if(!$('.ui-tooltip-content').is(':visible')) {
+						fisheye.cpr.reloadCartPreview();
+					}
+
+				});
+
+				$(FE_CARTPREVIEW_TARGET).qtip({
+					prerender : true,
+					overwrite : true,
+					suppress : false,
+					position : {
+						at : "bottom right",
+						my : "top right"
+					},
+					show : {
+						effect : function(offset) {
+
+							switch (FE_CARTPREVIEW_SHOWEFFECT) {
+
+								case 'fade':
+									$(this).fadeIn(FE_CARTPREVIEW_SHOWEFFECT_FADETIME);
+									break;
+
+								case 'slide':
+
+									switch (FE_CARTPREVIEW_SHOWEFFECT_SLIDEPOS) {
+
+										case 'up':
+											$(this).slideUp(FE_CARTPREVIEW_SHOWEFFECT_SLIDETIME);
+											break;
+
+										case 'down':
+											$(this).slideDown(FE_CARTPREVIEW_SHOWEFFECT_SLIDETIME);
+											break;
+
+									}
+
+									break;
+
+								case 'none':
+									$(this).show();
+									break;
+
+								default:
+									$(this).show();
+									break;
+							}
+
+						},
+						fixed : true
+					},
+					hide : {
+						effect : function(offset) {
+
+							switch (FE_CARTPREVIEW_HIDEEFFECT) {
+
+								case 'fade':
+									$(this).fadeOut(FE_CARTPREVIEW_HIDEEFFECT_FADETIME);
+									break;
+
+								case 'slide':
+
+									switch (FE_CARTPREVIEW_HIDEEFFECT_SLIDEPOS) {
+
+										case 'up':
+											$(this).slideUp(FE_CARTPREVIEW_HIDEEFFECT_SLIDETIME);
+											break;
+
+										case 'down':
+											$(this).slideDown(FE_CARTPREVIEW_HIDEEFFECT_SLIDETIME);
+											break;
+
+									}
+
+									break;
+
+								case 'none':
+									$(this).hide();
+									break;
+
+								default:
+									$(this).hide();
+									break;
+							}
+
+						},
+						fixed : true,
+						delay : FE_CARTPREVIEW_HIDEEFFECT_DELAY
+					},
+
+					events : {
+						show : function(event, api) {
+							AJAXCART_HIDDEN = 0;
+
+						},
+						hide : function(event, api) {
+
+						}
+					}
+
+				});
+
+			},
+			showCartPreview : function() {
+
+				$(FE_CARTPREVIEW_TARGET).qtip('toggle', true);
+				this.reloadCartPreview();
+
+			},
+			hideCartPreviewTimer : function(seconds) {
+				if(seconds == "") {
+					seconds = 8000;
+				}
+				if(seconds != 0) {
+					window.setTimeout(fisheye.cpr.hideCartPreview, seconds);
+				}
+			},
+			hideCartPreview : function() {
+				$(FE_CARTPREVIEW_TARGET).qtip('toggle', false);
+			}
+		};
+
+		if(FE_CARTPREVIEW_ENABLED) {
+
+			fisheye.cpr.init();
+
+		}
+
+		$('input').keydown(function(e) {
+			if(e.keyCode == 13) {
+
+				e.preventDefault();
+				$.ajax({
+					url : $('.cartpreview_update_form').attr('action'),
+					type : 'POST',
+					data : $('.cartpreview_update_form').serialize(),
+					success : function(response) {
+						fisheye.cpr.reloadCartPreview();
+					}
+				});
+
+			}
+		});
+
+		$('body').keydown(function(e) {
+
+			if(e.keyCode == 13) {
+
+				e.preventDefault();
+				$.ajax({
+					url : $('.cartpreview_update_form').attr('action'),
+					type : 'POST',
+					data : $('.cartpreview_update_form').serialize(),
+					success : function(response) {
+						fisheye.cpr.reloadCartPreview();
+					}
+				});
+
+			}
+		});
+	});
+	
+})(jQuery);

@@ -1,0 +1,86 @@
+<?php
+/**
+* aheadWorks Co.
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the EULA
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://ecommerce.aheadworks.com/AW-LICENSE-COMMUNITY.txt
+ *
+ * =================================================================
+ *                 MAGENTO EDITION USAGE NOTICE
+ * =================================================================
+ * This package designed for Magento COMMUNITY edition
+ * aheadWorks does not guarantee correct work of this extension
+ * on any other Magento edition except Magento COMMUNITY edition.
+ * aheadWorks does not provide extension support in case of
+ * incorrect edition usage.
+ * =================================================================
+ *
+ * @category   AW
+ * @package    AW_Searchautocomplete
+ * @version    3.2.2
+ * @copyright  Copyright (c) 2010-2012 aheadWorks Co. (http://www.aheadworks.com)
+ * @license    http://ecommerce.aheadworks.com/AW-LICENSE-COMMUNITY.txt
+ */
+?>
+<?php
+
+$installPath = Mage::app()->getStore()->getUrl('searchautocomplete/ajax/suggest');
+if(Mage::app()->getStore()->isCurrentlySecure())
+    $installPath = str_replace('http://', 'https://', $installPath);
+
+$skinUrl = $this->getSkinUrl('images/aw_searchautocomplete/');
+
+$queryDelay = Mage::getStoreConfig('searchautocomplete/interface/query_delay');
+if(!is_numeric($queryDelay)) $queryDelay = 500;
+$queryDelay = $queryDelay / 1000;
+
+$emptyText = $this->__('Search entire store here...');
+if(!$searchedText = $this->helper('catalogSearch')->getQueryText()) $searchedText = $emptyText;
+
+if($preloaderImage = Mage::getStoreConfig('searchautocomplete/interface/preloader_image'))
+    $preloaderImage = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).'aw_searchautocomplete/'.$preloaderImage;
+else $preloaderImage = $skinUrl.'preloader.gif';
+
+?>
+
+<div class="yui-ac">
+    <div id="myContainer" class="search-autocomplete yui-ac-container" style="display: none;">
+        <div class="yui-ac-content" style="">
+            <div class="yui-ac-hd" >
+                <?php echo Mage::getStoreConfig('searchautocomplete/interface/header') ?>
+            </div>
+            <div class="yui-ac-bd" id="sac-results">
+
+            </div>
+            <div class="yui-ac-ft">
+                <?php echo Mage::getStoreConfig('searchautocomplete/interface/footer') ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+    $('search').writeAttribute('value', '<?php echo $searchedText ?>');
+    $('search').writeAttribute('name', '<?php echo $this->helper('catalogSearch')->getQueryParamName() ?>');
+    $('search').writeAttribute('id', 'myInput');
+
+    $('search_autocomplete').remove();
+
+    var installPath = '<?php echo $installPath; ?>';
+    var storeId = '<?php echo Mage::app()->getStore()->getId(); ?>';
+    var queryDelay = <?php echo (float)$queryDelay ?>;
+    var defaultHeader = '<?php echo Mage::getStoreConfig('searchautocomplete/interface/header') ?>';
+    var defaultFooter = '<?php echo Mage::getStoreConfig('searchautocomplete/interface/footer') ?>';
+    var maxResultsDisplayed = <?php echo (int)Mage::getStoreConfig('searchautocomplete/interface/show_top_x') ?>;
+    var emptyText = '<?php echo $emptyText ?>';
+    var preloaderImage = '<?php echo $preloaderImage ?>';
+
+    var sacLayout = new Searchcomplete();
+    sacLayout.initAutocomplete('<?php echo $installPath; ?>', 'sac-results');
+//]]>
+</script>

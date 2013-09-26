@@ -1,0 +1,21 @@
+<?php if (Mage::Helper('ajaxcartpreview')->getCartQty() > 0): ?>
+	<script>
+        <?php echo Mage::Helper('ajaxcartpreview/updates')->toggleElementCSS('notempty'); ?>
+    </script>
+
+	<script>
+    	<?php echo Mage::Helper('ajaxcartpreview/updates')->getUpdatePriceJS(); ?>
+    	<?php echo Mage::Helper('ajaxcartpreview/updates')->getUpdateQtyJS(); ?>
+    </script>
+<?php else: ?>
+	<?php if (!Mage::getStoreConfig('ajaxcartpreview/advanced/noneemptycart_update')): ?>
+		<script>
+        	<?php echo Mage::Helper('ajaxcartpreview/updates')->getUpdatePriceJS(); ?>
+        	<?php echo Mage::Helper('ajaxcartpreview/updates')->getUpdateQtyJS(); ?>
+        </script>
+
+		<script>
+        	<?php echo Mage::Helper('ajaxcartpreview/updates')->toggleElementCSS('empty'); ?>
+        </script>
+	<?php endif; ?>
+<?php endif; ?>

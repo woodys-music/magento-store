@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout>
+<!--
+
+Jcarosel lite needs a version 
+
+JCarosel needs a version..
+-->
+
+<default>
+<reference name="head">
+
+
+<!-- Fisheye Disector -->
+<block type="core/template" name="fisheye_disector" template="fisheye/all/disector.phtml"/>
+<action method="addItem" ifconfig="fisheyeall/settings/disector"><type>skin_js</type><name>js/fisheye/all/disector/disector.js</name></action>
+<action method="addItem" ifconfig="fisheyeall/settings/disector" ><type>skin_css</type><name>css/fisheye/all/disector/disector.css</name></action>
+
+<!-- jQuery 1.4.3 -->
+<action method="addJs" ifconfig="fisheyeall/js/jquery"><script>fisheye/all/jquery/jquery-1.4.3-min.js</script></action>
+
+
+<!-- jQuery 1.6.1 -->
+<action method="addJs" ifconfig="fisheyeall/js/jquery6"><script>fisheye/all/jquery/jquery-1.6.1-min.js</script></action>
+
+<!-- Colorbox -->
+<action method="addItem" ifconfig="fisheyeall/js/colorbox"><type>skin_css</type><name>css/fisheye/all/colorbox/colorbox.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/colorbox"><script>fisheye/all/colorbox/colorbox-1.3.17.1-min.js</script></action>
+
+<!--  jCaroselLite -->
+<action method="addItem" ifconfig="fisheyeall/js/jcarosellite"><type>skin_css</type><name>css/fisheye/all/jcarosellite/jcarosellite.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/jcarosellite"><script>fisheye/all/jcarosellite/jcarosellite-min.js</script></action>
+
+<!-- jCarosel -->
+<action method="addItem" ifconfig="fisheyeall/js/jcarosel"><type>skin_css</type><name>css/fisheye/all/jcarosel/jcarosel.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/jcarosel"><script>fisheye/all/jcarosel/jcarosel-min.js</script></action>
+
+<!-- Show/Hide -->
+<action method="addItem" ifconfig="fisheyeall/js/showhide"><type>skin_css</type><name>css/fisheye/all/showhide/showhide.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/showhide"><script>fisheye/all/showhide/jquery.showmore.0.7.min.js</script></action>
+
+<!-- Password Blur  -->
+<action method="addItem" ifconfig="fisheyeall/js/passblur"><type>skin_css</type><name>css/fisheye/all/passblur/passblur.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/passblur"><script>fisheye/all/passblur/passblur0.1-min.js</script></action>
+
+<!-- Placeholder  -->
+<action method="addItem" ifconfig="fisheyeall/js/placeholder"><type>skin_css</type><name>css/fisheye/all/placeholder/placeholder.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/placeholder"><script>fisheye/all/placeholder/placeholder1.2-min.js</script></action>
+
+<!-- jQuery UI  -->
+<action method="addItem" ifconfig="fisheyeall/js/ui"><type>skin_css</type><name>css/fisheye/all/ui/ui.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/ui"><script>fisheye/all/ui/jquery1.8.7.ui.core.min.js</script></action>
+<action method="addJs" ifconfig="fisheyeall/js/ui"><script>fisheye/all/ui/jquery1.8.7.ui.widget.min.js</script></action>
+<action method="addJs" ifconfig="fisheyeall/js/ui"><script>fisheye/all/ui/jquery1.8.7.ui.tabs.min.js</script></action>
+<action method="addJs" ifconfig="fisheyeall/js/ui"><script>fisheye/all/ui/jquery1.8.7.ui.mouse.min.js</script></action>
+<action method="addJs" ifconfig="fisheyeall/js/ui"><script>fisheye/all/ui/jquery1.8.7.ui.slider.min.js</script></action>
+
+<!-- Cloud Zoom -->
+<action method="addItem" ifconfig="fisheyeall/js/cloudzoom"><type>skin_css</type><name>css/fisheye/all/cloudzoom/cloudzoom.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/cloudzoom"><script>fisheye/all/cloudzoom/cloudzoom1.0.2-min.js</script></action>
+
+<!-- Select Hide -->
+<action method="addItem" ifconfig="fisheyeall/js/selecthide"><type>skin_css</type><name>css/fisheye/all/selecthide/selecthide.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/selecthide"><script>fisheye/all/selecthide/selecthide0.2-min.js</script></action>
+
+<!-- Auto Column -->
+<action method="addItem" ifconfig="fisheyeall/js/autocolumn"><type>skin_css</type><name>css/fisheye/all/autocolumn/autocolumn.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/autocolumn"><script>fisheye/all/autocolumn/autocolumn1.4.0-min.js</script></action>
+
+<!-- Easing -->
+<action method="addItem" ifconfig="fisheyeall/js/easing"><type>skin_css</type><name>css/fisheye/all/easing/easing.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/easing"><script>fisheye/all/easing/easing1.3-min.js</script></action>
+
+<!-- Cycle -->
+<action method="addItem" ifconfig="fisheyeall/js/cycle"><type>skin_css</type><name>css/fisheye/all/cycle/cycle.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/cycle"><script>fisheye/all/cycle/cycle2.88-min.js</script></action>
+
+<!-- SWF Object -->
+<action method="addItem" ifconfig="fisheyeall/js/swfobject"><type>skin_css</type><name>css/fisheye/all/swfobject/swfobject.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/swfobject"><script>fisheye/all/swfobject/swfobject-1.1.1-min.js</script></action>
+
+<!-- qTip2 -->
+<action method="addItem" ifconfig="fisheyeall/js/qtip"><type>skin_css</type><name>css/fisheye/all/qtip/qtip.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/qtip"><script>fisheye/all/qtip/qtip2-min.js</script></action>
+
+<!-- Mouse Wheel -->
+<action method="addItem" ifconfig="fisheyeall/js/mousewheel"><type>skin_css</type><name>css/fisheye/all/mousewheel/mousewheel.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/mousewheel"><script>fisheye/all/mousewheel/mousewheel3.0.4-min.js</script></action>
+
+<!-- Hash Change -->
+<action method="addItem" ifconfig="fisheyeall/js/hashchange"><type>skin_css</type><name>css/fisheye/all/hashchange/hashchange.css</name></action>
+<action method="addJs" ifconfig="fisheyeall/js/hashchange"><script>fisheye/all/hashchange/hashchange1.0-min.js</script></action>
+
+
+</reference>
+</default>
+
+
+</layout>

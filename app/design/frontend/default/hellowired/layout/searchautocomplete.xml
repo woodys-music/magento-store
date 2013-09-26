@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+    <default>
+        <reference name="head">
+            <action method="addCss"><stylesheet>css/searchautocomplete.css</stylesheet></action>
+            <action method="addJs"><script>aw_searchautocomplete/main.js</script></action>
+        </reference>
+        <reference name="before_body_end">
+            <block type="core/template" name="top.searchautocomplete" as="topSearchautocomplete" template="searchautocomplete/init.phtml" />
+        </reference>
+    </default>
+</layout>

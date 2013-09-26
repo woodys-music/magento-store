@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layout>
+
+<default>
+<reference name="head">
+<action method="addJs"><script>fisheye/all/jquery-1.4.3-min.js</script></action>
+</reference>
+</default>
+
+
+</layout>

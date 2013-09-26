@@ -1,0 +1,311 @@
+<?xml version="1.0"?>
+<config>
+  <sections>
+    <ajaxcartpreview translate="label">
+      <label>Ajax Cart Preview</label>
+      <tab>fisheye</tab>
+      <frontend_type>text</frontend_type>
+      <sort_order>1000</sort_order>
+      <show_in_default>1</show_in_default>
+      <show_in_website>1</show_in_website>
+      <show_in_store>1</show_in_store>
+      <groups>
+        <!-- New groups go here -->
+       
+           <ajaxcart translate="label">
+          <label>Ajax Cart Configuration</label>
+          <frontend_type>text</frontend_type>
+          <sort_order>30</sort_order>
+          <show_in_default>1</show_in_default>
+          <fields>
+            <!-- New fields go here -->
+            <ajaxcart_enabled translate="label comment">
+              <label>Enable Ajax Cart</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>1</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </ajaxcart_enabled>
+            
+            
+              <ajaxcart_hidecpreview translate="label comment">
+              <label>Time To Hide Cart Preview after Adding</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>2</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <comment>Milliseconds [0 - Will prevent the cart preview closing automatically]</comment>
+              <show_in_store>1</show_in_store>
+              <required>1</required>
+            
+             </ajaxcart_hidecpreview>
+             
+             
+          </fields>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>
+        </ajaxcart>
+        
+              <cartpreview translate="label">
+          <label>Cart Preview Configuration</label>
+          <frontend_type>text</frontend_type>
+          <sort_order>40</sort_order>
+          <show_in_default>1</show_in_default>
+          <fields>
+            <!-- New fields go here -->
+              <cartpreview_enabled translate="label comment">
+              <label>Enable Cart Preview</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_enabledisable</source_model>
+              <sort_order>2</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </cartpreview_enabled>
+            
+              <cartpreview_showmsg translate="label comment">
+              <label>Show Message on Success</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_yesno</source_model>
+              <sort_order>3</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <comment>If yes the customer gets a success message on adding product</comment>
+              <depends><cartpreview_enabled>0</cartpreview_enabled></depends>
+             </cartpreview_showmsg>
+             
+               <cartpreview_target translate="label comment">
+              <label>Target Cartpreview Element</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>4</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <comment><![CDATA[Please use a CSS Selector <em>.classname #idname</em>]]></comment>
+              <depends><cartpreview_enabled>1</cartpreview_enabled></depends>
+             </cartpreview_target>
+             
+              <cartpreview_showeffect translate="label comment">
+              <label>Preview Show Effect</label>
+              <frontend_type>select</frontend_type>
+              <source_model>ajaxcartpreview/system_config_source_effects</source_model>
+              <sort_order>5</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <depends><cartpreview_enabled>1</cartpreview_enabled></depends>
+             </cartpreview_showeffect>
+         
+             
+             <cartpreview_showeffect_fadetime translate="label comment">
+              <label>Time For Fade</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>6</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <validate>required-entry validate-number</validate>
+              <comment>Milliseconds</comment>
+              <show_in_store>1</show_in_store>
+              <required>1</required>
+              <depends>
+              <cartpreview_showeffect>fade</cartpreview_showeffect>
+              </depends>
+             </cartpreview_showeffect_fadetime>
+            
+          
+              <cartpreview_showeffect_slidepos translate="label comment">
+              <label>Slide Position</label>
+              <frontend_type>select</frontend_type>
+              <source_model>ajaxcartpreview/system_config_source_slides</source_model>
+              <sort_order>7</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <depends>
+              <cartpreview_showeffect>slide</cartpreview_showeffect>
+              </depends>
+             </cartpreview_showeffect_slidepos>
+             
+             
+             <cartpreview_showeffect_slidetime translate="label comment">
+              <label>Slide Time</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>8</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <validate>required-entry validate-number</validate>
+              <comment>Milliseconds</comment>
+              <show_in_store>1</show_in_store>
+              <depends>
+              <cartpreview_showeffect>slide</cartpreview_showeffect>
+              </depends>
+             </cartpreview_showeffect_slidetime>
+             
+             
+             <cartpreview_hideeffect translate="label comment">
+              <label>Preview Hide Effect</label>
+              <frontend_type>select</frontend_type>
+              <source_model>ajaxcartpreview/system_config_source_effects</source_model>
+              <sort_order>9</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+             <depends><cartpreview_enabled>1</cartpreview_enabled></depends>
+             </cartpreview_hideeffect>
+             
+             
+             <cartpreview_hideeffect_fadetime translate="label comment">
+              <label>Time For Fade</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>10</sort_order>
+              <show_in_default>1</show_in_default>
+              <validate>required-entry validate-number</validate>
+              <show_in_website>1</show_in_website>
+              <comment>Milliseconds</comment>
+              <show_in_store>1</show_in_store>
+              <required>1</required>
+              <depends>
+              <cartpreview_hideeffect>fade</cartpreview_hideeffect>
+              </depends>
+             </cartpreview_hideeffect_fadetime>
+            
+          
+              <cartpreview_hideeffect_slidepos translate="label comment">
+              <label>Slide Position</label>
+              <frontend_type>select</frontend_type>
+              <source_model>ajaxcartpreview/system_config_source_slides</source_model>
+              <sort_order>11</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <depends>
+              <cartpreview_hideeffect>slide</cartpreview_hideeffect>
+              </depends>
+             </cartpreview_hideeffect_slidepos>
+             
+               <cartpreview_hideeffect_slidetime translate="label comment">
+              <label>Slide Time</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>12</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+                            <validate>required-entry validate-number</validate>
+              <comment>Milliseconds</comment>
+              <show_in_store>1</show_in_store>
+              <depends>
+              <cartpreview_hideeffect>slide</cartpreview_hideeffect>
+              </depends>
+             </cartpreview_hideeffect_slidetime>
+             
+             
+             <cartpreview_hideeffect_delay translate="label comment">
+              <label>Delay Before Hiding</label>
+              <frontend_type>text</frontend_type>
+              <sort_order>13</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <validate>required-entry validate-number</validate>
+              <comment>Milliseconds</comment>
+              <show_in_store>1</show_in_store>
+              <depends><cartpreview_enabled>1</cartpreview_enabled></depends>
+             </cartpreview_hideeffect_delay>
+             
+
+               <cartpreview_totalcart_price translate="label comment">
+              <label>Updated Return Price</label>
+              <frontend_type>select</frontend_type>
+              <source_model>ajaxcartpreview/system_config_source_totals</source_model>
+              <sort_order>14</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <depends><cartpreview_enabled>1</cartpreview_enabled></depends>
+             </cartpreview_totalcart_price>
+             
+
+             <cartpreview_preloadcart translate="label comment">
+              <label>Update Cart on Initial Page Load</label>
+              <frontend_type>select</frontend_type>
+              <source_model>adminhtml/system_config_source_yesno</source_model>
+              <sort_order>17</sort_order>
+              <show_in_default>1</show_in_default>
+              <comment>This should be enabled carefully, It will invisibly run the cart preview scripts, meaning there is no initial waiting load time.</comment>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+              <depends><cartpreview_enabled>1</cartpreview_enabled></depends>
+             </cartpreview_preloadcart>
+             
+
+          </fields>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>
+        </cartpreview>
+        
+        
+        
+        
+             <advanced translate="label">
+          <label>Advanced Configuration (Developer Area)</label>
+          <sort_order>50</sort_order>
+          <show_in_default>1</show_in_default>
+          <fields>
+        
+                <noneemptycart_update translate="label comment">
+              <label>Only Trigger Events if Cart has Items</label>
+              <frontend_type>select</frontend_type>
+             <source_model>adminhtml/system_config_source_yesno</source_model>
+              <sort_order>0</sort_order>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <show_in_store>1</show_in_store>
+            </noneemptycart_update>
+            
+             <price_update_fields translate="label comment">
+              <label>Price Update Elements on Complete</label>
+              <frontend_type>textarea</frontend_type>
+              <sort_order>1</sort_order>
+              <show_in_default>1</show_in_default>
+              <validate>fe_ajaxcartpreview_textarea</validate>
+              <show_in_website>1</show_in_website>
+              <comment>Example Usage:  .priceupdate:The price in the cart is %s  <![CDATA[<strong>[Multiples Allowed Seperate By Comma]</strong>]]> </comment>
+              <show_in_store>1</show_in_store>
+            </price_update_fields>
+           
+            
+               <qty_update_fields translate="label comment">
+              <label>Cart Quantity Update Elements on Complete</label>
+              <frontend_type>textarea</frontend_type>
+              <sort_order>2</sort_order>
+              <validate>fe_ajaxcartpreview_textarea</validate>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <comment>Example Usage:  #mycart:My Cart (%s) Items <![CDATA[<strong>[Multiples Allowed Seperate By Comma]</strong>]]> </comment>
+              <show_in_store>1</show_in_store>
+            </qty_update_fields>
+            
+               <css_update_toggles translate="label comment">
+              <label>Toggle Elements CSS (Cart Empty/Not Empty)</label>
+              <frontend_type>textarea</frontend_type>
+              <sort_order>3</sort_order>
+            <validate>fe_ajaxcartpreview_textarea</validate>
+              <show_in_default>1</show_in_default>
+              <show_in_website>1</show_in_website>
+              <comment>Example Usage:  .top-link-cart:empty:badclass,.top-link-cart:notempty:badclass <![CDATA[<strong>[Multiples Allowed Seperate By Comma]</strong>]]> </comment>
+              <show_in_store>1</show_in_store>
+            </css_update_toggles>
+            
+            
+          </fields>
+          <show_in_website>1</show_in_website>
+          <show_in_store>1</show_in_store>
+        </advanced>
+        
+        
+        
+      </groups>
+    </ajaxcartpreview>
+  </sections>
+</config>

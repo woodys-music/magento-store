@@ -1,0 +1,22 @@
+<script>
+	ProductMAP = new Array();
+	ProductMAPUrl = new Array();
+	<?php $collection = $this->getLoadedProductCollection(); ?>
+
+	<?php foreach ($collection as $product): 
+      $_product = Mage::getModel("catalog/product")->load($product->getId()); ?>
+		<?php if ($_product->getTypeInstance(true)->hasOptions($_product)): ?>
+			ProductMAP['<?php echo $this->getAddToCartUrl($product) ?>'] = 1;
+			ProductMAPUrl['<?php echo $this->getAddToCartUrl($product) ?>'] = '<?php echo $this->getProductUrl($product) ?>'+'?ajaxoptions=1';
+		<?php elseif ($_product->getTypeId() == "grouped"): ?>
+        
+       		ProductMAP['<?php echo $this->getAddToCartUrl($product) ?>'] = 1;
+			ProductMAPUrl['<?php echo $this->getAddToCartUrl($product) ?>'] = '<?php echo $this->getProductUrl($product) ?>'+'?ajaxoptions=1';
+	
+        
+        <?php else: ?>
+			ProductMAP['<?php echo $this->getAddToCartUrl($product) ?>'] = 0;
+			ProductMAPUrl['<?php echo $this->getAddToCartUrl($product) ?>'] = '<?php echo $this->getAddToCartUrl($product) ?>';
+		<?php endif; ?>
+	<?php endforeach; ?>
+</script>

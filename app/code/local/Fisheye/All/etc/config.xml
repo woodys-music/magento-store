@@ -1,0 +1,111 @@
+<?xml version="1.0"?>
+
+<config>
+	
+    
+  <!-- Module Declaration --> 
+    <modules>
+        <Fisheye_All>
+            <version>1.2.7</version>
+            <platform>ce</platform>
+        </Fisheye_All>
+    </modules>
+
+
+
+<!-- Frontend Layout Updates -->
+
+<frontend>
+             <layout>
+            <updates>
+                <fisheyeall  module="Fisheye_All">
+                    <file>fisheye/all/all.xml</file>
+                </fisheyeall>
+            </updates>
+        </layout>
+
+        <routers>
+            <fisheyeall>
+                <use>standard</use>
+                <args>
+                    <module>Fisheye_All</module>
+                    <frontName>fisheyeall</frontName>
+                </args>
+            </fisheyeall>
+        </routers>
+    </frontend>
+    
+    
+    
+
+    <!-- Backend Routing Control -->
+    <admin>
+        <routers>
+            <fisheyeall_admin>
+                <use>admin</use>
+                <args>
+                    <module>Fisheye_All</module>
+                    <frontName>fisheyeall_admin</frontName>
+                </args>
+            </fisheyeall_admin>
+        </routers>
+    </admin>
+    
+    
+   
+        
+<!-- Admin Layout Updates -->    
+    <adminhtml>
+        <layout>
+            <updates>
+                <fisheyeall>
+                    <file>fisheye/all/all.xml</file>
+                </fisheyeall>
+            </updates>
+        </layout>
+    </adminhtml>
+
+
+
+
+    <global>
+    
+    <!-- Models --> 
+        <models>
+            <fisheyeall>
+                <class>Fisheye_All_Model</class>
+            </fisheyeall>
+        </models>
+       
+       <!-- Blocks --> 
+        <blocks>
+            <fisheyeall>
+                <class>Fisheye_All_Block</class>
+            </fisheyeall>
+        </blocks>
+        
+        <!-- Helpers --> 
+        <helpers>
+            <fisheyeall>
+                <class>Fisheye_All_Helper</class>
+            </fisheyeall>
+        </helpers>
+
+
+<!--
+<events>
+      <admin_session_user_login_success> 
+        <observers>
+          <adminlogin_handler>
+            <type>model</type> 
+            <class>fisheyeall/observer</class>
+            <method>doAdminLogin</method>
+       </adminlogin_handler> 
+        </observers>
+    </admin_session_user_login_success>
+</events>-->
+
+    </global>
+
+    
+</config>

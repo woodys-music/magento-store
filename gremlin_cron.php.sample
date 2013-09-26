@@ -1,0 +1,82 @@
+<?php
+
+    ini_set('default_socket_timeout',12000);
+    $protocol    = 'http';
+    $username    = ''; // gremlin dealer username
+    $password    = ''; // gremlin dealer password
+    $url         = 'www.gremlinmusic.co.uk/dealer/stockdata/gremlinstockdata.csv';
+    $gremlinfile = "{$protocol}://{$username}:{$password}@{$url}";
+    $apiHost     = ''; // magento api URL eg http://mysite.com/api/soap/?wsdl
+    $apiUser     = ''; // magento api user
+    $apiKey      = ''; // magento api password
+    $rowcount    = 0;
+    $product     = array();
+    $products    = array();
+    $attributes  = array();
+    $sku         = null;
+    $gremlindata = fopen($gremlinfile, 'r');
+
+    while ($csvrow = fgetcsv($gremlindata, 0, ',')) {
+        foreach ($csvrow as $key => $value) {
+            if ($rowcount == 0) {
+                $attributes[$key] = $value;
+            } else {
+                if ($key == 0) {
+                    $sku = $value;
+                } else {
+                    $product[$attributes[$key]] = $value;
+                }
+            }
+        }
+        if ($rowcount != 0) {
+            $products[$sku] = $product;
+        }
+        $rowcount++;
+    }
+
+    fclose($gremlindata);
+
+    $calls = array();
+    $client = new SoapClient($apiHost);
+    $session = $client->login($apiUser, $apiKey);
+
+    foreach ($products as $sku => $product) {
+	$instock = ($product['Inventory'] == 0) ? 0 : 1;
+	if ($product['Description2'] == '') {
+            $product['Description2'] = $product['Description1'];
+	}
+	$calls[] = array('product_stock.update',
+	    array($sku,
+	        array(
+		    'price' => utf8_encode($product['Price']),
+		    'cost' => utf8_encode($product['SRP']),
+		    'description' => utf8_encode($product['Description1']),
+		    'short_description' => utf8_encode($product['Description2']),
+		    'qty' => utf8_encode($product['Inventory']),
+		    'qty_expected' => utf8_encode($product['QtyExpected']),
+		    'date_due' => utf8_encode($product['DateDue']),
+		    'with_case' => utf8_encode($product['WithCase']),
+		    'with_bag' => utf8_encode($product['WithBag']),
+		    'gremlin_status' => utf8_encode($product['Status']),
+		    'country_of_manufacture' => utf8_encode($product['Origin']),
+		    'brand' => utf8_encode($product['Brand']),
+		    'mainland_uk_dropship_price_gbp' => utf8_encode($product['MainlandUKDropShipPriceGBP']),
+		    'drop_ship_service' => utf8_encode($product['DropShipService']),
+		    'isbn' => utf8_encode($product['ISBN']),
+		    'barcode' => utf8_encode($product['BarCode']),
+		    'is_in_stock' => $instock
+		)
+	    )
+	);
+    }
+    $result = $client->multiCall($session, $calls);
+
+    if ($result) {
+	$logtext = 'Data for ' . count($products) . ' products was successfully updated';
+    } else {
+	$logtext = 'An error was encountered whilst attempting to update the product data';
+    }
+
+    $client->endSession($session);
+    $log = 'stock_update_' . date('Ymd-Hi') . '.log';
+    file_put_contents($log, $logtext);
