@@ -11,4 +11,6 @@ nbproject/
 app/etc/local.xml
 gremlin_cron.php
 gremlin.php
+includes/stat/
+media/css/
 
