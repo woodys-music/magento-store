@@ -92,11 +92,15 @@ ul,ol         { list-style:none; }
 
 
 /* Layout ================================================================================ */
-.page { width:960px;margin:0px auto; text-align:left; padding: 0px 20px 10px; background: #fff; 
-/* border: 5px solid #cfcfcf; 
-border-width: 5px 5px 5px 5px; */
+.page { 
+border-radius: 10px;
+width:960px;
+margin:0px auto;
+text-align:left;
+padding: 0px 20px 10px;
+background: none repeat scroll 0 0 rgba(255, 255, 255, 0.9); 
+border: 5px solid #F88613; 
 overflow:hidden;
-/* border-radius: 5px; */
 }
 .page-print { background:#fff; padding:25px 30px; text-align:left; }
 .page-empty { background:#fff; padding:20px; text-align:left; }
@@ -1649,7 +1653,10 @@ border-radius:10px;
 
 /* Footer ================================================================================ */
 .footer-container { background: #F5F3F2;  -moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px;}
-.footer {  padding: 30px 0px 30px 25px;margin-bottom: 20px; margin-top: 20px;}
+.footer {
+    border: 1px solid #DDDDDD;
+    border-radius: 10px 10px 10px 10px;
+  padding: 30px 0px 30px 25px;margin-bottom: 20px; margin-top: 20px;}
 .footer a { color:#444; }
 
 .footer h6 { font-size: 13px;margin-bottom: 10px; }
@@ -1722,7 +1729,10 @@ border-radius:10px;
 .wired-home .subpromo .offers img { margin-right: 20px; float: left;white-space: pre-wrap; }
 
 .wired-home .featured-social { margin-top: 15px; }
-.wired-home .subscribe { min-height: 110px;width: 235px; -moz-border-radius: 10px; -webkit-border-radius: 10px; float: right;background: #f4f4f4 url(../images/background/featured_product_bg.gif) repeat-x; padding: 10px 15px; border-radius: 10px;}
+.wired-home .subscribe {
+    border: 1px solid #DDDDDD;
+    border-radius: 10px 10px 10px 10px;
+ min-height: 110px;width: 235px; -moz-border-radius: 10px; -webkit-border-radius: 10px; float: right;background: #f4f4f4 url(../images/background/featured_product_bg.gif) repeat-x; padding: 10px 15px; border-radius: 10px;}
 .wired-home .subscribe strong { font-size: 16px; }
 .wired-home .form-subscribe { margin:8px 0; background:url(../images/background/subscribe_bg.png) no-repeat; width: 233px; height: 33px;position:relative; }
 .wired-home .form-subscribe label { display: none; }

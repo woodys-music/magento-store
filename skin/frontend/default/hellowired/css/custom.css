@@ -106,7 +106,10 @@ ol#controls li a:focus, #prevBtn a:focus, #nextBtn a:focus { outline:none; }
 .jcarousel-next { z-index: 3; display: none; }
 .jcarousel-prev { z-index: 3; display: none; }
 .jcarousel-skin-tango .jcarousel-container { float: left;background: #f4f4f4 url(../images/background/featured_product_bg.gif) repeat-x; }
-.jcarousel-skin-tango .jcarousel-container-horizontal { width: 598px; padding: 15px 40px; -moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px;}
+.jcarousel-skin-tango .jcarousel-container-horizontal {
+    border: 1px solid #DDDDDD;
+    border-radius: 10px 10px 10px 10px;
+ width: 598px; padding: 15px 40px; -moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px;}
 .jcarousel-skin-tango .jcarousel-container-vertical { width: 75px; height: 245px; padding: 40px 20px; }
 .jcarousel-skin-tango .jcarousel-clip-horizontal { width:  598px; height: 108px; }
 .jcarousel-skin-tango .jcarousel-clip-vertical { width:  75px; height: 245px; }
