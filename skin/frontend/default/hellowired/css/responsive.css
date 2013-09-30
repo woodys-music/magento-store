@@ -544,7 +544,7 @@
 	}
 	[class*="span"] {
 		float: left;
-		margin-left: 30px;
+		margin-left: 25px;
 	}
 	.category-products .span2 {
 		margin-left: 20px;
@@ -568,7 +568,7 @@
 		width: 210px;  
 	}
 	.span3 {
-		width: 195px;
+		/* width: 195px; -- no good */
 	}
 	.span4 {
 		width: 265px;
