@@ -19,7 +19,15 @@
 /* cart notification - failed */
 #fe_ajaxcartpreview_failedcart 							{}
 #fe_ajaxcartpreview_failedcart_msg						{ /* background-color:#FBEBD9; font-size:11px; */ text-align:center; padding:5px; }
-#fe_ajaxcartpreview_failedcart_close					{ background:url(http://www.woodys-music.co.uk/skin/frontend/default/default/images/fisheye/ajaxcartpreview/btn_remove.png) no-repeat; width:11px; height:11px; position:absolute; top:14px; right:10px; cursor:pointer; }
+#fe_ajaxcartpreview_failedcart_close {
+    background:url('../../../images/fisheye/ajaxcartpreview/btn_remove.png') no-repeat;
+    width:11px;
+    height:11px;
+    position:absolute;
+    top:14px;
+    right:10px;
+    cursor:pointer;
+}
 
 /* cart notification - success */
 #fe_ajaxcartpreview_successcart							{}	
