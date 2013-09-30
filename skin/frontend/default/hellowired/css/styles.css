@@ -26,7 +26,9 @@
 /* Reset ================================================================================= */
 * { margin:0; padding:0; }
 
-body          { /*background:#e0e0e0 ;*/ background:#fff;  font:13px/1.55 arial, helvetica, sans-serif; color:#444; text-align:center;  }
+body          {
+background: url("http://static.tumblr.com/7f4f8ad62cff5c6554787cb8268b4c12/tqqscm9/Bdrmku9uv/tumblr_static_370799.jpg") repeat scroll 0 0 rgba(0, 0, 0, 0);
+font:13px/1.55 arial, helvetica, sans-serif; color:#444; text-align:center;  }
 
 img           { border:0; vertical-align:top; }
 
