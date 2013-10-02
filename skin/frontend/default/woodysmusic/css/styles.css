@@ -99,7 +99,7 @@ margin:0px auto;
 text-align:left;
 padding: 0px 20px 10px;
 background: none repeat scroll 0 0 rgba(255, 255, 255, 0.9); 
-border: 5px solid #F88613; 
+/* border: 5px solid #F88613; */ 
 overflow:hidden;
 }
 .page-print { background:#fff; padding:25px 30px; text-align:left; }
