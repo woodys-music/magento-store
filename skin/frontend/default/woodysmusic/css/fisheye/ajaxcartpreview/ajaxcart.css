@@ -34,7 +34,7 @@
 #fe_ajaxcartpreview_successcart_msg						{ background-color:#FBEBD9; font-size:11px; text-align:center; padding:5px; margin:0 0 10px 0; }
 
 /* cart preview - container */
-.ui-tooltip-content										{  border:1px solid #DDDDDD; background:#FFFFFF; border-radius:10px; width: 550px; right: 200px;}
+.ui-tooltip-content										{  border:1px solid #DDDDDD; background:#FFFFFF; border-radius:10px; width: 750px; right: 400px;}
 
 /* cart preview - content */
 .fisheye_cart											{ padding:10px; /* font-size:11px; */ }
