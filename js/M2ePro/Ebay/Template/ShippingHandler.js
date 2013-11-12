@@ -55,6 +55,34 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
 
             return EbayTemplateShippingHandlerObj.counter[locationType] != 0;
         });
+
+        Validation.add('M2ePro-validate-shipping-service', M2ePro.translator.translate('This is a required field.'), function(value, el) {
+            var hidden = false;
+            var current = el;
+            hidden = !$(el).visible();
+
+            while (!hidden) {
+                el = $(el).up();
+                hidden = !el.visible();
+                if (el == document || el.hasClassName('entry-edit')) {
+                    break;
+                }
+            }
+
+            if (hidden || current.up('table').id == 'shipping_international_table') {
+                return true;
+            }
+
+            return value != '';
+        });
+    },
+
+    //----------------------------------
+
+    updateHiddenValue : function(elementMode, elementHidden)
+    {
+        var value = elementMode.options[elementMode.selectedIndex].getAttribute('value_hack');
+        elementHidden.value = value;
     },
 
     //----------------------------------
@@ -83,6 +111,9 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
         $('block_notice_ebay_template_shipping_local').hide();
         $('block_notice_ebay_template_shipping_freight').hide();
         $('local_shipping_methods_tr').hide();
+        if (!EbayTemplateShippingHandlerObj.isSimpleViewMode) {
+            $('magento_block_ebay_template_shipping_form_data_excluded_locations').show();
+        }
         //----------------------------------
 
         // clear selected shipping methods
@@ -136,6 +167,9 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
             $('block_notice_ebay_template_shipping_freight').show();
             $('international_shipping_mode').value = M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_Shipping::SHIPPING_TYPE_NO_INTERNATIONAL');
             $('international_shipping_mode').simulate('change');
+
+            $('magento_block_ebay_template_shipping_form_data_excluded_locations').hide();
+            EbayTemplateShippingHandlerObj.resetExcludeLocationsList();
         }
         //----------------------------------
 
@@ -144,6 +178,9 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
             $('block_notice_ebay_template_shipping_local').show();
             $('international_shipping_mode').value = M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_Shipping::SHIPPING_TYPE_NO_INTERNATIONAL');
             $('international_shipping_mode').simulate('change');
+
+            $('magento_block_ebay_template_shipping_form_data_excluded_locations').hide();
+            EbayTemplateShippingHandlerObj.resetExcludeLocationsList();
         }
         //----------------------------------
     },
@@ -338,6 +375,26 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
 
     //----------------------------------
 
+    taxCategoryChange: function()
+    {
+        var self = EbayTemplateShippingHandlerObj,
+            valueEl     = $('tax_category_value'),
+            attributeEl = $('tax_category_attribute');
+
+        valueEl.value     = '';
+        attributeEl.value = '';
+
+        if (this.value == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_Shipping::TAX_CATEGORY_MODE_VALUE')) {
+            self.updateHiddenValue(this, valueEl);
+        }
+
+        if (this.value == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_Shipping::TAX_CATEGORY_MODE_ATTRIBUTE')) {
+            self.updateHiddenValue(this, attributeEl);
+        }
+    },
+
+    //----------------------------------
+
     updateLocalHandlingCostVisibility: function()
     {
         if (!$('local_handling_cost_tr')) {
@@ -377,34 +434,55 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
 
     //----------------------------------
 
-    updateDiscountProfiles: function()
+    updateDiscountProfiles: function(accountId)
     {
         new Ajax.Request(M2ePro.url.get('adminhtml_ebay_template_shipping/updateDiscountProfiles'),
         {
             method: 'get',
-            parameters: {},
+            parameters: {
+                'account_id': accountId
+            },
             onSuccess: function(transport) {
-                EbayTemplateShippingHandlerObj.discountProfiles = transport.responseText.evalJSON(true);
-                EbayTemplateShippingHandlerObj.renderDiscountProfiles('local');
-                EbayTemplateShippingHandlerObj.renderDiscountProfiles('international');
+                EbayTemplateShippingHandlerObj.discountProfiles[accountId]['profiles'] = transport.responseText.evalJSON(true);
+                EbayTemplateShippingHandlerObj.renderDiscountProfiles('local', accountId);
+                EbayTemplateShippingHandlerObj.renderDiscountProfiles('international', accountId);
             }
         });
     },
 
-    renderDiscountProfiles: function(locationType)
+    renderDiscountProfiles: function(locationType, renderAccountId)
     {
-        if (!$(locationType+'_shipping_combined_discount_profile_id')) {
-            return;
+        if (typeof renderAccountId == 'undefined') {
+            $$('.' + locationType + '-discount-profile-account-tr').each(function (account) {
+                var accountId = account.readAttribute('account_id');
+
+                if ($(locationType + '_shipping_combined_discount_profile_id_' + accountId)) {
+                    var value = EbayTemplateShippingHandlerObj.discountProfiles[accountId]['selected'][locationType];
+
+                    var html = EbayTemplateShippingHandlerObj.getDiscountProfilesHtml(locationType, accountId);
+                    $(locationType + '_shipping_combined_discount_profile_id_' + accountId).update(html);
+
+                    if (value && EbayTemplateShippingHandlerObj.discountProfiles[accountId]['profiles'].length > 0) {
+                        $(locationType + '_shipping_combined_discount_profile_id_' + accountId).value = value;
+                    }
+                }
+            });
+        } else {
+            if ($(locationType + '_shipping_combined_discount_profile_id_' + renderAccountId)) {
+                var value = EbayTemplateShippingHandlerObj.discountProfiles[renderAccountId]['selected'][locationType];
+                var html = EbayTemplateShippingHandlerObj.getDiscountProfilesHtml(locationType, renderAccountId);
+
+                $(locationType + '_shipping_combined_discount_profile_id_' + renderAccountId).update(html);
+
+                if (value && EbayTemplateShippingHandlerObj.discountProfiles[renderAccountId]['profiles'].length > 0) {
+                    $(locationType + '_shipping_combined_discount_profile_id_' + renderAccountId).value = value;
+                }
+            }
         }
 
-        var html = EbayTemplateShippingHandlerObj.getDiscountProfilesHtml(locationType);
-        var value = M2ePro.formData[locationType + '_shipping_combined_discount_profile_id'];
-
-        $(locationType+'_shipping_combined_discount_profile_id').update(html);
-        $(locationType+'_shipping_combined_discount_profile_id').value = value;
     },
 
-    getDiscountProfilesHtml: function(locationType)
+    getDiscountProfilesHtml: function(locationType, accountId)
     {
         var shippingModeSelect = $(locationType + '_shipping_mode');
         var desiredProfileType = null;
@@ -423,7 +501,7 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
             return html;
         }
 
-        EbayTemplateShippingHandlerObj.discountProfiles.each(function(profile) {
+        EbayTemplateShippingHandlerObj.discountProfiles[accountId]['profiles'].each(function (profile) {
             if (profile.type != desiredProfileType) {
                 return;
             }
@@ -689,7 +767,9 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
     {
         var row = $(this).up('tr');
 
-        this.down(0).hide();
+        if (this.up('table').id != 'shipping_international_table') {
+            this.down(0).hide();
+        }
 
         if (this.value === '') {
             row.select('.cost-mode')[0].hide();
@@ -993,6 +1073,10 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
             $(el).simulate('change');
         });
         //----------------------------------
+
+        $$('input[value="Worldwide"]').each(function(element) {
+            EbayTemplateShippingHandlerObj.shippingLocationChange.call(element);
+        });
     },
 
     //----------------------------------
@@ -1128,6 +1212,299 @@ EbayTemplateShippingHandler = Class.create(CommonHandler, {
         if (td.down('.cost-mode')) {
             td.down('.cost-mode').observe('change', EbayTemplateShippingHandlerObj.serviceCostModeChange);
         }
+    },
+
+    //----------------------------------
+
+    initExcludeListPopup: function()
+    {
+        var self        = EbayTemplateShippingHandlerObj,
+            focusBefore = Windows.getFocusedWindow();
+
+        self.excludeListPopup = new Window({
+            draggable: true,
+            resizable: true,
+            closable: true,
+            className: "magento",
+            windowClassName: "popup-window",
+            title: M2ePro.translator.translate('Excluded Shipping Locations'),
+            top: 50,
+            width: 635,
+            height: 445,
+            zIndex: 100,
+            recenterAuto: true,
+            hideEffect: Element.hide,
+            showEffect: Element.show
+        });
+
+        self.excludeListPopup.getContent().update(
+            $('magento_block_ebay_template_shipping_form_data_exclude_locations_popup').innerHTML
+        );
+
+        Windows.focusedWindow = focusBefore;
+    },
+
+    //----------------------------------
+
+    showExcludeListPopup: function()
+    {
+        var self = EbayTemplateShippingHandlerObj;
+
+        self.updatePopupData();
+        self.checkExcludeLocationSelection();
+
+        self.excludeListPopup.getContent().setStyle({overflow: "auto"});
+        self.excludeListPopup.showCenter(true);
+
+        self.updatePopupControlsSizes();
+        $$('.shipping_excluded_location_region_link').shift().simulate('click')
+    },
+
+    //----------------------------------
+
+    updatePopupControlsSizes: function()
+    {
+        var standartRegionHeight = $('exclude_locations_international_regions').getHeight();
+        $('exclude_locations_international_locations').setStyle({ 'height': standartRegionHeight + 'px'});
+    },
+
+    updatePopupData: function()
+    {
+        $('excluded_locations_popup_hidden').value = $('excluded_locations_hidden').value;
+        EbayTemplateShippingHandlerObj.updateExcludedLocationsTitles();
+    },
+
+    checkExcludeLocationSelection: function()
+    {
+        var self = EbayTemplateShippingHandlerObj,
+            excludedLocations = $('excluded_locations_popup_hidden').value.evalJSON();
+
+        $$('.shipping_excluded_location').each(function(el){ el.checked = 0; });
+
+        $$('.shipping_excluded_location').each(function(el){
+
+            for (var i = 0; i < excludedLocations.length; i++) {
+                if (excludedLocations[i]['code'] == el.value) {
+                    el.checked = 1;
+                    el.hasClassName('shipping_excluded_region') && self.selectExcludedLocationAllRegion(el.value, 1);
+                }
+            }
+        });
+
+        EbayTemplateShippingHandlerObj.updateExcludedLocationsSelectedRegions();
+    },
+
+    selectExcludedLocationAllRegion: function(regionCode, checkBoxState)
+    {
+        $('shipping_excluded_location_international_region_' + regionCode).select('.shipping_excluded_location').each(function(el){
+            el.checked = checkBoxState;
+        });
+    },
+
+    //----------------------------------
+
+    saveExcludeLocationsList: function()
+    {
+        var title = $('excluded_locations_popup_titles').innerHTML;
+
+        if (title == M2ePro.translator.translate('None')) {
+            title = M2ePro.translator.translate('No locations are currently excluded.');
+        }
+        $('excluded_locations_titles').innerHTML = title;
+
+        $('excluded_locations_hidden').value = $('excluded_locations_popup_hidden').value;
+
+        EbayTemplateShippingHandlerObj.excludeListPopup.close()
+    },
+
+    resetExcludeLocationsList: function(window)
+    {
+        window = window || 'general';
+
+        if (window == 'general') {
+            $('excluded_locations_hidden').value = '[]';
+            $('excluded_locations_titles').innerHTML = M2ePro.translator.translate('No locations are currently excluded.');
+            return;
+        }
+
+        $('excluded_locations_popup_hidden').value = '[]';
+        EbayTemplateShippingHandlerObj.updateExcludedLocationsTitles();
+        EbayTemplateShippingHandlerObj.checkExcludeLocationSelection();
+    },
+
+    //----------------------------------
+
+    selectExcludeLocation: function()
+    {
+        EbayTemplateShippingHandlerObj.updateExcludedLocationsHiddenInput(this);
+        EbayTemplateShippingHandlerObj.updateExcludedLocationsTitles();
+        EbayTemplateShippingHandlerObj.updateExcludedLocationsSelectedRegions();
+    },
+
+    updateExcludedLocationsHiddenInput: function(element)
+    {
+        var self              = EbayTemplateShippingHandlerObj,
+            excludedLocations = $('excluded_locations_popup_hidden').value.evalJSON(),
+            code   = element.value,
+            title  = element.next().innerHTML,
+            region = element.getAttribute('region');
+
+        if (element.hasClassName('shipping_excluded_region')) {
+
+            if (element.checked) {
+                self.selectExcludedLocationAllRegion(code, 1);
+                excludedLocations = self.deleteExcludedLocation(code, excludedLocations, 'region');
+                excludedLocations = self.addExcludedLocation(code, title, region, excludedLocations);
+            } else {
+                self.selectExcludedLocationAllRegion(code, 0);
+                excludedLocations = self.deleteExcludedLocation(code, excludedLocations);
+            }
+
+        } else {
+
+            if (element.checked) {
+                excludedLocations = self.addExcludedLocation(code, title, region, excludedLocations);
+
+                if (self.isAllLocationsOfRegionAreSelected(region)) {
+                    var regionTitle = $('shipping_excluded_location_international_' + region).next('label').innerHTML;
+
+                    $('shipping_excluded_location_international_' + region).checked = 1;
+                    excludedLocations = self.deleteExcludedLocation(region, excludedLocations, 'region');
+                    excludedLocations = self.addExcludedLocation(region, regionTitle, null, excludedLocations);
+                }
+            } else {
+
+                excludedLocations = self.deleteExcludedLocation(code, excludedLocations);
+
+                if (region != null) {
+                    excludedLocations = self.deleteExcludedLocation(region, excludedLocations);
+                    excludedLocations = self.deleteExcludedLocation(region, excludedLocations, 'region');
+
+                    $('shipping_excluded_location_international_' + region).checked = 0;
+
+                    var result = self.getLocationsByRegion(region);
+                    result['locations'].each(function(el){
+                        excludedLocations = self.addExcludedLocation(el.value, el.next().innerHTML, region, excludedLocations);
+                    });
+                }
+            }
+        }
+
+        $('excluded_locations_popup_hidden').value = JSON.stringify(excludedLocations);
+    },
+
+    //----------------------------------
+
+    getLocationsByRegion: function(regionCode)
+    {
+        if (regionCode == null) {
+            return false;
+        }
+
+        var totalCount    = 0,
+            selectedLocations = [];
+
+        $('shipping_excluded_location_international_region_' + regionCode).select('.shipping_excluded_location').each(function(el){
+            totalCount ++;
+            el.checked && selectedLocations.push(el);
+        });
+
+        return {total: totalCount, selected: selectedLocations.length, locations: selectedLocations};
+    },
+
+    isAllLocationsOfRegionAreSelected: function(regionCode)
+    {
+        var locations = EbayTemplateShippingHandlerObj.getLocationsByRegion(regionCode);
+
+        if (!locations) {
+            return false;
+        }
+
+        return locations['total'] == locations['selected'];
+    },
+
+    isRootLocation: function(location)
+    {
+        return !!(location['region'] == null);
+    },
+
+    //----------------------------------
+
+    updateExcludedLocationsTitles: function()
+    {
+        var excludedLocations = $('excluded_locations_popup_hidden').value.evalJSON(),
+            title = M2ePro.translator.translate('None');
+
+        if (excludedLocations.length) {
+            title = [];
+            excludedLocations.each(function(location){
+                var currentTitle = EbayTemplateShippingHandlerObj.isRootLocation(location)
+                    ? '<b>' + location['title'] + '</b>'
+                    : location['title'];
+
+                title.push(currentTitle);
+            });
+            title = title.join(', ');
+        }
+
+        title == M2ePro.translator.translate('None')
+            ? $('excluded_locations_reset_link').hide()
+            : $('excluded_locations_reset_link').show();
+
+        $('excluded_locations_popup_titles').innerHTML = title;
+    },
+
+    updateExcludedLocationsSelectedRegions: function()
+    {
+        $$('.shipping_excluded_location_region_link').each(function(el){
+
+            var locations = EbayTemplateShippingHandlerObj.getLocationsByRegion(el.getAttribute('region'));
+
+            el.removeClassName('have_selected_locations');
+            if (locations['total'] != locations['selected'] && locations['selected'] > 0) {
+                el.addClassName('have_selected_locations');
+                el.down('span').innerHTML = '(' + locations['selected'] + ' ' + M2ePro.translator.translate('selected') + ')';
+            }
+        });
+    },
+
+    //----------------------------------
+
+    addExcludedLocation: function(code, title, region, locations)
+    {
+        var item = {
+            code: code,
+            title: title,
+            region: region
+        };
+
+        locations.push(item);
+        return locations;
+    },
+
+    deleteExcludedLocation: function(code, locations, key)
+    {
+        key = key || 'code';
+
+        var result = [];
+        for (var i = 0; i < locations.length; i++) {
+            if (locations[i][key] != code) {
+                result.push(locations[i]);
+            }
+        }
+
+        return result;
+    },
+
+    //----------------------------------
+
+    checkExcludeLocationsRegionsSelection: function()
+    {
+        $$('.shipping_excluded_location_region').invoke('hide');
+        $$('.shipping_excluded_location_region_link').invoke('removeClassName','selected_region');
+
+        $('shipping_excluded_location_international_region_' + this.getAttribute('region')).show();
+        this.addClassName('selected_region');
     }
 
     //----------------------------------

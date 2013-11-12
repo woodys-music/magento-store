@@ -50,14 +50,28 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
 
     // ########################################
 
-    public function getCurrency()
+    public function getCurrencies()
     {
         return $this->getData('currency');
     }
 
-    public function getCategoriesVersion()
+    public function getCurrency()
     {
-        return (int)$this->getData('categories_version');
+        $currency = (string)$this->getData('currency');
+
+        if (strpos($currency,',') === false) {
+            return $currency;
+        }
+
+        $currency = explode(',', $currency);
+
+        if (!is_null($setting = Mage::helper('M2ePro/Module')->getConfig()
+                                ->getGroupValue('/ebay/selling/currency/',$this->getParentObject()->getCode()))
+            && in_array($setting, $currency)) {
+            return $setting;
+        }
+
+        return array_shift($currency);
     }
 
     public function isMultivariationEnabled()

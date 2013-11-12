@@ -614,20 +614,6 @@ class Ess_M2ePro_Model_Play_Listing extends Ess_M2ePro_Model_Component_Child_Pla
 
     // ########################################
 
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
-        return parent::delete();
-    }
-
-    // ########################################
-
     public function getAffectedListingProducts($asObjects = false)
     {
         if (is_null($this->getId())) {
@@ -636,8 +622,6 @@ class Ess_M2ePro_Model_Play_Listing extends Ess_M2ePro_Model_Component_Child_Pla
 
         return $this->getProducts($asObjects);
     }
-
-    // ########################################
 
     public function setIsNeedSynchronize($newData, $oldData)
     {
@@ -669,6 +653,20 @@ class Ess_M2ePro_Model_Play_Listing extends Ess_M2ePro_Model_Component_Child_Pla
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // ########################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
+        return parent::delete();
     }
 
     // ########################################

@@ -252,6 +252,14 @@ abstract class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract
 
     protected function isTheSameProductAlreadyListed(Ess_M2ePro_Model_Listing_Product $listingProduct)
     {
+        $config = Mage::helper('M2ePro/Module')
+            ->getConfig()
+            ->getGroupValue('/ebay/connector/listing/', 'check_the_same_product_already_listed');
+
+        if (!is_null($config) && $config != 1) {
+            return false;
+        }
+
         $listingProductCollection = Mage::helper('M2ePro/Component_Ebay')
             ->getCollection('Listing_Product');
 

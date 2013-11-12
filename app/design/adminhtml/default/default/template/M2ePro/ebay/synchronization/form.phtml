@@ -16,7 +16,7 @@
     M2ePro.translator.add(<?php echo json_encode(array(
         'Synchronization settings have been saved.' => $this->__('Synchronization settings have been saved.'),
         'Running All Enabled Tasks' => $this->__('Running All Enabled Tasks'),
-        'Stock Level Synchronization' => $this->__('Stock Level Synchronization'),
+        'Inventory Synchronization' => $this->__('Inventory Synchronization'),
         'Orders Synchronization' => $this->__('Orders Synchronization'),
         '3rd Party Listings Synchronization' => $this->__('3rd Party Listings Synchronization'),
         'Feedback Synchronization' => $this->__('Feedback Synchronization'),
@@ -60,7 +60,7 @@
     <div class="entry-edit" id="magento_block_ebay_synchronization_templates">
 
         <div class="entry-edit-head">
-            <h4 class="icon-head head-edit-form fieldset-legend"><?php echo Mage::helper('M2ePro')->__('Stock Level Synchronization'); ?></h4>
+            <h4 class="icon-head head-edit-form fieldset-legend"><?php echo Mage::helper('M2ePro')->__('Inventory Synchronization'); ?></h4>
         </div>
 
         <div class="fieldset">
@@ -84,7 +84,7 @@
                                 <option value="1"<?php if ($templates_mode == 1) echo ' selected="selected"'; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                             </select>
                             <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__("Updates and synchronizes eBay Listings according to<br/>Synchronization Templates' rules."); ?></span>
+                                <span><?php echo Mage::helper('M2ePro')->__("Updates and synchronizes eBay Listings according to Synchronization Policies' rules."); ?></span>
                             </p>
                         </td>
 
@@ -136,7 +136,7 @@
                                 <option value="1"<?php if ($orders_mode == 1) echo ' selected="selected"'; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                             </select>
                             <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__('Imports and synchronizes eBay Orders for accounts,<br/>which have enabled Import eBay Orders in their<br/>Accounts settings.'); ?></span>
+                                <span><?php echo Mage::helper('M2ePro')->__('Imports and synchronizes eBay Orders for accounts, which have enabled Import eBay Orders in their Accounts settings.'); ?></span>
                             </p>
                         </td>
                         <td class="value">
@@ -186,7 +186,7 @@
                                 <option value="1"<?php if ($feedbacks_mode == 1) echo ' selected="selected"'; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                             </select>
                             <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__("Imports buyers' feedback and automatically sends<br/>Auto Responses according to eBay Accounts settings."); ?></span>
+                                <span><?php echo Mage::helper('M2ePro')->__("Imports buyers' feedback and automatically sends Auto Responses according to eBay Accounts settings."); ?></span>
                             </p>
                         </td>
                         <td class="value">
@@ -236,7 +236,7 @@
                                 <option value="1"<?php if ($otherListingsMode == 1) echo ' selected="selected"'; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                             </select>
                             <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__('Imports and synchronizes 3rd Party Listings for eBay accounts, which have enabled Import 3rd Party Listings in their Accounts settings.<br /><br /><strong>Note: </strong>click "Synchronization Settings" for configure settings.'); ?></span>
+                                <span><?php echo Mage::helper('M2ePro')->__('Imports and synchronizes 3rd Party Listings for eBay accounts, which have enabled Import 3rd Party Listings in their Accounts settings.<br/><strong>Note: </strong>Click "Synchronization Settings" to configure settings.'); ?></span>
                             </p>
                         </td>
                         <td class="value" id="ebay_other_listings_synchronization_settings_button_container" <?php if ($otherListingsMode != 1) echo ' style="display: none;"'; ?>>

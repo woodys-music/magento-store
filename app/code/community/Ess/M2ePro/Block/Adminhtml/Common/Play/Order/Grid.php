@@ -232,6 +232,12 @@ class Ess_M2ePro_Block_Adminhtml_Common_Play_Order_Grid extends Mage_Adminhtml_B
              'url'      => $this->getUrl('*/adminhtml_order/reservationCancel'),
              'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
         ));
+
+        $this->getMassactionBlock()->addItem('resend_shipping', array(
+             'label'    => Mage::helper('M2ePro')->__('Resend Shipping Information'),
+             'url'      => $this->getUrl('*/adminhtml_order/resendShippingInfo'),
+             'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
         //--------------------------------
 
         return parent::_prepareMassaction();

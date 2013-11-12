@@ -30,6 +30,17 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Order_Update_Shipping
 
     // ########################################
 
+    protected function validateNeedRequestSend()
+    {
+        if (!$this->order->getChildObject()->canUpdateShippingStatus($this->params)) {
+            return false;
+        }
+
+        return parent::validateNeedRequestSend();
+    }
+
+    // ########################################
+
     protected function getRequestData()
     {
         $requestData = parent::getRequestData();
@@ -46,40 +57,36 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Order_Update_Shipping
 
     protected function prepareResponseData($response)
     {
-        if ($this->resultType != parent::MESSAGE_TYPE_ERROR) {
-
-            if (!isset($response['result']) || !$response['result']) {
-                $this->order->addErrorLog(
-                    'Shipping status for eBay order was not updated. Reason: eBay Failure.'
-                );
-
-                return false;
-            }
-
-            if ($this->action == Ess_M2ePro_Model_Connector_Server_Ebay_Order_Dispatcher::ACTION_SHIP_TRACK) {
-                $trackingDetails = $this->order->getChildObject()->getShippingTrackingDetails();
-                $trackingDetails[] = array(
-                    'title'  => $this->carrierCode,
-                    'number' => $this->trackingNumber
-                );
-
-                $this->order->setData('shipping_tracking_details', json_encode($trackingDetails))->save();
-                $this->order->addSuccessLog(
-                    'Tracking number "%num%" for "%code%" has been sent to eBay.', array(
-                        '!num'  => $this->trackingNumber,
-                        '!code' => $this->carrierCode
-                    )
-                );
-            }
-
-            if (!$this->order->getChildObject()->isShippingCompleted()) {
-//             $this->order->setData('shipping_status',Ess_M2ePro_Model_Ebay_Order::SHIPPING_STATUS_COMPLETED)->save();
-                $this->order->addSuccessLog(
-                    'Shipping status for eBay order was updated to Shipped.'
-                );
-            }
-
+        if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
+            return $response;
         }
+
+        if (!isset($response['result']) || !$response['result']) {
+            $this->order->addErrorLog(
+                'Shipping status for eBay order was not updated. Reason: eBay Failure.'
+            );
+
+            return false;
+        }
+
+        if ($this->action == Ess_M2ePro_Model_Connector_Server_Ebay_Order_Dispatcher::ACTION_SHIP_TRACK) {
+            $this->order->addSuccessLog(
+                'Tracking number "%num%" for "%code%" has been sent to eBay.', array(
+                    '!num'  => $this->trackingNumber,
+                    '!code' => $this->carrierCode
+                )
+            );
+        }
+
+        if (!$this->order->getChildObject()->isShippingCompleted()) {
+//             $this->order->setData('shipping_status',Ess_M2ePro_Model_Ebay_Order::SHIPPING_STATUS_COMPLETED)->save();
+            $this->order->addSuccessLog(
+                'Shipping status for eBay order was updated to Shipped.'
+            );
+        }
+
+        Mage::getResourceModel('M2ePro/Order_Change')
+            ->deleteByOrderAction($this->order->getId(), Ess_M2ePro_Model_Order_Change::ACTION_UPDATE_SHIPPING);
 
         return $response;
     }

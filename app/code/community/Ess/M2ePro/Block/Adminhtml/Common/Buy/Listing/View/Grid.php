@@ -194,6 +194,7 @@ class Ess_M2ePro_Block_Adminhtml_Common_Buy_Listing_View_Grid extends Mage_Admin
                 'index'     => 'value',
                 'filter'    => false,
                 'sortable'  => false,
+                'js_handler' => 'ListingGridHandlerObj'
             ));
         }
 

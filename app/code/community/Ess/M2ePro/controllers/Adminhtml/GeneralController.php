@@ -240,28 +240,14 @@ class Ess_M2ePro_Adminhtml_GeneralController
         $id = $this->getRequest()->getParam('id');
         $prefix = $this->getRequest()->getParam('prefix');
         $storeId = $this->getRequest()->getParam('store', 0);
-        $attributeCriteria = $this->getRequest()->getParam(
-            'attribute_criteria', Ess_M2ePro_Model_Magento_Product_Rule::LOAD_ATTRIBUTES_CRITERIA_ALL
-        );
-        $attributeSets = $this->getRequest()->getParam('attribute_sets');
-        if (empty($attributeSets)) {
-            $attributeSets = array();
-        } else {
-            $attributeSets = explode(',', $attributeSets);
-        }
 
         $typeArr = explode('|', str_replace('-', '/', $this->getRequest()->getParam('type')));
         $type = $typeArr[0];
 
-        $rule = Mage::getModel('M2ePro/Magento_Product_Rule')->setData(array(
-            'attribute_criteria' => $attributeCriteria,
-            'attribute_sets' => $attributeSets
-        ));
-
         $model = Mage::getModel($type)
             ->setId($id)
             ->setType($type)
-            ->setRule($rule)
+            ->setRule(Mage::getModel('M2ePro/Magento_Product_Rule'))
             ->setPrefix($prefix);
 
         if ($type == 'M2ePro/Magento_Product_Rule_Condition_Combine') {

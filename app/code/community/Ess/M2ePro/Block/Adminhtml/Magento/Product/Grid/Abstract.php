@@ -79,6 +79,7 @@ abstract class Ess_M2ePro_Block_Adminhtml_Magento_Product_Grid_Abstract
     {
         $advancedFilterBlock = $this->getLayout()->createBlock('M2ePro/adminhtml_listing_product_rule');
         $advancedFilterBlock->setShowHideProductsOption($this->showAdvancedFilterProductsOption);
+        $advancedFilterBlock->setGridJsObjectName($this->getJsObjectName());
 
         return $advancedFilterBlock->toHtml() . parent::getMassactionBlockHtml();
     }

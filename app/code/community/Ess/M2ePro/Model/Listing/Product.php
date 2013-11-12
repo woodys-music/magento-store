@@ -207,6 +207,15 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     //----------------------------------------
 
+    public function getAdditionalData()
+    {
+        $additionalData = $this->getData('additional_data');
+        is_string($additionalData) && $additionalData = json_decode($additionalData,true);
+        return is_array($additionalData) ? $additionalData : array();
+    }
+
+    //----------------------------------------
+
     public function isNeedSynchronize()
     {
         return (int)$this->getData('is_need_synchronize');

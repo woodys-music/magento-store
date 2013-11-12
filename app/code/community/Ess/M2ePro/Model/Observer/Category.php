@@ -40,7 +40,7 @@ class Ess_M2ePro_Model_Observer_Category
 
     //####################################
 
-    public function synchProductWithAddedCategoryId($product, $categoryId)
+    public function synchProductWithAddedCategoryId($product, $categoryId, $websiteId)
     {
         $autoCategories = $this->getAutoCategoriesByCategory($categoryId);
 
@@ -50,6 +50,10 @@ class Ess_M2ePro_Model_Observer_Category
 
             /** @var $listing Ess_M2ePro_Model_Listing */
             $listing = $this->getLoadedListing($autoCategory->getListingId());
+
+            if ((int)$listing->getData('store_website_id') != $websiteId) {
+                continue;
+            }
 
             if ($listing->isCategoriesAddActionNone()) {
                 continue;
@@ -62,20 +66,15 @@ class Ess_M2ePro_Model_Observer_Category
             /** @var Mage_Catalog_Model_Product $product */
             $product = Mage::helper('M2ePro/Magento_Product')->getCachedAndLoadedProduct($product);
 
-            if ((int)$listing->getData('store_website_id') > 0 &&
-                !in_array($listing->getData('store_website_id'),$product->getWebsiteIds())) {
-                continue;
-            }
-
             $listing->addProduct($product);
         }
 
         /** @var Ess_M2ePro_Model_Observer_Ebay_Category $ebayObserver */
         $ebayObserver = Mage::getModel('M2ePro/Observer_Ebay_Category');
-        $ebayObserver->synchProductWithAddedCategoryId($product,$categoryId);
+        $ebayObserver->synchProductWithAddedCategoryId($product,$categoryId,$websiteId);
     }
 
-    public function synchProductWithDeletedCategoryId($product, $categoryId)
+    public function synchProductWithDeletedCategoryId($product, $categoryId, $websiteId)
     {
         $autoCategories = $this->getAutoCategoriesByCategory($categoryId);
 
@@ -85,6 +84,10 @@ class Ess_M2ePro_Model_Observer_Category
 
             /** @var $listing Ess_M2ePro_Model_Listing */
             $listing = $this->getLoadedListing($autoCategory->getListingId());
+
+            if ((int)$listing->getData('store_website_id') != $websiteId) {
+                continue;
+            }
 
             if ($listing->isCategoriesDeleteActionNone()) {
                 continue;
@@ -96,11 +99,6 @@ class Ess_M2ePro_Model_Observer_Category
 
             /** @var Mage_Catalog_Model_Product $product */
             $product = Mage::helper('M2ePro/Magento_Product')->getCachedAndLoadedProduct($product);
-
-            if ((int)$listing->getData('store_website_id') > 0 &&
-                !in_array($listing->getData('store_website_id'),$product->getWebsiteIds())) {
-                continue;
-            }
 
             $listingsProducts = $listing->getProducts(true,array('product_id'=>(int)$product->getId()));
 
@@ -132,7 +130,7 @@ class Ess_M2ePro_Model_Observer_Category
 
         /** @var Ess_M2ePro_Model_Observer_Ebay_Category $ebayObserver */
         $ebayObserver = Mage::getModel('M2ePro/Observer_Ebay_Category');
-        $ebayObserver->synchProductWithDeletedCategoryId($product,$categoryId);
+        $ebayObserver->synchProductWithDeletedCategoryId($product,$categoryId,$websiteId);
     }
 
     //####################################

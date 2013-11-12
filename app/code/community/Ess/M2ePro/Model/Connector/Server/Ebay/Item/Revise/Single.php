@@ -94,6 +94,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Revise_Single
         $tempParams = array(
             'start_date_raw' => $response['ebay_start_date_raw'],
             'end_date_raw' => $response['ebay_end_date_raw'],
+            'is_eps_ebay_images_mode' => $response['is_eps_ebay_images_mode'],
             'ebay_item_fees' => $response['ebay_item_fees']
         );
 
@@ -199,6 +200,15 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Revise_Single
 
             // Parser hack -> Mage::helper('M2ePro')->__('description');
             $tempStr = 'description';
+            $tempOnlyString == '' && $tempStr = ucwords($tempStr);
+            $tempOnlyString != '' && $tempOnlyString .= ', ';
+            $tempOnlyString .= $tempStr;
+        }
+
+        if (isset($this->params['only_data']['gallery'])) {
+
+            // Parser hack -> Mage::helper('M2ePro')->__('images');
+            $tempStr = 'images';
             $tempOnlyString == '' && $tempStr = ucwords($tempStr);
             $tempOnlyString != '' && $tempOnlyString .= ', ';
             $tempOnlyString .= $tempStr;

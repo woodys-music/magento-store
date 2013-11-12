@@ -631,20 +631,6 @@ class Ess_M2ePro_Model_Buy_Listing extends Ess_M2ePro_Model_Component_Child_Buy_
 
     // ########################################
 
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
-        return parent::delete();
-    }
-
-    // ########################################
-
     public function getAffectedListingProducts($asObjects = false)
     {
         if (is_null($this->getId())) {
@@ -685,6 +671,20 @@ class Ess_M2ePro_Model_Buy_Listing extends Ess_M2ePro_Model_Component_Child_Buy_
             array('id IN ('.implode(',', $ids).')')
         );
 
+    }
+
+    // ########################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('listing');
+        return parent::delete();
     }
 
     // ########################################

@@ -4,14 +4,13 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
     //----------------------------------
 
     popups: [],
+    attributesDataDefinion: [],
 
     //----------------------------------
 
     initialize: function()
     {
-        this.attributesContainer = $('buy_attr_container');
-
-        var requiredGroupedSelect = {};
+        var self = this;
 
         Validation.add('M2ePro-attributes-validation-int', M2ePro.translator.translate('Invalid input data. Integer value required.'), function(value, element) {
             if (!element.up('tr').visible()) {
@@ -103,9 +102,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
 
     clearAttributes: function ()
     {
-        var self = BuyTemplateNewProductHandlerObj.attributesHandler;
-
-        var trs = self.attributesContainer.childElements();
+        var trs = $('buy_attr_container').childElements();
         for (var i = 0; i < trs.length; i++) {
             trs[i].remove();
         }
@@ -118,7 +115,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
         self.clearAttributes();
 
         if (categoryId <= 0) {
-            var tr = self.attributesContainer.appendChild(new Element('tr'));
+            var tr = $('buy_attr_container').appendChild(new Element('tr'));
             var td = tr.appendChild(new Element ('td'));
             var label = td.appendChild(new Element ('label')).insert(M2ePro.translator.translate('Select Category first.'));
             return;
@@ -151,13 +148,15 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
 
         attributes.each(function(attribute) {
 
-            $('attributes[' + attribute.attribute_name + '][mode]').value = attribute.mode;
+            var attributeName =  attribute.attribute_name.replace(/[\s()]/gi,'_');
+
+            $('attributes[' + attributeName + '][mode]').value = attribute.mode;
 
             if (attribute.mode == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::ATTRIBUTE_MODE_RECOMMENDED_VALUE')) {
 
-                $('select_' + attribute.attribute_name).show();
+                $('select_' + attributeName).show();
                 var recommended_value = attribute.recommended_value.evalJSON();
-                var options = $$('#recommended_value_' + attribute.attribute_name.replace(/[\s()]/gi,'_') + ' option');
+                var options = $$('#recommended_value_' + attributeName + ' option');
 
                 for (var i = 0; i < options.length; i++) {
                     recommended_value.each(function(value){
@@ -167,11 +166,11 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
                     });
                 }
             } else if (attribute.mode == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::ATTRIBUTE_MODE_CUSTOM_VALUE')) {
-                $('input_' + attribute.attribute_name).show();
-                $('custom_value_' + attribute.attribute_name).value = attribute.custom_value;
+                $('input_' + attributeName).show();
+                $('custom_value_' + attributeName).value = attribute.custom_value;
             } else if (attribute.mode == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::ATTRIBUTE_MODE_CUSTOM_ATTRIBUTE')) {
-                $('attribute_' + attribute.attribute_name).show();
-                $('custom_attribute_' + attribute.attribute_name).value = attribute.custom_attribute;
+                $('attribute_' + attributeName).show();
+                $('custom_attribute_' + attributeName).value = attribute.custom_attribute;
             } else {
                 console.log(attribute);
             }
@@ -194,7 +193,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
                 if (attribute.required_group_id != '0' && typeof attribute.required_group_id !== 'undefined') {
                     requiredGroupId = attribute.required_group_id;
                     if (flag) {
-                        var tr = self.attributesContainer.appendChild(new Element('tr'));
+                        var tr = $('buy_attr_container').appendChild(new Element('tr'));
                         var td = tr.appendChild(new Element ('td',{'colspan': '2','style': 'padding: 15px 0'}));
                         td.appendChild(new Element('label')).insert('<b>'+ M2ePro.translator.translate('At least one of the following attributes must be chosen:')+'</tr></b> <span class="required">*</span>');
                     }
@@ -294,16 +293,16 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
         var self = BuyTemplateNewProductHandlerObj.attributesHandler,
             title = attribute.title.replace(/[\s()]/gi,'_');
 
-        var tr = self.attributesContainer.appendChild(new Element('tr'));
-
+        var tr = $('buy_attr_container').appendChild(new Element('tr'));
         var td = tr.appendChild(new Element('td',{'class': 'label'}));
+
         td.appendChild(new Element('label')).insert(attribute.title + ': ' + (attribute.is_required == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::TYPE_IS_REQUIRED') ? '<span class="required">*</span>' : ''));
 
         td = tr.appendChild(new Element('td',{'class': 'value'}));
         var select = td.appendChild(
             new Element('select',
                 {'name': 'attributes[' + attribute.title + '][mode]',
-                 'id': 'attributes[' + title.replace(/[\s()]/gi,'_') + '][mode]',
+                 'id': 'attributes[' + title + '][mode]',
                  'class': 'select attributes required-entry ' + requiredGroupId}));
 
         if (attribute.is_required == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::TYPE_IS_REQUIRED')) {
@@ -329,7 +328,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
         var self = BuyTemplateNewProductHandlerObj.attributesHandler,
             title = attribute.title.replace(/[\s()]/gi,'_');
 
-        var tr = self.attributesContainer.appendChild(new Element('tr',{'id': 'select_' + title,'style': 'display: none;'}));
+        var tr = $('buy_attr_container').appendChild(new Element('tr',{'id': 'select_' + title,'style': 'display: none;'}));
         var td = tr.appendChild(new Element('td',{'class': 'label'}));
         td.appendChild(new Element('label')).insert(M2ePro.translator.translate('Recommended Values') + '<span class="required">*</span> : ');
 
@@ -343,7 +342,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
 
         if (attribute.type == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::TYPE_MULTISELECT')) {
             select.setStyle({height: '150px'});
-            select.setAttribute('multiple');
+            select.setAttribute('multiple','multiple');
             select.setAttribute('class','select multi_select_validator');
         }
 
@@ -358,7 +357,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
         var self = BuyTemplateNewProductHandlerObj.attributesHandler,
             title = attribute.title.replace(/[\s()]/gi,'_');
 
-        var tr = self.attributesContainer.appendChild(new Element('tr',{'id': 'input_' + title,'style': 'display: none;'}));
+        var tr = $('buy_attr_container').appendChild(new Element('tr',{'id': 'input_' + title,'style': 'display: none;'}));
         var td = tr.appendChild(new Element('td',{'class': 'label'}));
         var label = td.appendChild(new Element('label')).insert(M2ePro.translator.translate('Custom Value') + '<span class="required">*</span> : ');
 
@@ -378,7 +377,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
         var self = BuyTemplateNewProductHandlerObj.attributesHandler,
             title = attribute.title.replace(/[\s()]/gi,'_');
 
-        var tr = self.attributesContainer.appendChild(new Element('tr',{'id': 'attribute_' + title,'style': 'display: none;'}));
+        var tr = $('buy_attr_container').appendChild(new Element('tr',{'id': 'attribute_' + title,'style': 'display: none;'}));
         var td = tr.appendChild(new Element('td',{'class': 'label'}));
         var label = td.appendChild(new Element('label')).insert(M2ePro.translator.translate('Custom Attribute') + '<span class="required">*</span> : ');
 
@@ -395,15 +394,12 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
 
     getValidator: function(attribute)
     {
-        var self = BuyTemplateNewProductHandlerObj.attributesHandler,
-            className = '';
+        var className = '';
 
         if (attribute.type == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::TYPE_INT')) {
             className = 'M2ePro-attributes-validation-int';
         } else if (attribute.type == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::TYPE_DECIMAL')) {
             className = 'M2ePro-attributes-validation-float';
-        } else if (attribute.type == M2ePro.php.constant('Ess_M2ePro_Model_Buy_Template_NewProduct_Attribute::TYPE_STRING')) {
-            className = 'M2ePro-attributes-validation-string';
         }
 
         return className;
@@ -440,7 +436,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
     {
         var self = BuyTemplateNewProductHandlerObj.attributesHandler;
 
-        self.attributesContainer
+        $('buy_attr_container')
             .appendChild(new Element('tr'))
             .appendChild(new Element('td'))
             .update(M2ePro.translator.translate('The category does not have attributes.'));
@@ -448,9 +444,7 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
 
     renderLine: function()
     {
-        var self = BuyTemplateNewProductHandlerObj.attributesHandler;
-
-        var tr = self.attributesContainer.appendChild(new Element('tr'));
+        var tr = $('buy_attr_container').appendChild(new Element('tr'));
         var td = tr.appendChild(new Element ('td',{'colspan': '2','style': 'padding: 15px 0'}));
         td.appendChild(new Element('hr',{'style': 'border: 1px solid silver; border-bottom: none;'}));
     },
@@ -458,6 +452,8 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
     //----------------------------------------------
 
     renderHelpIconDataDefinition: function(attribute, dataDefinition, container) {
+        var self = BuyTemplateNewProductHandlerObj.attributesHandler;
+
         if (!dataDefinition.definition) {
             return;
         }
@@ -468,9 +464,8 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
                 attributeLabel = $('attribute_' + title).down('label'),
                 inputLabel = $('input_' + title).down('label');
 
-            BuyTemplateNewProductHandlerObj.attributesHandler.renderHelpIconDataDefinition(attribute, dataDefinition, attributeLabel);
-            BuyTemplateNewProductHandlerObj.attributesHandler.renderHelpIconDataDefinition(attribute, dataDefinition, inputLabel);
-
+            self.renderHelpIconDataDefinition(attribute, dataDefinition, attributeLabel);
+            self.renderHelpIconDataDefinition(attribute, dataDefinition, inputLabel);
             return;
         }
 
@@ -482,28 +477,29 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
         }));
 
         helpIcon.insert('?');
-
         container.insert(')');
+
+        var winContent = new Element('div');
+
+        winContent.innerHTML += '<div style="padding: 3px 0"></div><h2>' + M2ePro.translator.translate('Definition:') + ' </h2>';
+        winContent.innerHTML += '<div>' + dataDefinition.definition + '</div>';
+
+        if (dataDefinition.tips) {
+            winContent.innerHTML += '<div style="padding: 5px 0"></div><h2>' + M2ePro.translator.translate('Tips:') + ' </h2>';
+            winContent.innerHTML += '<div>' + dataDefinition.tips + '</div>'
+        }
+        if (dataDefinition.example) {
+            winContent.innerHTML += '<div style="padding: 5px 0"></div><h2>' + M2ePro.translator.translate('Examples:') + ' </h2>';
+            winContent.innerHTML += '<div>' + dataDefinition.example + '</div>'
+        }
+
+        self.attributesDataDefinion[attribute.id] = winContent;
 
         var win;
         var self = this;
 
         helpIcon.observe('click',function() {
             var position = helpIcon.positionedOffset();
-
-            var winContent = new Element('div');
-
-            winContent.innerHTML += '<div style="padding: 3px 0"></div><h2>' + M2ePro.translator.translate('Definition:') + ' </h2>';
-            winContent.innerHTML += '<div>' + dataDefinition.definition + '</div>';
-
-            if (dataDefinition.tips) {
-                winContent.innerHTML += '<div style="padding: 5px 0"></div><h2>' + M2ePro.translator.translate('Tips:') + ' </h2>';
-                winContent.innerHTML += '<div>' + dataDefinition.tips + '</div>'
-            }
-            if (dataDefinition.example) {
-                winContent.innerHTML += '<div style="padding: 5px 0"></div><h2>' + M2ePro.translator.translate('Examples:') + ' </h2>';
-                winContent.innerHTML += '<div>' + dataDefinition.example + '</div>'
-            }
 
             win = win || new Window({
                 className: "magento",
@@ -514,7 +510,8 @@ CommonBuyTemplateNewProductAttributeHandler.prototype = Object.extend(new Common
                 left: position.left + 30
             });
 
-            win.setHTMLContent(winContent.outerHTML);
+            winContent = self.attributesDataDefinion[attribute.id];
+            win.setHTMLContent(winContent.innerHTML);
 
             win.height = win.content.firstChild.getStyle('height');
 

@@ -16,8 +16,11 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
         $shippingTemplate = $listingProduct->getChildObject()->getShippingTemplate();
         $shippingTemplate->setMagentoProduct($listingProduct->getMagentoProduct());
 
-        $this->addLocalShippingData($shippingTemplate,$requestData);
-        $this->addInternationalShippingData($shippingTemplate,$requestData);
+        $accountId = $listingProduct->getListing()->getAccountId();
+
+        $this->addLocalShippingData($shippingTemplate, $accountId, $requestData);
+        $this->addInternationalShippingData($shippingTemplate, $accountId, $requestData);
+        $this->addExcludedLocationsData($shippingTemplate,$requestData);
 
         if ($shippingTemplate->isLocalShippingFlatEnabled()
             && $shippingTemplate->isLocalShippingRateTableEnabled()
@@ -71,7 +74,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
     //-----------------------------------------
 
     protected function addLocalShippingData(Ess_M2ePro_Model_Ebay_Template_Shipping $shippingTemplate,
-                                            array &$requestData)
+                                            $accountId, array &$requestData)
     {
         $requestData['use_local_shipping_rate_table'] =
             $shippingTemplate->isLocalShippingRateTableEnabled();
@@ -122,7 +125,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
             $shippingTemplate->isLocalShippingDiscountEnabled();
 
         $requestData['shipping']['local']['combined_discount_profile'] =
-            $shippingTemplate->getLocalShippingCombinedDiscountProfileId();
+            $shippingTemplate->getLocalShippingCombinedDiscountProfileId($accountId);
 
         $requestData['shipping']['local']['methods'] = array();
 
@@ -154,7 +157,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
     }
 
     protected function addInternationalShippingData(Ess_M2ePro_Model_Ebay_Template_Shipping $shippingTemplate,
-                                                    array &$requestData)
+                                                    $accountId, array &$requestData)
     {
         if ($shippingTemplate->isInternationalShippingNoInternationalEnabled() ||
             $shippingTemplate->isLocalShippingFreightEnabled() ||
@@ -189,7 +192,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
             $shippingTemplate->isInternationalShippingDiscountEnabled();
 
         $requestData['shipping']['international']['combined_discount_profile'] =
-            $shippingTemplate->getInternationalShippingCombinedDiscountProfileId();
+            $shippingTemplate->getInternationalShippingCombinedDiscountProfileId($accountId);
 
         $requestData['shipping']['international']['methods'] = array();
 
@@ -217,12 +220,25 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
         }
     }
 
+    protected function addExcludedLocationsData(Ess_M2ePro_Model_Ebay_Template_Shipping $shippingTemplate,
+                                                array &$requestData)
+    {
+        $excludedLocations = array();
+
+        foreach ($shippingTemplate->getExcludedLocations() as $location) {
+            $excludedLocations[] = $location['code'];
+        }
+
+        $requestData['shipping']['excluded_locations'] = $excludedLocations;
+    }
+
     // ########################################
 
     protected function addAdditionalData(Ess_M2ePro_Model_Ebay_Template_Shipping $shippingTemplate,
                                          array &$requestData)
     {
         $requestData['vat_percent'] = $shippingTemplate->getVatPercent();
+        $requestData['tax_category'] = $shippingTemplate->getTaxCategory();
         $requestData['use_tax_table'] = $shippingTemplate->isTaxTableEnabled();
     }
 

@@ -14,6 +14,11 @@ class Ess_M2ePro_Adminhtml_Common_LogController
         $this->loadLayout()
              ->_title(Mage::helper('M2ePro')->__('Activity Logs'));
 
+        $this->getLayout()->getBlock('head')
+            ->addJs('M2ePro/LogHandler.js');
+
+        $this->_initPopUp();
+
         return $this;
     }
 

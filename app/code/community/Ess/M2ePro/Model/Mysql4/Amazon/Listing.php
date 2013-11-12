@@ -36,7 +36,7 @@ class Ess_M2ePro_Model_Mysql4_Amazon_Listing
                              ->where("`status` = ?",(int)Ess_M2ePro_Model_Listing_Product::STATUS_LISTED);
 
         $query = "UPDATE `{$listingTable}`
-                  SET `items_active_count` =  (".$dbSelect->__toString().")
+                  SET `items_active_count` =  IFNULL((".$dbSelect->__toString()."),0)
                   WHERE `component_mode` = 'amazon'";
 
         $this->_getWriteAdapter()->query($query);

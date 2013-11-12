@@ -22,6 +22,11 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
     private $categoryTemplateModel = NULL;
 
     /**
+     * @var Ess_M2ePro_Model_Ebay_Template_OtherCategory
+     */
+    private $otherCategoryTemplateModel = NULL;
+
+    /**
      * @var Ess_M2ePro_Model_Ebay_Template_Manager[]
      */
     private $templateManagers = array();
@@ -76,6 +81,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
 
         $this->ebayItemModel = NULL;
         $this->categoryTemplateModel = NULL;
+        $this->otherCategoryTemplateModel = NULL;
         $this->templateManagers = array();
         $this->sellingFormatTemplateModel = NULL;
         $this->synchronizationTemplateModel = NULL;
@@ -139,6 +145,37 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
     public function setCategoryTemplate(Ess_M2ePro_Model_Ebay_Template_Category $instance)
     {
          $this->categoryTemplateModel = $instance;
+    }
+
+    //------------------------------------------
+
+    /**
+     * @return Ess_M2ePro_Model_Ebay_Template_OtherCategory
+     */
+    public function getOtherCategoryTemplate()
+    {
+        if (is_null($this->otherCategoryTemplateModel)) {
+
+            try {
+                $this->otherCategoryTemplateModel = Mage::helper('M2ePro')->getCachedObject(
+                    'Ebay_Template_OtherCategory', (int)$this->getTemplateOtherCategoryId(), NULL, array('template')
+                );
+            } catch (Exception $exception) {
+                return $this->otherCategoryTemplateModel;
+            }
+
+            $this->otherCategoryTemplateModel->setMagentoProduct($this->getMagentoProduct());
+        }
+
+        return $this->otherCategoryTemplateModel;
+    }
+
+    /**
+     * @param Ess_M2ePro_Model_Ebay_Template_OtherCategory $instance
+     */
+    public function setOtherCategoryTemplate(Ess_M2ePro_Model_Ebay_Template_OtherCategory $instance)
+    {
+         $this->otherCategoryTemplateModel = $instance;
     }
 
     // ########################################
@@ -427,14 +464,26 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         return (int)$this->getData('ebay_item_id');
     }
 
+    //-----------------------------------------
+
     public function getTemplateCategoryId()
     {
         return $this->getData('template_category_id');
     }
 
+    public function getTemplateOtherCategoryId()
+    {
+        return $this->getData('template_other_category_id');
+    }
+
     public function isSetCategoryTemplate()
     {
         return !is_null($this->getTemplateCategoryId());
+    }
+
+    public function isSetOtherCategoryTemplate()
+    {
+        return !is_null($this->getTemplateOtherCategoryId());
     }
 
     //-----------------------------------------
@@ -511,7 +560,13 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
 
     public function getSku()
     {
-        return $this->getMagentoProduct()->getSku();
+        $sku = $this->getMagentoProduct()->getSku();
+
+        if (strlen($sku) >= 50) {
+            $sku = 'RANDOM_'.sha1($sku);
+        }
+
+        return $sku;
     }
 
     public function getDuration()
@@ -891,6 +946,11 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
             $attributes = array_merge($attributes,$categoryTemplateObject->getTrackingAttributes());
         }
 
+        $otherCategoryTemplateObject = $this->getOtherCategoryTemplate();
+        if (!is_null($otherCategoryTemplateObject)) {
+            $attributes = array_merge($attributes,$otherCategoryTemplateObject->getTrackingAttributes());
+        }
+
         foreach (Mage::getModel('M2ePro/Ebay_Template_Manager')->getTrackingAttributesTemplates() as $template) {
             $templateManager = $this->getTemplateManager($template);
             $resultObjectTemp = $templateManager->getResultObject();
@@ -915,6 +975,8 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
         foreach ($changedTemplates as &$template) {
             if ($template == Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SELLING_FORMAT) {
                 $template = 'sellingFormatTemplate';
+            } else if (in_array($template,array('category','otherCategory'))) {
+                $template = 'categoryTemplate';
             } else {
                 $template .= 'Template';
             }
@@ -936,24 +998,50 @@ class Ess_M2ePro_Model_Ebay_Listing_Product extends Ess_M2ePro_Model_Component_C
     {
         $changedTemplates = Mage::getModel('M2ePro/Ebay_Template_Manager')->getChangedTemplates($newData,$oldData);
 
-        if ($newData['template_category_id'] == $oldData['template_category_id']) {
-            return $changedTemplates;
+        if ($newData['template_category_id'] != $oldData['template_category_id']) {
+
+            if (!$oldData['template_category_id']) {
+                $changedTemplates[] = 'category';
+            } else {
+
+                $helper = Mage::helper('M2ePro');
+
+                $newTemplateCategory = $helper->getCachedObject(
+                    'Ebay_Template_Category',$newData['template_category_id']
+                );
+                $oldTemplateCategory = $helper->getCachedObject(
+                    'Ebay_Template_Category',$oldData['template_category_id']
+                );
+
+                if (Mage::getModel('M2ePro/Ebay_Template_Category')->getResource()->isDifferent(
+                    $newTemplateCategory->getDataSnapshot(), $oldTemplateCategory->getDataSnapshot()
+                )) {
+                    $changedTemplates[] = 'category';
+                }
+            }
         }
 
-        if (!$oldData['template_category_id']) {
-            $changedTemplates[] = 'category';
-            return $changedTemplates;
-        }
+        if ($newData['template_other_category_id'] != $oldData['template_other_category_id']) {
 
-        $helper = Mage::helper('M2ePro');
+            if (!$oldData['template_other_category_id']) {
+                $changedTemplates[] = 'otherCategory';
+            } else {
 
-        $newTemplateCategory = $helper->getCachedObject('Ebay_Template_Category',$newData['template_category_id']);
-        $oldTemplateCategory = $helper->getCachedObject('Ebay_Template_Category',$oldData['template_category_id']);
+                $helper = Mage::helper('M2ePro');
 
-        if (Mage::getModel('M2ePro/Ebay_Template_Category')->getResource()->isDifferent(
-            $newTemplateCategory->getDataSnapshot(), $oldTemplateCategory->getDataSnapshot()
-        )) {
-            $changedTemplates[] = 'category';
+                $newOtherTemplateCategory = $helper->getCachedObject(
+                    'Ebay_Template_OtherCategory',$newData['template_other_category_id']
+                );
+                $oldOtherTemplateCategory = $helper->getCachedObject(
+                    'Ebay_Template_OtherCategory',$oldData['template_other_category_id']
+                );
+
+                if (Mage::getModel('M2ePro/Ebay_Template_OtherCategory')->getResource()->isDifferent(
+                    $newOtherTemplateCategory->getDataSnapshot(), $oldOtherTemplateCategory->getDataSnapshot()
+                )) {
+                    $changedTemplates[] = 'otherCategory';
+                }
+            }
         }
 
         return $changedTemplates;

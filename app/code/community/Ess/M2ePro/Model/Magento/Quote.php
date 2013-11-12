@@ -211,6 +211,7 @@ class Ess_M2ePro_Model_Magento_Quote
             $product = $quoteItemBuilder->getProduct();
             $request = $quoteItemBuilder->getRequest();
 
+            // see Mage_Sales_Model_Observer::substractQtyFromQuotes
             $this->quote->setItemsCount($this->quote->getItemsCount() + 1);
             $this->quote->setItemsQty((float)$this->quote->getItemsQty() + $request->getQty());
 

@@ -24,7 +24,7 @@
 </script>
 
 <div id="block_notice_ebay_template_synchronization_form_data_relist" class="block_notices_module no-icon" title="<?php echo Mage::helper('M2ePro')->__('Relist Rules'); ?>">
-    <?php echo Mage::helper('M2ePro')->__('Relist Rules Define the conditions and schedule when you want eBay items automatically relisted.'); ?>
+    <?php echo Mage::helper('M2ePro')->__('Relist Rules define the conditions when you want eBay items to be relisted.'); ?>
 </div>
 
 <div class="entry-edit" id="magento_block_ebay_template_synchronization_form_data_relist_filters">
@@ -48,7 +48,7 @@
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_MODE_YES; ?>" <?php if ($formData['relist_mode'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_MODE_YES): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Enabled'); ?></option>
                         </select>
                         <p class="note">
-                            <span><?php echo Mage::helper('M2ePro')->__('Amend the relist action for any M2E Pro Listing that uses the current Synchronization Template.'); ?></span>
+                            <span><?php echo Mage::helper('M2ePro')->__('Activates relist action for any M2E Pro Listing that uses the current Synchronization Policy.'); ?></span>
                         </p>
                     </td>
                 </tr>
@@ -63,7 +63,7 @@
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_FILTER_USER_LOCK_NONE; ?>" <?php if ($formData['relist_filter_user_lock'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_FILTER_USER_LOCK_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                         </select>
                         <p class="note">
-                            <span><?php echo Mage::helper('M2ePro')->__('Automatically relist an item by over-riding any manual stop.'); ?></span>
+                            <span><?php echo Mage::helper('M2ePro')->__('Automatically relists an item by over-riding any manual stop.'); ?></span>
                         </p>
                     </td>
                 </tr>
@@ -80,8 +80,8 @@
                         <p class="note">
                             <span>
                                 <?php echo Mage::helper('M2ePro')->__(
-                                    'Update title, subtitle, description, price, quantity and shipment on eBay items.
-                                    <br/><b>Note:</b> If No is selected, eBay items with existing data are relisted.'
+                                    'Updates title, subtitle, description, price, quantity and shipment on eBay items.
+                                    <br/><b>Note:</b> If No is selected, eBay items with existing data on eBay are relisted.'
                                 ); ?>
                             </span>
                         </p>

@@ -62,7 +62,7 @@ SynchronizationHandler.prototype = Object.extend(new CommonHandler(), {
     runNowTemplates : function(components)
     {
         this.synchProgressObj.runTask(
-            M2ePro.translator.translate('Stock Level Synchronization'),
+            M2ePro.translator.translate('Inventory Synchronization'),
             M2ePro.url.get('runNowTemplates'),
             components
         );

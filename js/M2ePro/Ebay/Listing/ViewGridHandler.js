@@ -158,7 +158,9 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
         };
 
         try {
-            Windows.getFocusedWindow() || Dialog.info(null, config);
+            if (!Windows.getFocusedWindow() || !$('modal_dialog_message')) {
+                Dialog.info(null, config);
+            }
             Windows.getFocusedWindow().setTitle(title);
             $('modal_dialog_message').innerHTML = content;
             $('modal_dialog_message').innerHTML.evalScripts();

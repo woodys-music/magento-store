@@ -48,11 +48,11 @@ EbayListingOtherSynchronizationHandler.prototype = Object.extend(new CommonHandl
             $('revise_update_' + id).disabled = true;
 
             if (id == 'qty') {
-                $('relist_qty').selectedIndex = self.RELIST_QTY_NONE;
+                $('relist_qty').selectedIndex = M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Listing_Other_Synchronization::RELIST_QTY_NONE');
                 $('relist_qty').simulate('change');
                 $('relist_qty').disabled = true;
 
-                $('stop_qty').selectedIndex = self.STOP_QTY_NONE;
+                $('stop_qty').selectedIndex = M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Listing_Other_Synchronization::STOP_QTY_NONE');
                 $('stop_qty').simulate('change');
                 $('stop_qty').disabled = true;
             }
@@ -88,12 +88,12 @@ EbayListingOtherSynchronizationHandler.prototype = Object.extend(new CommonHandl
         $('relist_qty_value_max_container').hide();
         $('relist_qty_item_min').hide();
 
-        if (this.value == self.RELIST_QTY_MORE) {
+        if (this.value == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Listing_Other_Synchronization::RELIST_QTY_MORE')) {
             $('relist_qty_value_container').show();
             $('relist_qty_item').show();
         }
 
-        if (this.value == self.RELIST_QTY_BETWEEN) {
+        if (this.value == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Listing_Other_Synchronization::RELIST_QTY_BETWEEN')) {
             $('relist_qty_value_max_container').show();
             $('relist_qty_item_min').show();
             $('relist_qty_value_container').show();
@@ -109,12 +109,12 @@ EbayListingOtherSynchronizationHandler.prototype = Object.extend(new CommonHandl
         $('stop_qty_value_max_container').hide();
         $('stop_qty_item_min').hide();
 
-        if (this.value == self.RELIST_QTY_LESS) {
+        if (this.value == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Listing_Other_Synchronization::RELIST_QTY_LESS')) {
             $('stop_qty_value_container').show();
             $('stop_qty_item').show();
         }
 
-        if (this.value == self.RELIST_QTY_BETWEEN) {
+        if (this.value == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Listing_Other_Synchronization::RELIST_QTY_BETWEEN')) {
             $('stop_qty_value_max_container').show();
             $('stop_qty_item_min').show();
             $('stop_qty_value_container').show();

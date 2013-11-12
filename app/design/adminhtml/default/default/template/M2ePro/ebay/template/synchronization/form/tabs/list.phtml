@@ -24,8 +24,7 @@
 </script>
 
 <div id="block_notice_ebay_template_synchronization_form_data_list" class="block_notices_module no-icon" title="<?php echo Mage::helper('M2ePro')->__('List Rules'); ?>">
-    <?php echo Mage::helper('M2ePro')->__('List Action - at first this action to be executed for each item in M2E Listings, which has <i>Not Listed</i> status and its settings meet the List Condition. If an item was not listed for some reason, autosynchronization will attempt
-                                           to list it again only if Product Status, Stock Availability or Quantity is changed.
+    <?php echo Mage::helper('M2ePro')->__('List Action - at first this action to be executed for each item, that has Not Listed status and its settings meet the List Condition. If an item is not listed for some reason, autosynchronization will attempt to list it again according to the Schedule in case the Product Status, Stock Availability or Quantity is changed.
                                            '); ?>
 </div>
 
@@ -83,7 +82,9 @@
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::LIST_STATUS_ENABLED_YES; ?>" <?php if ($formData['list_status_enabled'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::LIST_STATUS_ENABLED_YES): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Enabled'); ?></option>
                         </select>
                         <p class="note">
-                            <span><?php echo Mage::helper('M2ePro')->__('M2E Listing items automatically list on eBay if this status is set to Enabled.'); ?></span>
+                            <span><?php echo Mage::helper('M2ePro')->__('<b>Enabled</b> – M2E Listing items automatically list on eBay if this status is set to Enabled.<br>
+<b>Any</b> – M2E Listing items automatically list on eBay regardless of its status.
+'); ?></span>
                         </p>
                     </td>
                 </tr>

@@ -1430,9 +1430,6 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             array(
                 'prefix' => $prefix,
                 'store_id' => $storeId,
-                'attribute_criteria' =>
-                Ess_M2ePro_Model_Magento_Product_Rule::LOAD_ATTRIBUTES_CRITERIA_BY_ATTRIBUTE_SETS,
-                'attribute_sets' => $listingData['attribute_sets']
             )
         );
 

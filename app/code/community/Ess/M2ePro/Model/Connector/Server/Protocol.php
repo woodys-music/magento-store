@@ -81,7 +81,7 @@ abstract class Ess_M2ePro_Model_Connector_Server_Protocol extends Ess_M2ePro_Mod
         return $this->response[self::RESPONSE_DATA_KEY];
     }
 
-    protected function sendHttpRequest($params)
+    protected function sendHttpRequest($params, $secondAttempt = false)
     {
         $curlObject = curl_init();
 
@@ -110,6 +110,13 @@ abstract class Ess_M2ePro_Model_Connector_Server_Protocol extends Ess_M2ePro_Mod
         curl_close($curlObject);
 
         if ($response === false) {
+
+            $switchEndpointResult = Mage::helper('M2ePro/Server')->switchEndpoint();
+
+            if ($switchEndpointResult && !$secondAttempt) {
+                return $this->sendHttpRequest($params,true);
+            }
+
             throw new Exception('Server connection is failed. Please try again later.');
         }
 

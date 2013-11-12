@@ -29,11 +29,14 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
             'ignoreListings', json_decode($this->getRequest()->getParam('ignoreListings'))
         );
 
+        $component = ucfirst(strtolower($this->getRequest()->getParam('componentMode')));
+        $movingHandlerJs = $component.'ListingOtherGridObj.movingHandler';
+
         $block = $this->loadLayout()->getLayout()->createBlock(
             'M2ePro/adminhtml_listing_moving_grid','',
             array(
-                'mode' => strtolower($this->getRequest()->getParam('componentMode')).'ListingOther',
-                'grid_url' => $this->getUrl('*/adminhtml_listing_other_moving/moveToListingGrid',array('_current'=>true))
+                'grid_url' => $this->getUrl('*/adminhtml_listing_other_moving/moveToListingGrid',array('_current'=>true)),
+                'moving_handler_js' => $movingHandlerJs,
             )
         );
         $this->getResponse()->setBody($block->toHtml());

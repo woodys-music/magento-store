@@ -175,6 +175,26 @@ class Ess_M2ePro_Block_Adminhtml_Common_Buy_Order_Grid extends Mage_Adminhtml_Bl
         return parent::_prepareColumns();
     }
 
+    protected function _prepareMassaction()
+    {
+        // Set massaction identifiers
+        //--------------------------------
+        $this->setMassactionIdField('main_table.id');
+        $this->getMassactionBlock()->setFormFieldName('ids');
+        //--------------------------------
+
+        // Set mass-action
+        //--------------------------------
+        $this->getMassactionBlock()->addItem('resend_shipping', array(
+             'label'    => Mage::helper('M2ePro')->__('Resend Shipping Information'),
+             'url'      => $this->getUrl('*/adminhtml_order/resendShippingInfo'),
+             'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
+        //--------------------------------
+
+        return parent::_prepareMassaction();
+    }
+
     //##############################################################
 
     public function callbackColumnMagentoOrder($value, $row, $column, $isExport)

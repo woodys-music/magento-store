@@ -21,6 +21,11 @@ class Ess_M2ePro_Model_Ebay_Template_Payment extends Ess_M2ePro_Model_Component_
         $this->_init('M2ePro/Ebay_Template_Payment');
     }
 
+    public function getNick()
+    {
+        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_PAYMENT;
+    }
+
     // ########################################
 
     public function isLocked()
@@ -157,12 +162,20 @@ class Ess_M2ePro_Model_Ebay_Template_Payment extends Ess_M2ePro_Model_Component_
 
     // #######################################
 
-    public function getNick()
+    public function getDataSnapshot()
     {
-        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_PAYMENT;
-    }
+        $data = parent::getDataSnapshot();
 
-    // #######################################
+        $data['services'] = $this->getServices();
+
+        foreach ($data['services'] as &$serviceData) {
+            foreach ($serviceData as &$value) {
+                !is_null($value) && !is_array($value) && $value = (string)$value;
+            }
+        }
+
+        return $data;
+    }
 
     public function getDefaultSettingsSimpleMode()
     {
@@ -177,20 +190,6 @@ class Ess_M2ePro_Model_Ebay_Template_Payment extends Ess_M2ePro_Model_Component_
     public function getDefaultSettingsAdvancedMode()
     {
         return $this->getDefaultSettingsSimpleMode();
-    }
-
-    // #######################################
-
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_payment');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_payment');
-        return parent::delete();
     }
 
     // #######################################
@@ -233,25 +232,6 @@ class Ess_M2ePro_Model_Ebay_Template_Payment extends Ess_M2ePro_Model_Component_
         return $listingProducts;
     }
 
-    // #######################################
-
-    public function getDataSnapshot()
-    {
-        $data = parent::getDataSnapshot();
-
-        $data['services'] = $this->getServices();
-
-        foreach ($data['services'] as &$serviceData) {
-            foreach ($serviceData as &$value) {
-                !is_null($value) && !is_array($value) && $value = (string)$value;
-            }
-        }
-
-        return $data;
-    }
-
-    // #######################################
-
     public function setIsNeedSynchronize($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
@@ -282,6 +262,20 @@ class Ess_M2ePro_Model_Ebay_Template_Payment extends Ess_M2ePro_Model_Component_
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // #######################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_payment');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_payment');
+        return parent::delete();
     }
 
     // #######################################

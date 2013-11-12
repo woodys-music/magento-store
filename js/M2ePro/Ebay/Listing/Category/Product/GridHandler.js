@@ -4,7 +4,6 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
     productTitleCellIndex: 2,
 
     selectedProducts: [],
-    showTaxCategory: false,
 
     //----------------------------------
 
@@ -52,7 +51,7 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
 
                 if (searchResult.failed > 0) {
                     MagentoMessageObj.addError(
-                        M2ePro.translator.translate('eBay could not assign categories for {X} products.')
+                        M2ePro.translator.translate('eBay could not assign categories for %s products.')
                             .replace('%s', searchResult.failed)
                     );
                 } else if (searchResult.succeeded > 0) {
@@ -85,7 +84,7 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
 
         new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing_categorySettings/getChooserBlockHtml') ,
         {
-            method: 'get',
+            method: 'post',
             asynchronous : true,
             parameters : {
                 ids: this.selectedProductsIds.join(',')
@@ -125,7 +124,7 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
 
         new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing_categorySettings/getChooserBlockHtml') ,
         {
-            method: 'get',
+            method: 'post',
             asynchronous : true,
             parameters : {
                 ids: this.selectedProductsIds.join(',')
@@ -215,10 +214,6 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
             }
         };
 
-        if (this.showTaxCategory) {
-            config.height = 425;
-        }
-
         Dialog.info(content, config);
 
         $('cancel_button').observe('click', function () {
@@ -289,7 +284,7 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
             return;
         }
 
-        var url = M2ePro.url.get('adminhtml_ebay_listing_categorySettings/deleteModeProduct');
+        var url = M2ePro.url.get('adminhtml_ebay_listing_categorySettings/stepTwoDeleteProductsModeProduct');
         new Ajax.Request(url, {
             method: 'post',
             parameters: {

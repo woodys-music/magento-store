@@ -15,6 +15,9 @@ class Ess_M2ePro_Helper_Component_Ebay extends Mage_Core_Helper_Abstract
     const MARKETPLACE_UK     = 3;
     const MARKETPLACE_DE     = 8;
     const MARKETPLACE_MOTORS = 9;
+    const MARKETPLACE_CANADA = 2;
+    const MARKETPLACE_AUSTRALIA = 4;
+    const MARKETPLACE_CANADA_FRENCH = 19;
 
     // ########################################
 
@@ -146,6 +149,16 @@ class Ess_M2ePro_Helper_Component_Ebay extends Mage_Core_Helper_Abstract
             self::MARKETPLACE_US,
             self::MARKETPLACE_UK,
             self::MARKETPLACE_MOTORS
+        ));
+    }
+
+    // ########################################
+
+    public function isMultiCurrencyMarketplace($marketplaceId)
+    {
+        return in_array($marketplaceId, array(
+            self::MARKETPLACE_CANADA,
+            self::MARKETPLACE_CANADA_FRENCH
         ));
     }
 

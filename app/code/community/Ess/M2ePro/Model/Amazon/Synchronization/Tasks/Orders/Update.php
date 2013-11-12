@@ -101,18 +101,26 @@ class Ess_M2ePro_Model_Amazon_Synchronization_Tasks_Orders_Update extends Ess_M2
             return;
         }
 
+        // delete changes, which were processed 3 or more times
+        //------------------------------
+        Mage::getResourceModel('M2ePro/Order_Change')
+            ->deleteByProcessingAttemptCount(
+                Ess_M2ePro_Model_Order_Change::MAX_ALLOWED_PROCESSING_ATTEMPTS,
+                Ess_M2ePro_Helper_Component_Amazon::NICK
+            );
+        //------------------------------
+
         /** @var $accountsCollection Mage_Core_Model_Mysql4_Collection_Abstract */
         $accountsCollection = Mage::helper('M2ePro/Component_Amazon')->getCollection('Account');
         $accountsCollection->addFieldToFilter('orders_mode', Ess_M2ePro_Model_Amazon_Account::ORDERS_MODE_YES);
+        $accountsTotalCount = (int)$accountsCollection->getSize();
+        $accountIteration = 1;
 
         $percentsForAccount = self::PERCENTS_INTERVAL;
-        $accountsTotalCount = (int)$accountsCollection->getSize();
-
         if ($accountsTotalCount > 0) {
             $percentsForAccount = $percentsForAccount/$accountsTotalCount;
         }
 
-        $accountIteration = 1;
         foreach ($accountsCollection->getItems() as $account) {
 
             /** @var Ess_M2ePro_Model_Account $account */
@@ -124,9 +132,8 @@ class Ess_M2ePro_Model_Amazon_Synchronization_Tasks_Orders_Update extends Ess_M2
                 $this->processAccountMarketplace($account, $marketplace);
             }
 
-            $this->_lockItem->setPercents(self::PERCENTS_START + $percentsForAccount*$accountIteration);
+            $this->_lockItem->setPercents(self::PERCENTS_START + $percentsForAccount*$accountIteration++);
             $this->_lockItem->activate();
-            $accountIteration++;
         }
 
         $this->setSynchLastTime(Mage::helper('M2ePro')->getCurrentGmtDate(true));
@@ -149,6 +156,7 @@ class Ess_M2ePro_Model_Amazon_Synchronization_Tasks_Orders_Update extends Ess_M2
 
         $changesCollection = Mage::getModel('M2ePro/Order_Change')->getCollection();
         $changesCollection->addAccountFilter($account->getId());
+        $changesCollection->addProcessingAttemptDateFilter();
         $changesCollection->addFieldToFilter('component', Ess_M2ePro_Helper_Component_Amazon::NICK);
         $changesCollection->addFieldToFilter('action', Ess_M2ePro_Model_Order_Change::ACTION_UPDATE_SHIPPING);
         $changesCollection->setPageSize(self::MAX_UPDATES_PER_TIME);
@@ -181,13 +189,13 @@ class Ess_M2ePro_Model_Amazon_Synchronization_Tasks_Orders_Update extends Ess_M2
             return;
         }
 
+        Mage::getResourceModel('M2ePro/Order_Change')->incrementAttemptCount($changesCollection->getAllIds());
+
         /** @var $dispatcherObject Ess_M2ePro_Model_Connector_Server_Amazon_Dispatcher */
         $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Amazon_Dispatcher');
         $dispatcherObject->processConnector(
             'orders', 'update', 'items', array('items' => $items), $marketplace, $account
         );
-
-        $changesCollection->walk('deleteInstance');
         //---------------------------
 
         $this->_profiler->saveTimePoint(__METHOD__.'send'.$account->getId());

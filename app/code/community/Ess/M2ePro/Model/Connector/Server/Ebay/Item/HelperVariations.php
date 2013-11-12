@@ -171,6 +171,14 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperVariations
             return;
         }
 
+        if (isset($nativeRequestData['variation_image'])) {
+            $additionalData = $listingProduct->getAdditionalData();
+            $additionalData['ebay_product_variation_images_hash'] = sha1(
+                json_encode($nativeRequestData['variation_image'])
+            );
+            $listingProduct->setData('additional_data', json_encode($additionalData))->save();
+        }
+
         // Delete Variations
         //-----------------------------
         $productVariations = $listingProduct->getVariations(true);

@@ -43,6 +43,9 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
     const REVISE_UPDATE_SUB_TITLE_NONE = 0;
     const REVISE_UPDATE_SUB_TITLE_YES  = 1;
 
+    const REVISE_UPDATE_GALLERY_NONE = 0;
+    const REVISE_UPDATE_GALLERY_YES  = 1;
+
     const REVISE_CHANGE_PAYMENT_TEMPLATE_NONE = 0;
     const REVISE_CHANGE_PAYMENT_TEMPLATE_YES  = 1;
 
@@ -95,6 +98,11 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
     {
         parent::_construct();
         $this->_init('M2ePro/Ebay_Template_Synchronization');
+    }
+
+    public function getNick()
+    {
+        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SYNCHRONIZATION;
     }
 
     // ########################################
@@ -190,6 +198,11 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
     public function isReviseWhenChangeDescription()
     {
         return $this->getData('revise_update_description') != self::REVISE_UPDATE_DESCRIPTION_NONE;
+    }
+
+    public function isReviseWhenChangeGallery()
+    {
+        return $this->getData('revise_update_gallery') != self::REVISE_UPDATE_GALLERY_NONE;
     }
 
     //------------------------
@@ -386,27 +399,6 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
 
     // #######################################
 
-    public function getNick()
-    {
-        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SYNCHRONIZATION;
-    }
-
-    // #######################################
-
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_synchronization');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_synchronization');
-        return parent::delete();
-    }
-
-    // ########################################
-
     public function getDefaultSettingsSimpleMode()
     {
         return array_merge(
@@ -453,6 +445,7 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
             'revise_update_title'                      => self::REVISE_UPDATE_TITLE_YES,
             'revise_update_sub_title'                  => self::REVISE_UPDATE_SUB_TITLE_YES,
             'revise_update_description'                => self::REVISE_UPDATE_DESCRIPTION_YES,
+            'revise_update_gallery'                    => self::REVISE_UPDATE_GALLERY_YES,
 
             'revise_change_selling_format_template'    =>
                     Ess_M2ePro_Model_Template_Synchronization::REVISE_CHANGE_SELLING_FORMAT_TEMPLATE_YES,
@@ -580,4 +573,18 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
     }
 
     // #######################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_synchronization');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_synchronization');
+        return parent::delete();
+    }
+
+    // ########################################
 }

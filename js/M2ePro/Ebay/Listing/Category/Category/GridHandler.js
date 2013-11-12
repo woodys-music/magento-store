@@ -2,10 +2,6 @@ EbayListingCategoryCategoryGridHandler = Class.create(GridHandler, {
 
     //----------------------------------
 
-    showTaxCategory: false,
-
-    //----------------------------------
-
     prepareActions: function()
     {
         this.actions = {
@@ -81,7 +77,7 @@ EbayListingCategoryCategoryGridHandler = Class.create(GridHandler, {
     registerChooserCallbacks: function()
     {
         EbayListingCategoryChooserHandlerObj
-            .categoriesRequiringValidation[M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::CATEGORY_TYPE_EBAY_MAIN')] = true;
+            .categoriesRequiringValidation[M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::TYPE_EBAY_MAIN')] = true;
 
         EbayListingCategoryChooserHandlerObj.doneCallback = function() {
             this.saveCategoriesData(EbayListingCategoryChooserHandlerObj.getInternalEbayMainData());
@@ -92,7 +88,7 @@ EbayListingCategoryCategoryGridHandler = Class.create(GridHandler, {
             EbayListingCategoryChooserHandlerObj.cancelCallback = null;
 
             delete EbayListingCategoryChooserHandlerObj
-                .categoriesRequiringValidation[M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::CATEGORY_TYPE_EBAY_MAIN')];
+                .categoriesRequiringValidation[M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::TYPE_EBAY_MAIN')];
         }.bind(this);
 
         EbayListingCategoryChooserHandlerObj.cancelCallback = function() {
@@ -102,7 +98,7 @@ EbayListingCategoryCategoryGridHandler = Class.create(GridHandler, {
             EbayListingCategoryChooserHandlerObj.cancelCallback = null;
 
             delete EbayListingCategoryChooserHandlerObj
-                .categoriesRequiringValidation[M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::CATEGORY_TYPE_EBAY_MAIN')];
+                .categoriesRequiringValidation[M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::TYPE_EBAY_MAIN')];
         }.bind(this);
     },
 
@@ -126,10 +122,6 @@ EbayListingCategoryCategoryGridHandler = Class.create(GridHandler, {
             hideEffect: Element.hide,
             showEffect: Element.show
         };
-
-        if (this.showTaxCategory) {
-            config.height = 385;
-        }
 
         this.popUp = Dialog.info(content, config);
 

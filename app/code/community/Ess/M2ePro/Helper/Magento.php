@@ -189,7 +189,8 @@ class Ess_M2ePro_Helper_Magento extends Mage_Core_Helper_Abstract
             '/Exactory_Core/i',
             '/Exactor_ExactorSettings/i',
             '/Exactor_Sales/i',
-            '/Aoe_AsyncCache/i'
+            '/Aoe_AsyncCache/i',
+            '/Idev_OneStepCheckout/i'
         );
 
         $result = array();

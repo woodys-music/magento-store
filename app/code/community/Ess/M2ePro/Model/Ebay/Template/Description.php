@@ -96,6 +96,11 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
         $this->_init('M2ePro/Ebay_Template_Description');
     }
 
+    public function getNick()
+    {
+        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_DESCRIPTION;
+    }
+
     // ########################################
 
     public function isLocked()
@@ -542,7 +547,9 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
         $attributes = array();
         $src = $this->getGalleryImagesSource();
 
-        if ($src['mode'] == self::GALLERY_IMAGES_MODE_ATTRIBUTE) {
+        if ($src['mode'] == self::GALLERY_IMAGES_MODE_PRODUCT) {
+            $attributes[] = 'media_gallery';
+        } else if ($src['mode'] == self::GALLERY_IMAGES_MODE_ATTRIBUTE) {
             $attributes[] = $src['attribute'];
         }
 
@@ -1033,21 +1040,13 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
 
     public function getTrackingAttributes()
     {
-        $tempArray = array_unique(array_merge(
+        return array_unique(array_merge(
             $this->getTitleAttributes(),
             $this->getSubTitleAttributes(),
-            $this->getDescriptionAttributes()
+            $this->getDescriptionAttributes(),
+            $this->getImageMainAttributes(),
+            $this->getGalleryImagesAttributes()
         ));
-
-        $resultArray = array();
-        foreach ($tempArray as $attribute) {
-            if (strpos($attribute,'media_gallery') !== false) {
-                continue;
-            }
-            $resultArray[] = $attribute;
-        }
-
-        return $resultArray;
     }
 
     public function getUsedAttributes()
@@ -1062,27 +1061,6 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
             $this->getImageMainAttributes(),
             $this->getGalleryImagesAttributes()
         ));
-    }
-
-    // #######################################
-
-    public function getNick()
-    {
-        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_DESCRIPTION;
-    }
-
-    // #######################################
-
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_description');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_description');
-        return parent::delete();
     }
 
     // #######################################
@@ -1194,8 +1172,6 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
         return $listingProducts;
     }
 
-    // #######################################
-
     public function setIsNeedSynchronize($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
@@ -1226,6 +1202,20 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // #######################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_description');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_description');
+        return parent::delete();
     }
 
     // #######################################

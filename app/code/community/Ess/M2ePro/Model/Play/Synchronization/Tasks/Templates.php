@@ -96,15 +96,15 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Templates extends Ess_M2ePro_M
         }
 
         $this->_profiler->addEol();
-        $this->_profiler->addTitle($componentName.'Stock Level Synchronization');
+        $this->_profiler->addTitle($componentName.'Inventory Synchronization');
         $this->_profiler->addTitle('--------------------------');
         $this->_profiler->addTimePoint(__CLASS__,'Total time');
         $this->_profiler->increaseLeftPadding(5);
 
-        $this->_lockItem->setTitle(Mage::helper('M2ePro')->__($componentName.'Stock Level Synchronization'));
+        $this->_lockItem->setTitle(Mage::helper('M2ePro')->__($componentName.'Inventory Synchronization'));
         $this->_lockItem->setPercents(self::PERCENTS_START);
         $this->_lockItem->setStatus(
-            Mage::helper('M2ePro')->__('Task "Stock Level Synchronization" is started. Please wait...')
+            Mage::helper('M2ePro')->__('Task "Inventory Synchronization" is started. Please wait...')
         );
     }
 
@@ -112,7 +112,7 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Templates extends Ess_M2ePro_M
     {
         $this->_lockItem->setPercents(self::PERCENTS_END);
         $this->_lockItem->setStatus(
-            Mage::helper('M2ePro')->__('Task "Stock Level Synchronization" is finished. Please wait...')
+            Mage::helper('M2ePro')->__('Task "Inventory Synchronization" is finished. Please wait...')
         );
 
         $this->_profiler->decreaseLeftPadding(5);
@@ -151,9 +151,9 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Templates extends Ess_M2ePro_M
         if ($result == Ess_M2ePro_Model_Connector_Server_Play_Product_Requester::STATUS_ERROR) {
 
             $tempString = Mage::getModel('M2ePro/Log_Abstract')->encodeDescription(
-                // Parser hack -> Mage::helper('M2ePro')->__('Task "Stock Level Synchronization" has completed
+                // Parser hack -> Mage::helper('M2ePro')->__('Task "Inventory Synchronization" has completed
 //                with errors. View %sl%listings log%el% for details.');
-                'Task "Stock Level Synchronization" has completed with errors. View %sl%listings log%el% for details.',
+                'Task "Inventory Synchronization" has completed with errors. View %sl%listings log%el% for details.',
                 array('!sl'=>$startLink,'!el'=>$endLink)
             );
             $this->_logs->addMessage($tempString,
@@ -165,9 +165,9 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Templates extends Ess_M2ePro_M
         if ($result == Ess_M2ePro_Model_Connector_Server_Play_Product_Requester::STATUS_WARNING) {
 
             $tempString = Mage::getModel('M2ePro/Log_Abstract')->encodeDescription(
-                // Parser hack -> Mage::helper('M2ePro')->__('Task "Stock Level Synchronization" has completed
+                // Parser hack -> Mage::helper('M2ePro')->__('Task "Inventory Synchronization" has completed
 //                with warnings. View %sl%listings log%el% for details.');
-                'Task "Stock Level Synchronization" has completed with warnings. View %sl%listings log%el% for details.',
+                'Task "Inventory Synchronization" has completed with warnings. View %sl%listings log%el% for details.',
                 array('!sl'=>$startLink,'!el'=>$endLink)
             );
             $this->_logs->addMessage($tempString,

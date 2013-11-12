@@ -312,7 +312,7 @@ class Ess_M2ePro_Model_Ebay_Template_Manager
 
         if ($this->isHorizontalTemplate()) {
             $object = Mage::helper('M2ePro/Component')->getCachedComponentObject(
-                $this->getOwnerObject()->getComponentMode(),
+                Ess_M2ePro_Helper_Component_Ebay::NICK,
                 $modelName, $id, NULL, array('template')
             );
         } else {

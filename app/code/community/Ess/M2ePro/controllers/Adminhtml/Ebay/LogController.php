@@ -13,6 +13,11 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
         $this->loadLayout()
             ->_title(Mage::helper('M2ePro')->__('Logs'));
 
+        $this->getLayout()->getBlock('head')
+            ->addJs('M2ePro/LogHandler.js');
+
+        $this->_initPopUp();
+
         return $this;
     }
 
@@ -32,10 +37,6 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
 
     public function listingAction()
     {
-        if (!Mage::getSingleton('admin/session')->isAllowed('m2epro_ebay/configuration')) {
-            return $this->_forward('denied');
-        }
-
         $id = $this->getRequest()->getParam('id');
         $model = Mage::getModel('M2ePro/Listing')->load($id);
 
@@ -79,10 +80,6 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
 
     public function listingOtherAction()
     {
-        if (!Mage::getSingleton('admin/session')->isAllowed('m2epro_ebay/configuration')) {
-            return $this->_forward('denied');
-        }
-
         $id = $this->getRequest()->getParam('id');
         $model = Mage::getModel('M2ePro/Listing_Other')->load($id);
 
@@ -127,11 +124,6 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
 
     public function synchronizationAction()
     {
-        if (!Mage::getSingleton('admin/session')->isAllowed('m2epro_ebay/configuration')) {
-            $this->_forward('denied');
-            return;
-        }
-
         $this->_initAction()
              ->_addContent(
                  $this->getLayout()->createBlock(
@@ -152,11 +144,6 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
 
     public function orderAction()
     {
-        if (!Mage::getSingleton('admin/session')->isAllowed('m2epro_ebay/configuration')) {
-            $this->_forward('denied');
-            return;
-        }
-
         $this->_initAction()
              ->_addContent(
                  $this->getLayout()->createBlock(

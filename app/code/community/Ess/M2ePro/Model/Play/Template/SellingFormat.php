@@ -239,6 +239,25 @@ class Ess_M2ePro_Model_Play_Template_SellingFormat extends Ess_M2ePro_Model_Comp
         return $attributes;
     }
 
+    //-------------------------
+
+    public function usesProductOrSpecialPrice($currency = null)
+    {
+        if ($currency == Ess_M2ePro_Helper_Component_Play::CURRENCY_EUR || is_null($currency)) {
+            if ($this->isPriceEuroModeProduct() || $this->isPriceEuroModeSpecial()) {
+                return true;
+            }
+        }
+
+        if ($currency == Ess_M2ePro_Helper_Component_Play::CURRENCY_GBP || is_null($currency)) {
+            if ($this->isPriceGbrModeProduct() || $this->isPriceGbrModeSpecial()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     // ########################################
 
     public function getPriceVariationMode()
@@ -278,39 +297,6 @@ class Ess_M2ePro_Model_Play_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
     // ########################################
 
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
-        return parent::delete();
-    }
-
-    // ########################################
-
-    public function usesProductOrSpecialPrice($currency = null)
-    {
-        if ($currency == Ess_M2ePro_Helper_Component_Play::CURRENCY_EUR || is_null($currency)) {
-            if ($this->isPriceEuroModeProduct() || $this->isPriceEuroModeSpecial()) {
-                return true;
-            }
-        }
-
-        if ($currency == Ess_M2ePro_Helper_Component_Play::CURRENCY_GBP || is_null($currency)) {
-            if ($this->isPriceGbrModeProduct() || $this->isPriceGbrModeSpecial()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    // ########################################
-
     public function getAffectedListingProducts($asObjects = false)
     {
         if (is_null($this->getId())) {
@@ -327,8 +313,6 @@ class Ess_M2ePro_Model_Play_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
         return $asObjects ? $listingProductCollection->getItems() : $listingProductCollection->getData();
     }
-
-    // ########################################
 
     public function setIsNeedSynchronize($newData, $oldData)
     {
@@ -360,6 +344,20 @@ class Ess_M2ePro_Model_Play_Template_SellingFormat extends Ess_M2ePro_Model_Comp
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // ########################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
+        return parent::delete();
     }
 
     // ########################################

@@ -7,6 +7,8 @@
 class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
     extends Ess_M2ePro_Model_Connector_Server_Ebay_Item_SingleAbstract
 {
+    const RELIST_ERROR_ITEM_CANNOT_BE_ACCESSED = 17;
+
     // ########################################
 
     protected function getCommand()
@@ -73,6 +75,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
     protected function prepareResponseData($response)
     {
         if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
+            $this->checkAndLogErrorMessage();
             return $response;
         }
 
@@ -80,6 +83,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
             'ebay_item_id' => $response['ebay_item_id'],
             'start_date_raw' => $response['ebay_start_date_raw'],
             'end_date_raw' => $response['ebay_end_date_raw'],
+            'is_eps_ebay_images_mode' => $response['is_eps_ebay_images_mode'],
             'ebay_item_fees' => $response['ebay_item_fees']
         );
 
@@ -115,6 +119,30 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
         }
 
         return $response;
+    }
+
+    // ########################################
+
+    private function checkAndLogErrorMessage()
+    {
+        foreach ($this->messages as $message) {
+            if ($message[parent::MESSAGE_SENDER_KEY] == parent::MESSAGE_SENDER_COMPONENT &&
+                $message[parent::MESSAGE_CODE_KEY] == self::RELIST_ERROR_ITEM_CANNOT_BE_ACCESSED) {
+
+                $this->listingProduct
+                    ->addData(array('status' => Ess_M2ePro_Model_Listing_Product::STATUS_NOT_LISTED))->save();
+
+                $message = array(
+                    // Parser hack -> Mage::helper('M2ePro')->__('This item cannot be accessed on eBay. M2E set Not Listed status.');
+                    parent::MESSAGE_TEXT_KEY => 'This item cannot be accessed on eBay. M2E set Not Listed status.',
+                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING
+                );
+
+                $this->addListingsProductsLogsMessage($this->listingProduct, $message,
+                                                      Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
+                break;
+            }
+        }
     }
 
     // ########################################

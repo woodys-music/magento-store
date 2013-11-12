@@ -329,6 +329,7 @@ class Ess_M2ePro_Block_Adminhtml_Common_Amazon_Listing_Product_Grid extends Mage
     {
         $advancedFilterBlock = $this->getLayout()->createBlock('M2ePro/adminhtml_listing_product_rule');
         $advancedFilterBlock->setShowHideProductsOption();
+        $advancedFilterBlock->setGridJsObjectName($this->getJsObjectName());
 
         return $advancedFilterBlock->toHtml() . parent::getMassactionBlockHtml();
     }

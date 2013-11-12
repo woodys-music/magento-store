@@ -14,10 +14,15 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperCategory
         $categoryTemplate = $listingProduct->getChildObject()->getCategoryTemplate();
         $categoryTemplate->setMagentoProduct($listingProduct->getMagentoProduct());
 
-        $this->addMainCategoriesData($categoryTemplate,$requestData);
-        $this->addStoreCategoriesData($categoryTemplate,$requestData);
+        /** @var $otherCategoryTemplate Ess_M2ePro_Model_Ebay_Template_OtherCategory */
+        $otherCategoryTemplate = $listingProduct->getChildObject()->getOtherCategoryTemplate();
+        if (!is_null($otherCategoryTemplate)) {
+            $otherCategoryTemplate->setMagentoProduct($listingProduct->getMagentoProduct());
+        }
 
-        $this->addAdditionalData($categoryTemplate,$requestData);
+        $this->addMainCategoriesData($categoryTemplate,$otherCategoryTemplate,$requestData);
+        $this->addStoreCategoriesData($otherCategoryTemplate,$requestData);
+
         $this->addMotorsSpecificsData($listingProduct, $listingProduct->getListing()->getMarketplace(),
                                       $categoryTemplate, $requestData);
 
@@ -32,26 +37,24 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperCategory
     // ########################################
 
     protected function addMainCategoriesData(Ess_M2ePro_Model_Ebay_Template_Category $categoryTemplate,
+                                             Ess_M2ePro_Model_Ebay_Template_OtherCategory $otherCategoryTemplate,
                                              array &$requestData)
     {
         $requestData['category_main_id'] = $categoryTemplate->getMainCategory();
-        $requestData['category_secondary_id'] = $categoryTemplate->getSecondaryCategory();
+        $requestData['category_secondary_id'] = !is_null($otherCategoryTemplate) ?
+                                                    $otherCategoryTemplate->getSecondaryCategory() : 0;
     }
 
-    protected function addStoreCategoriesData(Ess_M2ePro_Model_Ebay_Template_Category $categoryTemplate,
+    protected function addStoreCategoriesData(Ess_M2ePro_Model_Ebay_Template_OtherCategory $otherCategoryTemplate,
                                               array &$requestData)
     {
-        $requestData['store_category_main_id'] = $categoryTemplate->getStoreCategoryMain();
-        $requestData['store_category_secondary_id'] = $categoryTemplate->getStoreCategorySecondary();
+        $requestData['store_category_main_id'] = !is_null($otherCategoryTemplate) ?
+                                                    $otherCategoryTemplate->getStoreCategoryMain() : 0;
+        $requestData['store_category_secondary_id'] = !is_null($otherCategoryTemplate) ?
+                                                         $otherCategoryTemplate->getStoreCategorySecondary() : 0;
     }
 
     // ########################################
-
-    protected function addAdditionalData(Ess_M2ePro_Model_Ebay_Template_Category $categoryTemplate,
-                                         array &$requestData)
-    {
-        $requestData['tax_category'] = $categoryTemplate->getTaxCategory();
-    }
 
     protected function addMotorsSpecificsData(Ess_M2ePro_Model_Listing_Product $listingProduct,
                                               Ess_M2ePro_Model_Marketplace $marketplace,
@@ -76,7 +79,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperCategory
 
         $categoryTemplate->getMagentoProduct()->clearNotFoundAttributes();
 
-        $specifics = $categoryTemplate->getMotorsSpecifics();
+        $specifics = Mage::helper('M2ePro/Component_Ebay_MotorsSpecifics')->getSpecifics($listingProduct);
 
         $notFoundAttributes = $categoryTemplate->getMagentoProduct()->getNotFoundAttributes();
         if (!empty($notFoundAttributes)) {

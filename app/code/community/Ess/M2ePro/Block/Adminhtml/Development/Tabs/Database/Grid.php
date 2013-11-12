@@ -89,14 +89,16 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs_Database_Grid extends Mage_Adm
             //--------------------
             if ($tableRow['is_exist']) {
 
-                $dbSelect = $connRead->select()->from('information_schema.tables',array('table_rows','data_length'))
+                $dbSelect = $connRead->select()->from('information_schema.tables',array('data_length'))
                                                ->where('`table_name` = ?',$moduleTable)
                                                ->where('`table_schema` = ?',$databaseName);
 
                 $tempRow = $connRead->fetchRow($dbSelect);
-
-                $tableRow['records'] = $tempRow['table_rows'];
                 $tableRow['size'] = round($tempRow['data_length'] / 1024 / 1024, 2);
+
+                $dbSelect = $connRead->select()->from($moduleTable, array('count' => 'COUNT(*)'));
+                $tempRow = $connRead->fetchRow($dbSelect);
+                $tableRow['records'] = $tempRow['count'];
             }
             //--------------------
 
@@ -199,15 +201,6 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs_Database_Grid extends Mage_Adm
             'frame_callback' => array($this, 'callbackColumnEdit')
         ));
 
-        $this->addColumn('truncate', array(
-            'header'    => Mage::helper('M2ePro')->__('Truncate'),
-            'align'     => 'center',
-            'width'     => '80px',
-            'filter'    => false,
-            'sortable'  => false,
-            'frame_callback' => array($this, 'callbackColumnTruncate')
-        ));
-
         return parent::_prepareColumns();
     }
 
@@ -232,20 +225,6 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs_Database_Grid extends Mage_Adm
             return '<a href="'.$url.'">Edit</a>';
         }
         return '<p style="color: silver;">Edit</p>';
-    }
-
-    public function callbackColumnTruncate($value, $row, $column, $isExport)
-    {
-        $url = $this->getUrl(
-            '*/adminhtml_development_database/truncateTables',
-            array('tables' => $row->getData('table_name'))
-        );
-
-        $confirmMessage = Mage::helper('M2ePro')->__('Are you sure?');
-        if ($row->getData('is_exist') && $row->getData('has_model')) {
-            return '<a href="'.$url.'" onclick="return confirm(\''.$confirmMessage.'\');">Truncate</a>';
-        }
-        return '<p style="color: silver;">Truncate</p>';
     }
 
     // ########################################

@@ -23,6 +23,8 @@ abstract class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Settings_Grid_Abstract
 
     // ####################################
 
+    abstract protected function getListingId();
+
     abstract protected function getGridHandlerJs();
 
     abstract protected function getListingProductCollection();
@@ -598,7 +600,7 @@ HTML;
         if (!$this->getRequest()->isXmlHttpRequest()) {
             $additionalJs = <<<HTML
 <script type="text/javascript">
-    EbayListingSettingsGridHandlerObj = new {$this->getGridHandlerJs()}('{$this->getId()}');
+    EbayListingSettingsGridHandlerObj = new {$this->getGridHandlerJs()}('{$this->getId()}','{$this->getListingId()}');
 </script>
 HTML;
         }

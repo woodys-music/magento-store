@@ -30,17 +30,18 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
 
             $this->addSellingFormatData($listingProduct,$requestData);
             $this->addEnhancements($listingProduct,$requestData);
-            $this->addImagesData($listingProduct,$requestData);
 
             $this->addCharityData($listingProduct,$requestData);
         }
 
         $this->addDescriptionData($listingProduct,$requestData,$permissions);
+        $this->addImagesData($listingProduct,$requestData,$permissions);
 
         if (!$requestData['is_variation_item']) {
             $this->addQtyPriceData($listingProduct,$requestData,$permissions);
         }
 
+        $requestData['is_eps_ebay_images_mode'] = NULL;
         $requestData['is_m2epro_listed_item'] = 1;
 
         return $requestData;
@@ -56,10 +57,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
 
         // Save additional info
         //---------------------
-        $additionalData = $listingProduct->getData('additional_data');
-        is_string($additionalData) && $additionalData = json_decode($additionalData,true);
-        !is_array($additionalData) && $additionalData = array();
-        $additionalData['is_eps_ebay_images_mode'] = $params['is_eps_ebay_images_mode'];
+        $additionalData = $listingProduct->getAdditionalData();
         $additionalData['ebay_item_fees'] = $params['ebay_item_fees'];
         $listingProduct->setData('is_m2epro_listed_item',1);
         $listingProduct->setData('is_need_synchronize',0);
@@ -91,6 +89,14 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         $permissions = $this->getPreparedPermissions(true,$params);
         $this->addVariationsData($listingProduct,$requestData,$permissions,$params);
 
+        $additionalData = $listingProduct->getAdditionalData();
+
+        $key = 'ebay_product_variation_images_hash';
+        if (!empty($additionalData[$key]) && isset($requestData['variation_image']) &&
+            $additionalData[$key] == sha1(json_encode($requestData['variation_image']))) {
+            unset ($requestData['variation_image']);
+        }
+
         $requestData['item_id'] = $listingProduct->getChildObject()->getEbayItemIdReal();
 
         if ($permissions['additional']) {
@@ -119,6 +125,13 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         $ebayItemsId = $this->createNewEbayItemsId($listingProduct,$params['ebay_item_id']);
         //---------------------
 
+        // Save additional info
+        //---------------------
+        $additionalData = $listingProduct->getAdditionalData();
+        $additionalData['ebay_item_fees'] = $params['ebay_item_fees'];
+        $listingProduct->setData('additional_data', json_encode($additionalData))->save();
+        //---------------------
+
         // Update Listing Product
         //---------------------
         $this->updateProductAfterAction($listingProduct,
@@ -126,15 +139,6 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
                                         $params,
                                         $ebayItemsId,
                                         false);
-        //---------------------
-
-        // Save additional info
-        //---------------------
-        $additionalData = $listingProduct->getData('additional_data');
-        is_string($additionalData) && $additionalData = json_decode($additionalData,true);
-        !is_array($additionalData) && $additionalData = array();
-        $additionalData['ebay_item_fees'] = $params['ebay_item_fees'];
-        $listingProduct->setData('additional_data', json_encode($additionalData))->save();
         //---------------------
 
         // Update Variations
@@ -150,6 +154,21 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
     {
         $params['return_variation_has_sales_key_when_qty_is_zero'] = true;
         $requestData = $this->getListRequestData($listingProduct,$params);
+
+        $additionalData = $listingProduct->getAdditionalData();
+
+        $key = 'ebay_product_images_hash';
+        if (!empty($additionalData[$key]) && isset($requestData['images']['images']) &&
+            $additionalData[$key] == sha1(json_encode($requestData['images']['images']))) {
+            unset ($requestData['images']['images']);
+        }
+
+        $key = 'ebay_product_variation_images_hash';
+        if (!empty($additionalData[$key]) && isset($requestData['variation_image']) &&
+            $additionalData[$key] == sha1(json_encode($requestData['variation_image']))) {
+            unset($requestData['variation_image']);
+        }
+
         unset($requestData['is_m2epro_listed_item']);
 
         $requestData['item_id'] = $listingProduct->getChildObject()->getEbayItemIdReal();
@@ -165,18 +184,29 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
                               ($listingProduct->getChildObject()->isListingTypeAuction()
                                    && $listingProduct->getChildObject()->getOnlineBids() > 0);
 
+            $deleteWarningMessage = array();
+
             if (isset($requestData['title']) && $tempDeleteData) {
+                $deleteWarningMessage[] = 'Title';
                 unset($requestData['title']);
             }
             if (isset($requestData['subtitle']) && $tempDeleteData) {
+                $deleteWarningMessage[] = 'Subtitle';
                 unset($requestData['subtitle']);
             }
             if (isset($requestData['duration']) && $tempDeleteData) {
+                $deleteWarningMessage[] = 'Duration';
                 unset($requestData['duration']);
             }
             if (isset($requestData['is_private']) && $tempDeleteData) {
+                $deleteWarningMessage[] = 'Private Listing';
                 unset($requestData['is_private']);
             }
+
+            !empty($deleteWarningMessage) &&
+                $this->addAdditionalWarningMessage($listingProduct,
+                    implode(', ', $deleteWarningMessage) . ' field(s) were ignored');
+
         }
 
         if (isset($requestData['bestoffer_mode']) && $requestData['bestoffer_mode']) {
@@ -193,22 +223,12 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
     public function updateAfterReviseAction(Ess_M2ePro_Model_Listing_Product $listingProduct,
                                             array $nativeRequestData = array(), array $params = array())
     {
-        // Update Listing Product
-        //---------------------
-        $this->updateProductAfterAction($listingProduct,
-                                        $nativeRequestData,
-                                        $params,
-                                        NULL,
-                                        true);
-        //---------------------
-
         // Save additional info
         //---------------------
-        $additionalData = $listingProduct->getData('additional_data');
-        is_string($additionalData) && $additionalData = json_decode($additionalData,true);
-        !is_array($additionalData) && $additionalData = array();
+        $additionalData = $listingProduct->getAdditionalData();
 
         foreach ($params['ebay_item_fees'] as $feeCode => $feeData) {
+
             if ($feeData['fee'] == 0) {
                 continue;
             }
@@ -221,6 +241,15 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         }
 
         $listingProduct->setData('additional_data', json_encode($additionalData))->save();
+        //---------------------
+
+        // Update Listing Product
+        //---------------------
+        $this->updateProductAfterAction($listingProduct,
+                                        $nativeRequestData,
+                                        $params,
+                                        NULL,
+                                        true);
         //---------------------
 
         // Update Variations
@@ -260,9 +289,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
 
         // Save additional info
         //---------------------
-        $additionalData = $listingProduct->getData('additional_data');
-        is_string($additionalData) && $additionalData = json_decode($additionalData,true);
-        !is_array($additionalData) && $additionalData = array();
+        $additionalData = $listingProduct->getAdditionalData();
         $additionalData['ebay_item_fees'] = array();
         $listingProduct->setData('additional_data', json_encode($additionalData))->save();
         //---------------------
@@ -300,7 +327,8 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
                 'price'=>true,
                 'title'=>true,
                 'subtitle'=>true,
-                'description'=>true
+                'description'=>true,
+                'gallery'=>true
             );
         }
 
@@ -346,8 +374,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
 
         if ($tempPermission && $requestData['is_variation_item']) {
 
-            $additionalData = $listingProduct->getData('additional_data');
-            is_string($additionalData) && $additionalData = json_decode($additionalData,true);
+            $additionalData = $listingProduct->getAdditionalData();
             if (isset($additionalData['variations_sets'])) {
                 $requestData['variations_sets'] = $additionalData['variations_sets'];
             }
@@ -355,10 +382,6 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
             $requestData['variation'] = $tempVariations;
             $requestData['variation_image'] = Mage::getModel('M2ePro/Connector_Server_Ebay_Item_HelperVariations')
                                                     ->getImagesData($listingProduct,$params);
-
-            if (count($requestData['variation_image']) == 0) {
-                unset($requestData['variation_image']);
-            }
         }
     }
 
@@ -366,11 +389,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
 
     protected function addEpsOrSelfHostedMode(Ess_M2ePro_Model_Listing_Product $listingProduct, array &$requestData)
     {
-        $additionalData = $listingProduct->getData('additional_data');
-
-        is_string($additionalData) && $additionalData = json_decode($additionalData,true);
-        !is_array($additionalData) && $additionalData = array();
-
+        $additionalData = $listingProduct->getAdditionalData();
         if (isset($additionalData['is_eps_ebay_images_mode'])) {
             $requestData['is_eps_ebay_images_mode'] = $additionalData['is_eps_ebay_images_mode'];
         }
@@ -561,25 +580,28 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         $requestData['listing_enhancements'] = $descriptionTemplate->getEnhancements();
     }
 
-    protected function addImagesData(Ess_M2ePro_Model_Listing_Product $listingProduct, array &$requestData)
+    protected function addImagesData(Ess_M2ePro_Model_Listing_Product $listingProduct,
+                                     array &$requestData, $permissions = array())
     {
-        /** @var $descriptionTemplate Ess_M2ePro_Model_Ebay_Template_Description */
-        $descriptionTemplate = $listingProduct->getChildObject()->getDescriptionTemplate();
+        if (!isset($permissions['gallery']) || $permissions['gallery']) {
 
-        $descriptionTemplate->getMagentoProduct()->clearNotFoundAttributes();
+            /** @var $descriptionTemplate Ess_M2ePro_Model_Ebay_Template_Description */
+            $descriptionTemplate = $listingProduct->getChildObject()->getDescriptionTemplate();
+            $descriptionTemplate->getMagentoProduct()->clearNotFoundAttributes();
 
-        $requestData['images'] = array(
-            'gallery_type' => $descriptionTemplate->getGalleryType(),
-            'images' => $descriptionTemplate->getImagesForEbay(),
-            'supersize' => $descriptionTemplate->isUseSupersizeImagesEnabled()
-        );
-
-        $notFoundAttributes = $descriptionTemplate->getMagentoProduct()->getNotFoundAttributes();
-
-        if (!empty($notFoundAttributes)) {
-            $this->addNotFoundAttributesMessage(
-                $listingProduct, Mage::helper('M2ePro')->__('Main Image / Gallery Images'), $notFoundAttributes
+            $requestData['images'] = array(
+                'gallery_type' => $descriptionTemplate->getGalleryType(),
+                'images' => $descriptionTemplate->getImagesForEbay(),
+                'supersize' => $descriptionTemplate->isUseSupersizeImagesEnabled()
             );
+
+            $notFoundAttributes = $descriptionTemplate->getMagentoProduct()->getNotFoundAttributes();
+
+            if (!empty($notFoundAttributes)) {
+                $this->addNotFoundAttributesMessage(
+                    $listingProduct, Mage::helper('M2ePro')->__('Main Image / Gallery Images'), $notFoundAttributes
+                );
+            }
         }
     }
 
@@ -647,20 +669,29 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
                                                 $saveSoldData = false)
     {
         $dataForUpdate = array(
-            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_LISTED
+            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_LISTED,
+            'additional_data' => $listingProduct->getAdditionalData()
         );
 
         !empty($nativeRequestData['title']) && $dataForUpdate['online_title'] = $nativeRequestData['title'];
         !empty($nativeRequestData['sku']) && $dataForUpdate['online_sku'] = $nativeRequestData['sku'];
 
+        $dataForUpdate['additional_data']['is_eps_ebay_images_mode'] = $params['is_eps_ebay_images_mode'];
+
+        if (isset($nativeRequestData['images']['images'])) {
+            $dataForUpdate['additional_data']['ebay_product_images_hash'] = sha1(
+                json_encode($nativeRequestData['images']['images'])
+            );
+        }
+
         !is_null($ebayItemsId) && $dataForUpdate['ebay_item_id'] = (int)$ebayItemsId;
         isset($params['status_changer']) && $dataForUpdate['status_changer'] = (int)$params['status_changer'];
 
         if (isset($nativeRequestData['category_main_id'])) {
-            $dataForUpdate['online_category'] = Mage::helper('M2ePro/Component_Ebay_Category')->getPathById(
+            $dataForUpdate['online_category'] = Mage::helper('M2ePro/Component_Ebay_Category_Ebay')->getPath(
                 $nativeRequestData['category_main_id'],
                 $listingProduct->getMarketplace()->getId()
-            );
+            ).' ('.$nativeRequestData['category_main_id'].')';
         }
 
         if (isset($params['start_date_raw'])) {
@@ -746,6 +777,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
             }
         }
 
+        $dataForUpdate['additional_data'] = json_encode($dataForUpdate['additional_data']);
         $listingProduct->addData($dataForUpdate)->save();
     }
 

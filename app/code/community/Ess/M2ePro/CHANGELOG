@@ -1,3 +1,46 @@
+* 6.0.5 (r5534) (03/10/2013)
+
+* Added: [eBay] excluded shipping locations option into shipping policy
+* Fix: weren't caught some changes for product categories if website state was changed
+* Fix: crash during migration process from 4.x.x - 6.x.x version
+
+* 6.0.4 (r5518) (02/10/2013)
+
+* Added: ability to resend order's shipping information (tracking numbers, carriers etc)
+* Added: [eBay] automatic revise item option into synchronization policy when product gallery was changed
+* Added: [eBay] ability to select used currency (USD or CAD) for Canada and Canada (French) marketplace
+* Added: [eBay] "Stock Availability" and "Qty" filters into magento product advanced filter
+* Added: [eBay] ability to change listing title on the listings grid page
+* Added: [eBay] "Stock Availability" column and filter with it into search grid
+* Added: [eBay] notification if categories of active marketplace(s) were changed
+* Added: [eBay] additional filter "eBay Primary Category Assigned" was added to Products Grid Settings View
+* Improvement: ability to show long descriptions in logs
+* Improvement: ability to filter using all attributes in advanced filter
+* Improvement: [eBay] "Available QTY" column is now sortable / filterable on listing view of grid(s)
+* Improvement: [eBay] don't send images on eBay during revise action if they weren't changed
+* Improvement: [eBay] tax category option was moved to the Shipping Policy
+* Improvement: [eBay] ability to set Combined Shipping Profile separately for all accounts
+* Improvement: [eBay] motor specific attribute is global for all listings
+* Improvement: [eBay] major improvements of working with eBay categories and item specifics
+* Fix: magento product performance improvements of getting stock availability and status
+* Fix: unable to edit order shipping address if state/region is invalid
+* Fix: wrong message for license validation (base directory / IP)
+* Fix: weren't caught some changes for global attributes
+* Fix: Column 'items_active_count' cannot be null on Listings grid pages on certain MySQL versions
+* Fix: [eBay] 'is_metric_measurement_system' column is not exist in 'm2epro_ebay_marketplace' table
+* Fix: [eBay] generate random sku if it length is more than 80 characters
+* Fix: [eBay] wrong USD currency of India marketplace was changed to INR
+* Fix: [eBay] table '*.catalog_category_entity_varchar' doesn't exist'
+* Fix: [eBay] weren't shown some configurable attributes for variation images option
+* Fix: [eBay] wrong watermarks are applied after migration to version 6.x.x
+* Fix: [eBay] motors compatibility tool for certain magento versions
+* Fix: [eBay] auto actions bug when category used from magento attribute
+* Fix: [eBay] search by category path and category id on the settings view mode of grid
+* Fix: [eBay] an empty shipping service in international shipping
+* Fix: [eBay] unable to save specifics for some eBay categories
+* Fix: [eBay] international shipping locations in shipping policy
+* Fix: [Buy] unable to save specifics in newSku template (stringTypeValidator is not exist)
+
 * 6.0.3 (r5285) (04/09/2013)
 
 * Added: separated documentation and video tutorials links for eBay and Other integrations

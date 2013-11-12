@@ -288,7 +288,7 @@
                             <option id="durationId7" value="7"><?php echo '7 '.Mage::helper('M2ePro')->__('days'); ?></option>
                             <option id="durationId10" value="10"><?php echo '10 '.Mage::helper('M2ePro')->__('days'); ?></option>
                             <option id="durationId30" value="30"><?php echo '30 '.Mage::helper('M2ePro')->__('days'); ?></option>
-                            <option id="durationId100" value="100"><?php echo Mage::helper('M2ePro')->__('GTC'); ?></option>
+                            <option id="durationId100" value="100"><?php echo Mage::helper('M2ePro')->__('Good Till Cancelled'); ?></option>
                         </select>
 
                         <span id="duration_attribute_span">
@@ -314,7 +314,7 @@
                         <p class="note">
                             <span><?php echo Mage::helper('M2ePro')->__('The length of time your eBay listing will be active. You can have it last 1, 3, 5, 7, 10, 30 days or Good \'Til Cancelled.
                                                                         <br />Good \'Til Cancelled listings renew automatically every 30 days unless all of the items sell, you end the listing, or the listing breaches an eBay policy.'); ?></span>
-                            <span id="duration_attribute_note" style="display: none;"><?php echo Mage::helper('M2ePro')->__('</br>Attribute must contain a whole number. If you choose GTC the attribute must contain 100.'); ?></span>
+                            <span id="duration_attribute_note" style="display: none;"><?php echo Mage::helper('M2ePro')->__('</br>Attribute must contain a whole number. If you choose "Good Till Cancelled" the attribute must contain 100.'); ?></span>
                         </p>
                     </td>
                 </tr>
@@ -409,6 +409,29 @@
             <div id="template_selling_format_messages">
                 <?php echo $this->getCurrencyAvailabilityMessage(); ?>
             </div>
+
+            <?php if ($this->isShowMultiCurrencyNotification()) { ?>
+
+                <?php
+                    $currencies = explode(',',$this->getMarketplace()->getChildObject()->getCurrencies());
+                    $currencies = implode(', ',array_slice($currencies,0,-1)) . ' ' .Mage::helper('M2ePro')->__('and') . ' ' . end($currencies)
+                ?>
+
+                <ul class="messages" id="multi_currency_notification" style="width: 850px">
+                    <li class="notice-msg">
+                        <span>
+                            <?php echo Mage::helper('M2ePro')->__(
+                                'eBay %s supports %s currencies. To switch currency, go to %s > Configuration > <a target="_blank" href="%s">General</a>',
+                                $this->getMarketplace()->getTitle(),
+                                $currencies,
+                                Mage::helper('M2ePro/View_Ebay')->getMenuRootNodeLabel(),
+                                $this->getUrl('*/adminhtml_ebay_configuration')
+                            ); ?>
+                        </span>
+                    </li>
+                </ul>
+
+            <?php } ?>
 
             <table id="price_table" class="form-list" cellspacing="0" cellpadding="0">
 

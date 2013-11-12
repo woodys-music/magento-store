@@ -65,6 +65,11 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
         $this->_init('M2ePro/Ebay_Template_SellingFormat');
     }
 
+    public function getNick()
+    {
+        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SELLING_FORMAT;
+    }
+
     // ########################################
 
     public function isLocked()
@@ -426,6 +431,33 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
     //-------------------------
 
+    public function usesProductOrSpecialPrice()
+    {
+        if ($this->isListingTypeFixed()) {
+            if ($this->isBuyItNowPriceModeProduct() || $this->isBuyItNowPriceModeSpecial()) {
+                return true;
+            }
+
+            return false;
+        }
+
+        if ($this->isStartPriceModeProduct() || $this->isStartPriceModeSpecial()) {
+            return true;
+        }
+
+        if ($this->isReservePriceModeProduct() || $this->isReservePriceModeSpecial()) {
+            return true;
+        }
+
+        if ($this->isBuyItNowPriceModeProduct() || $this->isBuyItNowPriceModeSpecial()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    //-------------------------
+
     public function isBestOfferEnabled()
     {
         return (int)$this->getData('best_offer_mode') == self::BEST_OFFER_MODE_YES;
@@ -566,27 +598,6 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
     // #######################################
 
-    public function getNick()
-    {
-        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_SELLING_FORMAT;
-    }
-
-    // #######################################
-
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
-        return parent::delete();
-    }
-
-    // #######################################
-
     public function getDefaultSettingsSimpleMode()
     {
         return array(
@@ -644,33 +655,6 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
     // #######################################
 
-    public function usesProductOrSpecialPrice()
-    {
-        if ($this->isListingTypeFixed()) {
-            if ($this->isBuyItNowPriceModeProduct() || $this->isBuyItNowPriceModeSpecial()) {
-                return true;
-            }
-
-            return false;
-        }
-
-        if ($this->isStartPriceModeProduct() || $this->isStartPriceModeSpecial()) {
-            return true;
-        }
-
-        if ($this->isReservePriceModeProduct() || $this->isReservePriceModeSpecial()) {
-            return true;
-        }
-
-        if ($this->isBuyItNowPriceModeProduct() || $this->isBuyItNowPriceModeSpecial()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // #######################################
-
     public function getAffectedListingProducts($asObjects = false)
     {
         if (is_null($this->getId())) {
@@ -709,8 +693,6 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
         return $listingProducts;
     }
 
-    // #######################################
-
     public function setIsNeedSynchronize($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
@@ -741,6 +723,20 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // #######################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
+        return parent::delete();
     }
 
     // #######################################

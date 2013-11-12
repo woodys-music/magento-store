@@ -61,4 +61,33 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Orders_Update_Shipping
     }
 
     // ########################################
+
+    public function process()
+    {
+        parent::process();
+
+        $this->deleteProcessedChanges();
+    }
+
+    // ########################################
+
+    private function deleteProcessedChanges()
+    {
+        // collect ids of processed order changes
+        //------------------------------
+        $changeIds = array();
+
+        foreach ($this->params as $updateData) {
+            if (!is_array($updateData)) {
+                continue;
+            }
+
+            $changeIds[] = $updateData['change_id'];
+        }
+        //------------------------------
+
+        Mage::getResourceModel('M2ePro/Order_Change')->deleteByIds($changeIds);
+    }
+
+    // ########################################
 }

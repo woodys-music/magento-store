@@ -16,7 +16,7 @@ class Ess_M2ePro_Model_Amazon_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
      * @return Ess_M2ePro_Model_Order_Item_Proxy[]
      * @throws Exception
      */
-    protected function mergeItems(array &$items)
+    protected function mergeItems(array $items)
     {
         foreach ($items as $key => $item) {
             if ($item->getPrice() <= 0) {

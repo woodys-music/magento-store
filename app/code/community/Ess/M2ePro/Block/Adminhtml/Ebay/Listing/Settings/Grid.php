@@ -237,4 +237,11 @@ HTML;
     }
 
     // ####################################
+
+    protected function getListingId()
+    {
+        return $this->getRequest()->getParam('listing_id');
+    }
+
+    // ####################################
 }

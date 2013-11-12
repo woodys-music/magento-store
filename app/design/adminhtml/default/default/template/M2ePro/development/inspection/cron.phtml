@@ -46,4 +46,13 @@
         </td>
     </tr>
 
+    <tr <?php if (!$this->getIsInspection()) echo 'style="display: none"' ?>>
+        <td class="label">
+            <label><?php echo Mage::helper('M2ePro')->__('Cron Schedule Table'); ?>: </label>
+        </td>
+        <td class="value">
+            <a href="<?php echo $this->getUrl('*/adminhtml_development_inspection/cronScheduleTable'); ?>" target="_blank"><?php echo Mage::helper('M2ePro')->__('Show') ?></a>
+        </td>
+    </tr>
+
 </table>

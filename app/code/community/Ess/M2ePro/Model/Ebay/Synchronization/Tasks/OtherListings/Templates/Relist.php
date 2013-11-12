@@ -167,7 +167,7 @@ class Ess_M2ePro_Model_Ebay_Synchronization_Tasks_OtherListings_Templates_Relist
 
         if($listingOther->getChildObject()->getSynchronizationModel()->isRelistWhenQtyHasValue()) {
 
-            $productQty = (int)$listingOther->getChildObject()->getMappedQty();
+            $productQty = $listingOther->getChildObject()->getMappedQty();
 
             if (!is_null($productQty)) {
 

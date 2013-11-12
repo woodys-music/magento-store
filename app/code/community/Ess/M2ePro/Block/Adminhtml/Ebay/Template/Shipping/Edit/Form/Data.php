@@ -67,30 +67,49 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
 
     public function getDiscountProfiles()
     {
-        $account = $this->getAccount();
+        $template = Mage::helper('M2ePro/Data_Global')->getValue('ebay_template_shipping');
 
-        if (is_null($account)) {
-            return array();
-        }
+        $localDiscount = $template->getData('local_shipping_combined_discount_profile_id');
+        $internationalDiscount = $template->getData('international_shipping_combined_discount_profile_id');
 
-        $accountProfiles = $account->getChildObject()->getData('ebay_shipping_discount_profiles');
+        !is_null($localDiscount) && $localDiscount = json_decode($localDiscount, true);
+        !is_null($internationalDiscount) && $internationalDiscount = json_decode($internationalDiscount, true);
 
-        if (is_null($accountProfiles)) {
-            return array();
-        }
-
-        $accountProfiles = json_decode($accountProfiles, true);
-        $marketplaceId = $this->getMarketplace()->getId();
+        $accountCollection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Account');
 
         $profiles = array();
-        if (is_array($accountProfiles) && isset($accountProfiles[$marketplaceId]['profiles'])) {
-            foreach ($accountProfiles[$marketplaceId]['profiles'] as $profile) {
-                $profiles[] = array(
-                    'type' => Mage::helper('M2ePro')->escapeHtml($profile['type']),
-                    'profile_id' => Mage::helper('M2ePro')->escapeHtml($profile['profile_id']),
-                    'profile_name' => Mage::helper('M2ePro')->escapeHtml($profile['profile_name'])
-                );
+
+        foreach ($accountCollection as $account) {
+            $accountId = $account->getId();
+
+            $temp = array();
+            $temp['account_name'] = $account->getTitle();
+            $temp['selected']['local'] = isset($localDiscount[$accountId]) ? $localDiscount[$accountId] : '';
+            $temp['selected']['international'] = isset($internationalDiscount[$accountId]) ?
+                $internationalDiscount[$accountId] : '';
+
+            $accountProfiles = $account->getChildObject()->getData('ebay_shipping_discount_profiles');
+            $temp['profiles'] = array();
+
+            if (is_null($accountProfiles)) {
+                $profiles[$accountId] = $temp;
+                continue;
             }
+
+            $accountProfiles = json_decode($accountProfiles, true);
+            $marketplaceId = $this->getMarketplace()->getId();
+
+            if (is_array($accountProfiles) && isset($accountProfiles[$marketplaceId]['profiles'])) {
+                foreach ($accountProfiles[$marketplaceId]['profiles'] as $profile) {
+                    $temp['profiles'][] = array(
+                        'type' => Mage::helper('M2ePro')->escapeHtml($profile['type']),
+                        'profile_id' => Mage::helper('M2ePro')->escapeHtml($profile['profile_id']),
+                        'profile_name' => Mage::helper('M2ePro')->escapeHtml($profile['profile_name'])
+                    );
+                }
+            }
+
+            $profiles[$accountId] = $temp;
         }
 
         return $profiles;
@@ -144,6 +163,13 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
             $this->formData = array_merge($this->formData, $calculated->getData());
         }
 
+        if (is_string($this->formData['excluded_locations'])) {
+            $excludedLocations = json_decode($this->formData['excluded_locations'],true);
+            $this->formData['excluded_locations'] = is_array($excludedLocations) ? $excludedLocations : array();
+        } else {
+            unset($this->formData['excluded_locations']);
+        }
+
         return $this->formData;
     }
 
@@ -154,6 +180,8 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
         } else {
             $default = Mage::getModel('M2ePro/Ebay_Template_Shipping')->getDefaultSettingsAdvancedMode();
         }
+
+        $default['excluded_locations'] = json_decode($default['excluded_locations'],true);
 
         // populate address fields with the data from magento configuration
         //------------------------------
@@ -191,7 +219,7 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
             'packages' => $this->getMarketplace()->getChildObject()->getPackageInfo(),
             'dispatch' => $this->getSortedDispatchInfo(),
             'locations' => $this->getMarketplace()->getChildObject()->getShippingLocationInfo(),
-            'locations_exclude' => $this->getMarketplace()->getChildObject()->getShippingLocationExcludeInfo()
+            'locations_exclude' => $this->getSortedLocationExcludeInfo()
         );
 
         return $data;
@@ -210,6 +238,21 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
         array_multisort($ebayIds, SORT_ASC, $dispatchInfo);
 
         return $dispatchInfo;
+    }
+
+    private function getSortedLocationExcludeInfo()
+    {
+        foreach($this->getMarketplace()->getChildObject()->getShippingLocationExcludeInfo() as $locationExcludeRecord) {
+
+            $region = $locationExcludeRecord['region'];
+
+            strpos(strtolower($region), 'worldwide') !== false && $region = 'international';
+            strpos(strtolower($region), 'domestic') !== false && $region = 'domestic';
+            strpos(strtolower($region), 'additional') !== false && $region = 'additional';
+
+            $sortedInfo[$region][$locationExcludeRecord['ebay_id']] = $locationExcludeRecord['title'];
+        }
+        return $sortedInfo;
     }
 
     // ####################################
@@ -425,15 +468,6 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
         return $this->getMarketplace()->getChildObject()->isCashOnDeliveryEnabled();
     }
 
-    public function canDisplayCombinedDiscountProfiles()
-    {
-        if (Mage::helper('M2ePro/View_Ebay')->isSimpleMode()) {
-            return false;
-        }
-
-        return !is_null($this->getAccountId());
-    }
-
     public function canDisplayNorthAmericaCrossBorderTradeOption()
     {
         $marketplace = $this->getMarketplace();
@@ -523,6 +557,16 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
                                 'class' => 'delete icon-btn remove_shipping_method_button'
                             ) );
         $this->setChild('remove_shipping_method_button',$buttonBlock);
+        //------------------------------
+
+        //------------------------------
+        $data = array(
+            'id'      => 'save_popup_button',
+            'label'   => Mage::helper('M2ePro')->__('Save'),
+            'onclick' => 'EbayTemplateShippingHandlerObj.saveExcludeLocationsList()',
+        );
+        $buttonBlock = $this->getLayout()->createBlock('adminhtml/widget_button')->setData($data);
+        $this->setChild('save_popup_button',$buttonBlock);
         //------------------------------
     }
 

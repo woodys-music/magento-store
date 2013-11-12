@@ -1,0 +1,5 @@
+November 7, 2013, 11:40:21 am, page:0, items selected:500
+November 7, 2013, 11:41:00 am, page:500, items selected:500
+November 7, 2013, 11:41:29 am, page:1000, items selected:500
+November 7, 2013, 11:42:04 am, page:1500, items selected:358
+November 7, 2013, 11:42:25 am, page:2000, items selected:0

@@ -682,10 +682,6 @@ class Ess_M2ePro_Model_Ebay_Order extends Ess_M2ePro_Model_Component_Child_Ebay_
 
     public function updateShippingStatus(array $trackingDetails = array())
     {
-        if (!$this->canUpdateShippingStatus($trackingDetails)) {
-            return false;
-        }
-
         $params = array();
         $action = Ess_M2ePro_Model_Connector_Server_Ebay_Order_Dispatcher::ACTION_SHIP;
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <mobile>
+                        <title>Mobile Dashboard</title>
+                        <sort_order>1</sort_order>
+                    </mobile>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+</config>

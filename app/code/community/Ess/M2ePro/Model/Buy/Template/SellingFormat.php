@@ -191,6 +191,17 @@ class Ess_M2ePro_Model_Buy_Template_SellingFormat extends Ess_M2ePro_Model_Compo
         return $attributes;
     }
 
+    //-------------------------
+
+    public function usesProductOrSpecialPrice()
+    {
+        if ($this->isPriceModeProduct() || $this->isPriceModeSpecial()) {
+            return true;
+        }
+
+        return false;
+    }
+
     // ########################################
 
     public function getPriceVariationMode()
@@ -228,31 +239,6 @@ class Ess_M2ePro_Model_Buy_Template_SellingFormat extends Ess_M2ePro_Model_Compo
 
     // ########################################
 
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
-        return parent::delete();
-    }
-
-    // ########################################
-
-    public function usesProductOrSpecialPrice()
-    {
-        if ($this->isPriceModeProduct() || $this->isPriceModeSpecial()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    // ########################################
-
     public function getAffectedListingProducts($asObjects = false)
     {
         if (is_null($this->getId())) {
@@ -269,8 +255,6 @@ class Ess_M2ePro_Model_Buy_Template_SellingFormat extends Ess_M2ePro_Model_Compo
 
         return $asObjects ? $listingProductCollection->getItems() : $listingProductCollection->getData();
     }
-
-    // ########################################
 
     public function setIsNeedSynchronize($newData, $oldData)
     {
@@ -302,6 +286,20 @@ class Ess_M2ePro_Model_Buy_Template_SellingFormat extends Ess_M2ePro_Model_Compo
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // ########################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('template_sellingformat');
+        return parent::delete();
     }
 
     // ########################################

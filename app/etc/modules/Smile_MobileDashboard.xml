@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Smile_MobileDashboard>
+            <active>true</active>
+            <codePool>community</codePool>
+        </Smile_MobileDashboard>
+    </modules>
+</config>

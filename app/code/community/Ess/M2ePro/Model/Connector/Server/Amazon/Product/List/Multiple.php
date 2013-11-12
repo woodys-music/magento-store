@@ -689,7 +689,9 @@ class Ess_M2ePro_Model_Connector_Server_Amazon_Product_List_Multiple
     {
         $data = array(
             'general_id' => $listingProduct->getData('general_id'),
-            'is_isbn_general_id' => Ess_M2ePro_Helper_Component_Amazon_Validation::isISBN($listingProduct->getData('general_id')),
+            'is_isbn_general_id' => Mage::helper('M2ePro/Component_Amazon_Validation')->isISBN(
+                $listingProduct->getData('general_id')
+            ),
             'sku' => $listingProduct->getData('sku'),
             'status' => Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED
         );

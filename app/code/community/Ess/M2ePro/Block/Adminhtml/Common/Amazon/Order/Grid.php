@@ -257,6 +257,12 @@ class Ess_M2ePro_Block_Adminhtml_Common_Amazon_Order_Grid extends Mage_Adminhtml
              'url'      => $this->getUrl('*/adminhtml_common_amazon_order/updateShippingStatus'),
              'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
         ));
+
+        $this->getMassactionBlock()->addItem('resend_shipping', array(
+             'label'    => Mage::helper('M2ePro')->__('Resend Shipping Information'),
+             'url'      => $this->getUrl('*/adminhtml_order/resendShippingInfo'),
+             'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
         //--------------------------------
 
         return parent::_prepareMassaction();

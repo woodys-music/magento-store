@@ -164,11 +164,11 @@ class Ess_M2ePro_Model_Amazon_Listing_Product_Variation_Option extends Ess_M2ePr
         }
 
         if ($src['mode'] == Ess_M2ePro_Model_Amazon_Listing::SKU_MODE_CUSTOM_ATTRIBUTE) {
-            return $this->getMagentoProduct()->getAttributeValue($src['attribute']);
+            return trim($this->getMagentoProduct()->getAttributeValue($src['attribute']));
         }
 
         if (!$this->getListingProduct()->getMagentoProduct()->isSimpleTypeWithCustomOptions()) {
-            return $this->getMagentoProduct()->getSku();
+            return trim($this->getMagentoProduct()->getSku());
         }
 
         $tempSku = '';
@@ -213,7 +213,7 @@ class Ess_M2ePro_Model_Amazon_Listing_Product_Variation_Option extends Ess_M2ePr
             }
         }
 
-        return $tempSku;
+        return trim($tempSku);
     }
 
     public function getQty()

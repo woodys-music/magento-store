@@ -22,6 +22,7 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs extends Mage_Adminhtml_Block_W
     {
         $activeTab = $this->getRequest()->getParam('tab');
         $allowedTabs = array(
+            Ess_M2ePro_Helper_View_Development::TAB_SUMMARY,
             Ess_M2ePro_Helper_View_Development::TAB_ABOUT,
             Ess_M2ePro_Helper_View_Development::TAB_INSPECTION,
             Ess_M2ePro_Helper_View_Development::TAB_DATABASE,
@@ -32,8 +33,20 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs extends Mage_Adminhtml_Block_W
         );
 
         //------------------------------
+        $params = array('label' => $this->__('Summary'));
+        if ($activeTab == Ess_M2ePro_Helper_View_Development::TAB_SUMMARY || !in_array($activeTab,$allowedTabs)) {
+            $params['content'] = $this->getLayout()
+                                      ->createBlock('M2ePro/adminhtml_development_tabs_summary')->toHtml();
+        } else {
+            $params['url'] = $this->getUrl('*/adminhtml_development/summaryTab');
+            $params['class'] = 'ajax';
+        }
+        $this->addTab(Ess_M2ePro_Helper_View_Development::TAB_SUMMARY, $params);
+        //------------------------------
+
+        //------------------------------
         $params = array('label' => $this->__('About'));
-        if ($activeTab == Ess_M2ePro_Helper_View_Development::TAB_ABOUT || !in_array($activeTab,$allowedTabs)) {
+        if ($activeTab == Ess_M2ePro_Helper_View_Development::TAB_ABOUT) {
             $params['content'] = $this->getLayout()
                                       ->createBlock('M2ePro/adminhtml_development_tabs_about')->toHtml();
         } else {

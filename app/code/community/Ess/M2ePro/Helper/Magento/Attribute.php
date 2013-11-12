@@ -197,7 +197,19 @@ class Ess_M2ePro_Helper_Magento_Attribute extends Ess_M2ePro_Helper_Magento_Abst
 
     public function getAllConfigurable()
     {
-        return $this->getConfigurable();
+        $attributes = array();
+
+        $attributeSets = Mage::helper('M2ePro/Magento_AttributeSet')->getAll();
+        foreach ($attributeSets as $attributeSet) {
+
+            $attributesTemp = $this->getConfigurable($attributeSet['attribute_set_id']);
+
+            foreach ($attributesTemp as $attributeTemp) {
+                $attributes[$attributeTemp['code']] = $attributeTemp;
+            }
+        }
+
+        return array_values($attributes);
     }
 
     // -------------------------------------------

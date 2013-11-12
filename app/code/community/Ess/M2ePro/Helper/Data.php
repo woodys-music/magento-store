@@ -392,4 +392,34 @@ class Ess_M2ePro_Helper_Data extends Mage_Core_Helper_Abstract
     }
 
     // ########################################
+
+    public function theSameItemsInData($data, $keysToCheck)
+    {
+        if (count($data) > 200) {
+            return false;
+        }
+
+        $preparedData = array();
+
+        foreach ($keysToCheck as $key) {
+            $preparedData[$key] = array();
+        }
+
+        foreach ($data as $item) {
+            foreach ($keysToCheck as $key) {
+                $preparedData[$key][] = $item[$key];
+            }
+        }
+
+        foreach ($keysToCheck as $key) {
+            $preparedData[$key] = array_unique($preparedData[$key]);
+            if (count($preparedData[$key]) > 1) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // ########################################
 }

@@ -1,3 +1,25 @@
+<?php
+    $specificsAttribute = Mage::helper('M2ePro/Module')->getConfig()->getGroupValue(
+        '/ebay/motor/','motors_specifics_attribute'
+    );
+
+    $translations = array();
+
+    // ->__('Please specify eBay motors compatibility attribute in %s > Configuration > <a target="_blank" href="%s">General</a>')
+    $text = 'Please specify eBay motors compatibility attribute in %s > Configuration > <a target="_blank" href="%s">General</a>';
+    $translations[$text] = Mage::helper('M2ePro')->__(
+        $text,
+        Mage::helper('M2ePro/View_Ebay')->getMenuRootNodeLabel(),
+        $this->getUrl('*/adminhtml_ebay_configuration')
+    );
+
+    // ->__('Please edit categories settings for selected products and select the compatibility attribute.')
+    $text = 'Please edit categories settings for selected products and select the compatibility attribute.';
+    $translations[$text] = Mage::helper('M2ePro')->__($text);
+
+    $translations = json_encode($translations);
+?>
+
 <style type="text/css">
     #specifics_grid_container table td, #specifics_grid_container table th {
         padding: 5px;
@@ -25,23 +47,22 @@
     }
 
     M2ePro.php.setConstants(<?php echo Mage::helper('M2ePro')->getClassConstantAsJson('Ess_M2ePro_Model_Ebay_Template_Category'); ?>, 'Ess_M2ePro_Model_Ebay_Template_Category');
+    M2ePro.php.setConstants(<?php echo Mage::helper('M2ePro')->getClassConstantAsJson('Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics'); ?>, 'Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics');
 
     M2ePro.url.add(<?php echo json_encode(array(
         'adminhtml_ebay_listing/motorSpecificGrid' => $this->getUrl('*/adminhtml_ebay_listing/motorSpecificGrid'),
         'adminhtml_ebay_listing/updateMotorsSpecificsAttributes' => $this->getUrl('*/adminhtml_ebay_listing/updateMotorsSpecificsAttributes'),
-        'adminhtml_ebay_listing/hasEmptyMotorsSpecificsAttributes' => $this->getUrl('*/adminhtml_ebay_listing/hasEmptyMotorsSpecificsAttributes'),
     )) ?>);
 
-    M2ePro.translator.add(<?php echo json_encode(array(
-        'Please edit categories settings for selected products and select the compatibility attribute.' => $this->__('Please edit categories settings for selected products and select the compatibility attribute.')
-    )) ?>);
+    M2ePro.translator.add(<?php echo $translations ?>);
 
     Event.observe(window, 'load', function() {
 
         EbayMotorSpecificHandlerObj = new EbayMotorSpecificHandler(
             <?php echo (int)$this->getRequest()->getParam('id') ?>,
             '<?php echo Mage::helper('M2ePro')->escapeJs($this->getData('specifics_grid_id')) ?>',
-            '<?php echo Mage::helper('M2ePro')->escapeJs($this->getData('products_grid_id')) ?>'
+            '<?php echo Mage::helper('M2ePro')->escapeJs($this->getData('products_grid_id')) ?>',
+            <?php echo json_encode(empty($specificsAttribute)); ?>
         );
 
         EbayMotorSpecificHandlerObj.initPopUp('<?php echo Mage::helper('M2ePro')->escapeJs(Mage::helper('M2ePro')->__('Add Compatible Vehicles')); ?>', 'pop_up_content');
@@ -53,15 +74,19 @@
 <div id="pop_up_content" style="display: none;">
 
     <div id="block_notice_motors_specifics_generate_attribute_value" class="block_notices_module" title="<?php echo Mage::helper('M2ePro')->__('Add Compatible Vehicles'); ?>" style="margin-top: 15px;">
-        <?php echo Mage::helper('M2ePro')->__('The grid below contains a list of cars, trucks and motorcycles which can be found on eBay Motors.<br/><br/>
-Select items, compatible with your part and choose one of three actions in the Actions dropdown:
+
+        <?php echo Mage::helper('M2ePro')->__(
+'Select the items, compatible with your part and choose one of three actions in the Actions dropdown:
 <ul class=list>
-<li><b>Overwrite ePIDs in Compatibility Attribute</b> - replaces items ePIDs in the Compatibility Attribute chosen in the General Template with selected ones.</li>
-<li><b>Add ePIDs to Compatibility Attribute</b> - adds selected items ePIDs to existing ones in Compatibility Attribute chosen in the General Template.</li>
-<li><b>Show ePIDs</b> - displays selected items ePIDs in the text field.</li>
+    <li><b>Overwrite ePIDs in Compatibility Attribute</b> - replaces items ePIDs in the Compatibility Attribute chosen in %s > Configuration > <a target="_blank" href="%s">General</a> with selected ones.</li>
+    <li><b>Add ePIDs to Compatibility Attribute</b> - adds selected items ePIDs to existing ones in Compatibility Attribute chosen in the General settings.</li>
+    <li><b>Show ePIDs</b> - displays selected items ePIDs in the text field.</li>
 </ul>
-<b>Note:</b> Compatibility Items of listed products can not be replaced or removed from eBay when you revise or relist product, only new ones can be added in these cases.
-'); ?>
+<b>Note:</b> Compatibility items can not be replaced or removed from eBay.',
+            Mage::helper('M2ePro/View_Ebay')->getMenuRootNodeLabel(),
+            $this->getUrl('*/adminhtml_ebay_configuration')
+        ); ?>
+
     </div>
 
     <div id="generate_attribute_content_container" class="<?php echo Mage::helper('M2ePro/Magento')->isGoEdition() ? '' : 'switcher'; ?>" style="display: none; margin-top: 15px;">

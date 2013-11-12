@@ -7,7 +7,7 @@
 abstract class Ess_M2ePro_Model_Connector_Server_Ebay_Abstract extends Ess_M2ePro_Model_Connector_Server_Command
 {
     const COMPONENT = 'Ebay';
-    const COMPONENT_VERSION = 5;
+    const COMPONENT_VERSION = 6;
 
     const MODE_SANDBOX = 'sandbox';
     const MODE_PRODUCTION = 'production';

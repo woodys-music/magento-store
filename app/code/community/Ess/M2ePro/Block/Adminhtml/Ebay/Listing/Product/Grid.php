@@ -13,7 +13,10 @@ abstract class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Product_Grid
 
         // Initialization block
         //------------------------------
-        $this->setId('ebayListingProductGrid');
+        $listing = Mage::helper('M2ePro/Component_Ebay')
+            ->getCachedObject('Listing',$this->getRequest()->getParam('listing_id'));
+
+        $this->setId('ebayListingProductGrid'.$listing->getId());
         //------------------------------
 
         $this->hideMassactionDropDown = true;

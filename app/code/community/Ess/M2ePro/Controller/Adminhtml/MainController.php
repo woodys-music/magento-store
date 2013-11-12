@@ -17,6 +17,11 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
             !$this->getRequest()->isPost() &&
             !$this->getRequest()->isXmlHttpRequest()) {
 
+            // check rewrite menu
+            if (count($this->getCustomViewComponentHelper()->getActiveComponents()) < 1) {
+                throw new Exception('At least 1 channel of current view should be enabled.');
+            }
+
             // update client data
             try {
                 Mage::helper('M2ePro/Client')->updateBackupConnectionData(false);
@@ -245,8 +250,10 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
             '/license/validation/domain/notification/', 'mode'
         );
 
+        $licenseDomain = Mage::helper('M2ePro/Module_License')->getDomain();
+
         if ($domainNotify &&
-            Mage::helper('M2ePro/Module_License')->getDomain() != Mage::helper('M2ePro/Client')->getDomain()) {
+            strtolower($licenseDomain) != strtolower(Mage::helper('M2ePro/Client')->getDomain())) {
 
             $startLink = '<a href="'.Mage::helper('M2ePro/View_Configuration')->getLicenseUrl().'" target="_blank">';
             $endLink = '</a>';
@@ -263,7 +270,10 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
             '/license/validation/ip/notification/', 'mode'
         );
 
-        if ($ipNotify && Mage::helper('M2ePro/Module_License')->getIp() != Mage::helper('M2ePro/Client')->getIp()) {
+        $licenseIp = Mage::helper('M2ePro/Module_License')->getIp();
+
+        if ($ipNotify &&
+            strtolower($licenseIp) != strtolower(Mage::helper('M2ePro/Client')->getIp())) {
 
             $startLink = '<a href="'.Mage::helper('M2ePro/View_Configuration')->getLicenseUrl().'" target="_blank">';
             $endLink = '</a>';
@@ -283,7 +293,7 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
         $licenseDirectory = Mage::helper('M2ePro/Module_License')->getDirectory();
 
         if ($directoryNotify &&
-            $licenseDirectory != Mage::helper('M2ePro/Client')->getBaseDirectory()) {
+            strtolower($licenseDirectory) != strtolower(Mage::helper('M2ePro/Client')->getBaseDirectory())) {
 
             $startLink = '<a href="'.Mage::helper('M2ePro/View_Configuration')->getLicenseUrl().'" target="_blank">';
             $endLink = '</a>';
@@ -437,7 +447,8 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
 
         foreach ($this->getCustomViewComponentHelper()->getActiveComponents() as $component) {
 
-            if (Mage::helper('M2ePro/Module_License')->getIntervalBeforeExpirationDate($component) <= 60*60*24*3) {
+            if (Mage::helper('M2ePro/Module_License')->getIntervalBeforeExpirationDate($component) > 0 &&
+                Mage::helper('M2ePro/Module_License')->getIntervalBeforeExpirationDate($component) <= 60*60*24*3) {
 
                 $startLink = '<a href="'.Mage::helper('M2ePro/View_Configuration')->getLicenseUrl().'" target="_blank">';
                 $endLink = '</a>';

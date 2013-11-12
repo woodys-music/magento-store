@@ -4,14 +4,16 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
     listingId: null,
     specificsGridId: null,
     productsGridId: null,
+    isEmptySpecificsAttribute: false,
 
     //----------------------------------
 
-    initialize: function(listingId, specificsGridId, productsGridId)
+    initialize: function(listingId, specificsGridId, productsGridId, isEmptySpecificsAttribute)
     {
         this.listingId = listingId;
         this.specificsGridId = specificsGridId;
         this.productsGridId = productsGridId;
+        this.isEmptySpecificsAttribute = isEmptySpecificsAttribute;
     },
 
     //----------------------------------
@@ -38,7 +40,7 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
                 callOriginal();
 
                 $('attribute_content').value = grid.massaction.getCheckedValues()
-                    .replace(/,/g, M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_Category::MOTORS_SPECIFICS_VALUE_SEPARATOR'));
+                    .replace(/,/g, M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics::VALUE_SEPARATOR'));
             }
         );
 
@@ -109,8 +111,8 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
 
         MagentoMessageObj.clearAll();
 
-        if (self.hasEmptyAttributes()) {
-            MagentoMessageObj.addError(M2ePro.translator.translate('Please edit categories settings for selected products and select the compatibility attribute.'));
+        if (self.isEmptySpecificsAttribute) {
+            MagentoMessageObj.addError(M2ePro.translator.translate('Please specify eBay motors compatibility attribute in %s > Configuration > <a target="_blank" href="%s">General</a>'));
             return;
         }
 
@@ -164,30 +166,6 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
         $('generate_attribute_content_container').hide();
 
         $('attribute_content').value = '';
-    },
-
-    //----------------------------------
-
-    hasEmptyAttributes: function()
-    {
-        var hasEmpty = true;
-        var productsGrid = window[this.productsGridId + 'JsObject'];
-
-        new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing/hasEmptyMotorsSpecificsAttributes') ,
-        {
-            method: 'get',
-            asynchronous : false,
-            parameters : {
-                listing_id: this.listingId,
-                listing_product_ids: productsGrid.massaction.getCheckedValues()
-            },
-            onSuccess: function (transport)
-            {
-                hasEmpty = transport.responseText.evalJSON()['has_empty'];
-            }
-        });
-
-        return hasEmpty;
     },
 
     //----------------------------------

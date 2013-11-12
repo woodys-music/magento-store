@@ -512,13 +512,25 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         if ($isChangeTokenSession || (int)$this->getRequest()->getParam('update_ebay_store')) {
             $ebayAccount = $model->getChildObject();
             $ebayAccount->updateEbayStoreInfo();
+
+            if (Mage::helper('M2ePro/Component_Ebay_Category_Store')->isExistDeletedCategories()) {
+
+                $url = $this->getUrl('*/adminhtml_ebay_category/index', array('filter' => base64_encode('state=0')));
+
+                $this->_getSession()->addWarning(
+                    Mage::helper('M2ePro')->__(
+                        'Some eBay store categories were deleted from eBay. Click
+                        <a target="_blank" href="%s">here</a> to check.', $url
+                    )
+                );
+            }
         }
         //--------------------
 
         $this->_getSession()->addSuccess(Mage::helper('M2ePro')->__('Account was successfully saved'));
 
         $this->_redirectUrl(Mage::helper('M2ePro')->getBackUrl(
-            'list',array(),array('edit'=>array('id'=>$id,'_current'=>true))
+            'list',array(),array('edit'=>array('id'=>$id, 'update_ebay_store' => null, '_current'=>true))
         ));
     }
 

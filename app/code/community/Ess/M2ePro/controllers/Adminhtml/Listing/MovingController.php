@@ -32,8 +32,8 @@ class Ess_M2ePro_Adminhtml_Listing_MovingController
         $block = $this->loadLayout()->getLayout()->createBlock(
             'M2ePro/adminhtml_listing_moving_grid','',
             array(
-                'mode' => 'listing',
-                'grid_url' => $this->getUrl('*/adminhtml_listing_moving/moveToListingGrid', array('_current'=>true))
+                'grid_url' => $this->getUrl('*/adminhtml_listing_moving/moveToListingGrid', array('_current'=>true)),
+                'moving_handler_js' => 'ListingGridHandlerObj.movingHandler',
             )
         );
         $this->getResponse()->setBody($block->toHtml());

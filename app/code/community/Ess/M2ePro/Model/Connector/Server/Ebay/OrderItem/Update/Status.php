@@ -115,6 +115,12 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_OrderItem_Update_Status
             ));
         }
 
+        Mage::getResourceModel('M2ePro/Order_Change')
+            ->deleteByOrderAction(
+                $this->orderItem->getOrderId(),
+                Ess_M2ePro_Model_Order_Change::ACTION_UPDATE_SHIPPING
+            );
+
         return true;
     }
 }

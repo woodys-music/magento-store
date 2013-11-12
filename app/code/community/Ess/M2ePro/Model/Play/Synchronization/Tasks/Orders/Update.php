@@ -97,30 +97,37 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Orders_Update extends Ess_M2eP
             return;
         }
 
-        /** @var $accountsCollection Mage_Core_Model_Mysql4_Collection_Abstract */
-        $accountsCollection = Mage::helper('M2ePro/Component_Play')->getCollection('Account');
-        $accountsCollection->addFieldToFilter('orders_mode', Ess_M2ePro_Model_Play_Account::ORDERS_MODE_YES);
-
-        $percentsForAccount = self::PERCENTS_INTERVAL;
-        $accountsTotalCount = (int)$accountsCollection->getSize();
-
-        if ($accountsTotalCount > 0) {
-            $percentsForAccount = $percentsForAccount/$accountsTotalCount;
-        }
+        // delete changes, which were processed 3 or more times
+        //------------------------------
+        Mage::getResourceModel('M2ePro/Order_Change')
+            ->deleteByProcessingAttemptCount(
+                Ess_M2ePro_Model_Order_Change::MAX_ALLOWED_PROCESSING_ATTEMPTS,
+                Ess_M2ePro_Helper_Component_Play::NICK
+            );
+        //------------------------------
 
         $marketplace = Mage::helper('M2ePro/Component_Play')->getCachedObject(
             'Marketplace', Ess_M2ePro_Helper_Component_Play::MARKETPLACE_VIRTUAL_ID
         );
 
+        /** @var $accountsCollection Mage_Core_Model_Mysql4_Collection_Abstract */
+        $accountsCollection = Mage::helper('M2ePro/Component_Play')->getCollection('Account');
+        $accountsCollection->addFieldToFilter('orders_mode', Ess_M2ePro_Model_Play_Account::ORDERS_MODE_YES);
+        $accountsTotalCount = (int)$accountsCollection->getSize();
         $accountIteration = 1;
+
+        $percentsForAccount = self::PERCENTS_INTERVAL;
+        if ($accountsTotalCount > 0) {
+            $percentsForAccount = $percentsForAccount/$accountsTotalCount;
+        }
+
         foreach ($accountsCollection->getItems() as $account) {
             if (!$this->isLockedAccountMarketplace($account->getId(), $marketplace->getId())) {
                 $this->processAccountMarketplace($account, $marketplace);
             }
 
-            $this->_lockItem->setPercents(self::PERCENTS_START + $percentsForAccount*$accountIteration);
+            $this->_lockItem->setPercents(self::PERCENTS_START + $percentsForAccount*$accountIteration++);
             $this->_lockItem->activate();
-            $accountIteration++;
         }
 
         $this->setSynchLastTime(Mage::helper('M2ePro')->getCurrentGmtDate(true));
@@ -143,14 +150,20 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Orders_Update extends Ess_M2eP
         $status = Mage::helper('M2ePro')->__($status, $this->name, $account->getTitle(), $marketplace->getTitle());
         $this->_lockItem->setStatus($status);
 
+        Mage::getResourceModel('M2ePro/Order_Change')
+            ->deleteByProcessingAttemptCount(Ess_M2ePro_Model_Order_Change::MAX_ALLOWED_PROCESSING_ATTEMPTS);
+
         $changesCollection = Mage::getModel('M2ePro/Order_Change')->getCollection();
         $changesCollection->addAccountFilter($account->getId());
+        $changesCollection->addProcessingAttemptDateFilter();
         $changesCollection->addFieldToFilter('action', Ess_M2ePro_Model_Order_Change::ACTION_UPDATE_SHIPPING);
         $changesCollection->getSelect()->group(array('order_id'));
 
         if ($changesCollection->getSize() == 0) {
             return;
         }
+
+        Mage::getResourceModel('M2ePro/Order_Change')->incrementAttemptCount($changesCollection->getAllIds());
 
         // Update orders shipping status on Rakuten.com
         //---------------------------
@@ -160,6 +173,7 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Orders_Update extends Ess_M2eP
             $changeParams = $change->getParams();
 
             $params[] = array(
+                'change_id'       => $change->getId(),
                 'order_id'        => $change->getOrderId(),
                 'play_order_id'   => $changeParams['play_order_id'],
                 'carrier_name'    => $changeParams['carrier_name'],
@@ -172,8 +186,6 @@ class Ess_M2ePro_Model_Play_Synchronization_Tasks_Orders_Update extends Ess_M2eP
         $dispatcherObject->processConnector(
             'orders', 'update', 'shipping', $params, $marketplace, $account
         );
-
-        $changesCollection->walk('deleteInstance');
         //---------------------------
 
         $this->_profiler->saveTimePoint(__METHOD__.'send'.$account->getId());

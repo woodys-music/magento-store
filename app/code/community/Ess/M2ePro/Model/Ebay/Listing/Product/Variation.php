@@ -317,6 +317,10 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation extends Ess_M2ePro_Model_C
             }
         }
 
+        if (strlen($sku) >= 80) {
+            $sku = 'RANDOM_'.sha1($sku);
+        }
+
         return $sku;
     }
 

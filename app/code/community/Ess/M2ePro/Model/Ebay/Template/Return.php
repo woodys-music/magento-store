@@ -21,6 +21,11 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
         $this->_init('M2ePro/Ebay_Template_Return');
     }
 
+    public function getNick()
+    {
+        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_RETURN;
+    }
+
     // ########################################
 
     public function isLocked()
@@ -149,13 +154,6 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
 
     // #######################################
 
-    public function getNick()
-    {
-        return Ess_M2ePro_Model_Ebay_Template_Manager::TEMPLATE_RETURN;
-    }
-
-    // #######################################
-
     public function getDefaultSettingsSimpleMode()
     {
         return array(
@@ -171,20 +169,6 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
     public function getDefaultSettingsAdvancedMode()
     {
         return $this->getDefaultSettingsSimpleMode();
-    }
-
-    // #######################################
-
-    public function save()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_return');
-        return parent::save();
-    }
-
-    public function delete()
-    {
-        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_return');
-        return parent::delete();
     }
 
     // #######################################
@@ -227,8 +211,6 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
         return $listingProducts;
     }
 
-    // #######################################
-
     public function setIsNeedSynchronize($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
@@ -259,6 +241,20 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
             ),
             array('id IN ('.implode(',', $ids).')')
         );
+    }
+
+    // #######################################
+
+    public function save()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_return');
+        return parent::save();
+    }
+
+    public function delete()
+    {
+        Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_return');
+        return parent::delete();
     }
 
     // #######################################
