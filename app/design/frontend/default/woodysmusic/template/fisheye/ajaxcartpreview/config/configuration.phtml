@@ -1,6 +1,14 @@
+<?php
+	$isSecure = Mage::app()->getStore()->isCurrentlySecure();
+	if ($isSecure) {
+		$feBaseUrl = Mage::getBaseUrl('web', true);
+	} else {
+		$feBaseUrl = Mage::getBaseUrl();
+	}
+?>
 <!--AjaxCartPreview System Variables -->
 <script type="text/javascript">
-	FE_BASE_URL = '<?php echo Mage::getBaseUrl(); ?>';
+	FE_BASE_URL = '<?php echo $feBaseUrl; ?>';
 	FE_AJAXCART_ENABLED = <?php echo Mage::getStoreConfig('ajaxcartpreview/ajaxcart/ajaxcart_enabled'); ?>;
 	FE_CARTPREVIEW_ENABLED = <?php echo Mage::getStoreConfig('ajaxcartpreview/cartpreview/cartpreview_enabled'); ?>;
 	FE_CARTPREVIEW_SHOWMSG = <?php echo Mage::getStoreConfig('ajaxcartpreview/cartpreview/cartpreview_showmsg'); ?>;
