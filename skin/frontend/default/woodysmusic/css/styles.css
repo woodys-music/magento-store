@@ -909,7 +909,7 @@ color:#d83820;
 .price { white-space:nowrap !important; }
 
 .price-box { margin:5px 0 10px; }
-.price-box .price { font-size:13px; font-weight:bold; color:#396f00; }
+.price-box .price { font-size:16px; font-weight:bold; color:#396f00; }
 
 /* Regular price */
 .regular-price { color:#396f00; }
