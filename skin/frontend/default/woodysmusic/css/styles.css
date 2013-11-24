@@ -839,8 +839,8 @@ border-top: 1px solid #f7f7f7;}
 .products-grid .product-name a { color:#444; text-decoration:underline; }
 .products-grid .product-name a:hover { text-decoration:none; }
 .products-grid .price-box { margin:5px 0; }
-.products-grid .availability { line-height:21px; }
-.products-grid .actions { position:absolute; bottom:20px; }
+.products-grid .availability { line-height:21px; width:116px; }
+.products-grid .actions { position:absolute; bottom:20px; padding-left:27px; }
 .3column-layout .col-main { width: 200px; }
 .col2-left-layout .products-grid,
 .col2-right-layout .products-grid { width:730px; margin:0 auto; }
