@@ -835,7 +835,7 @@ border-top: 1px solid #f7f7f7;}
 .products-grid .product-image { display:block; width:170px; height:170px; border:1px none #ddd; border-width:1px 1px 1px 0; margin:0 0 10px; }
 .products-grid.first .product-image { border-top:0; }
 .products-grid li.last .product-image { border-right:0; }
-.products-grid .product-name { font-size:12px; margin:0 0 6px; }
+.products-grid .product-name { font-size:14px; margin:0 0 6px; }
 .products-grid .product-name a { color:#444; text-decoration:underline; }
 .products-grid .product-name a:hover { text-decoration:none; }
 .products-grid .price-box { margin:5px 0; }
