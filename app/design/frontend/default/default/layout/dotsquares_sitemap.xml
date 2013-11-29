@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Dotsquares_Sitemap extension
+ * 
+ * NOTICE OF LICENSE
+ * 
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ * 
+ * @category   	Dotsquares
+ * @package		Dotsquares_Sitemap
+ * @copyright  	Copyright (c) 2013
+ * @license		http://opensource.org/licenses/mit-license.php MIT License
+ */
+-->
+<layout>
+	<default>
+		<reference name="footer_links">
+            <action method="addLink" translate="label title" module="sitemap" ifconfig="site_map/sitemap/enable_sitemap">
+                <label>Advanced Sitemap</label>
+                <url helper="sitemap/data/getSitemapUrl" />
+                <title>Advanced Sitemap</title>
+            </action>
+        </reference>
+	</default>
+	<sitemap_index_index translate="label" module="sitemap">
+		<label>Sitemap</label>
+		<reference name="root">
+			<action method="setTemplate"><template>page/1column.phtml</template></action>
+		</reference>
+		<reference name="content">
+			<block type="sitemap/view" name="site_map" template="sitemap/view.phtml" />
+		</reference>
+	</sitemap_index_index>
+</layout>

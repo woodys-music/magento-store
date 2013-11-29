@@ -1,0 +1,138 @@
+<?php 
+/**
+ * Dotsquares_Sitemap extension
+ * 
+ * NOTICE OF LICENSE
+ * 
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ * 
+ * @category   	Dotsquares
+ * @package		Dotsquares_Sitemap
+ * @copyright  	Copyright (c) 2013
+ * @license		http://opensource.org/licenses/mit-license.php MIT License
+ */
+/**
+ * Sitemap view template
+ *
+ * @category	Dotsquares
+ * @package		Dotsquares_Sitemap
+ * @author 		Pankaj Pareek
+ */
+ 
+echo $this->getMessagesBlock()->getGroupedHtml();
+$sitemapHelper = Mage::helper('sitemap');
+$externalLinks = $this->getExternalUrl();
+$userLinks = $this->getUserLinks();
+?>
+<link rel="stylesheet" type="text/css" href="<?php echo $this->getSkinUrl('css/sitemap-style.css'); ?>" media="all" />
+<div class="page-title">
+<h1><?php echo $this->__('Site Map'); ?></h1>
+</div>
+<div class="sitemap-view">
+
+<?php
+$pagesCollection = $sitemapHelper->getCmsPages();
+	if( (is_object($pagesCollection) && $pagesCollection->count()) || count($externalLinks) > 0):
+?>
+	  <h3><?php echo $this->__('Pages'); ?></h3>
+	  <ul>
+		<?php foreach($pagesCollection as $item): ?>
+			<li><a href="<?php echo Mage::getUrl($item->getIdentifier()); ?>" title="<?php echo $item->getTitle(); ?>"><?php echo $item->getTitle(); ?></a></li>
+		<?php endforeach; ?>
+		
+		
+		<?php foreach($userLinks as $links): ?>
+			<li><a href="<?php echo $links['link']; ?>" title="<?php echo $links['title']; ?>"><?php echo $links['title']; ?></a></li>
+		<?php endforeach; ?>
+		
+		<?php foreach($externalLinks as $links): ?>
+			<li><a href="<?php echo $links['link']; ?>" title="<?php echo $links['title']; ?>"><?php echo $links['title']; ?></a></li>
+		<?php endforeach; ?>
+		
+	  </ul>
+<?php endif; ?>
+
+<?php
+	$isShowDependent = Mage::getstoreConfig('site_map/sitemap/show_dependent');
+	if(!$isShowDependent):  //Not Dependent View 
+?>
+
+<?php
+	//Category Section Start
+	$categoryCollection = $sitemapHelper->getCategories();
+	if(is_object($categoryCollection) && $categoryCollection->count()):
+?>
+		<h3><?php echo $this->__('Categories'); ?></h3>
+		<ul class="sub-cat">
+			<?php foreach($categoryCollection as $_item): ?>
+				<li><a href="<?php echo $this->getItemUrl($_item) ?>" title="<?php echo $this->escapeHtml($_item->name) ?>"><?php echo $this->escapeHtml($_item->name) ?></a></li>
+			<?php endforeach; ?>
+		</ul>
+<?php
+	endif;
+	//Category Section End
+?>
+
+<?php
+	//Product Section Start
+	$productsCollection = $sitemapHelper->getProducts();
+	if(is_object($productsCollection) && $productsCollection->count()):
+?>
+	<h3><?php echo $this->__('Products'); ?></h3>
+	<ul>
+		<?php foreach($productsCollection as $_item): ?>
+			<li><a href="<?php echo $this->getProductUrl($_item) ?>" title="<?php echo $this->escapeHtml($_item->name) ?>"><?php echo $this->escapeHtml($_item->name) ?></a></li>
+		<?php endforeach; ?>
+	</ul>
+<?php
+	endif;
+	//Product Section End
+?>
+
+
+<?php else:  // Dependent View 
+
+	$categoryCollection = $sitemapHelper->getParentCategories();
+?>
+  
+  <h3><?php echo $this->__('Catalog'); ?></h3>
+
+	<?php foreach($categoryCollection as $_item): //Parent Category ?>
+
+	<ul class="sitemap-main-cat">
+		<li><a href="<?php echo $this->getItemUrl($_item) ?>" title="<?php echo $this->escapeHtml($_item->name) ?>"><?php echo $this->escapeHtml($_item->name) ?></a></li>
+		
+		<?php
+			//All Sub Category N Level 
+			$childCollectionIds = $sitemapHelper->getAllChildCategories($_item->getId()); 
+			if(!empty($childCollectionIds)) { 
+				$categoriesId = array_merge($childCollectionIds, array($_item->getId()));
+		?>
+			  <ul class="sitemap-sub-cat">
+			   <?php 
+					foreach($childCollectionIds as $catId):
+					$subCategory = Mage::getModel('catalog/category')->load($catId);
+				?>
+						<li><a href="<?php echo $this->getItemUrl($subCategory) ?>" title="<?php echo $this->escapeHtml($subCategory->name) ?>"><?php echo $this->escapeHtml($subCategory->name) ?></a></li>
+				<?php endforeach; ?>
+				
+			  </ul>
+		<?php } ?>
+      
+		<?php 
+			//All Associated Products 
+			$productcollection = $sitemapHelper->getProductCollection($categoriesId);
+		?>
+		  <ul class="sitemap-assoc-product">
+			<?php foreach($productcollection as $_item): ?>
+				<li><a href="<?php echo $this->getProductUrl($_item) ?>" title="<?php echo $this->escapeHtml($_item->name) ?>"><?php echo $this->escapeHtml($_item->name) ?></a></li>
+			<?php endforeach; ?>
+		  </ul>
+	</ul>
+	<?php endforeach; ?>
+  <?php endif;
+?>
+</div>

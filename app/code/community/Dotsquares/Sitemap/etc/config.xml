@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Dotsquares_Sitemap extension
+ * 
+ * NOTICE OF LICENSE
+ * 
+ * This source file is subject to the MIT License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/mit-license.php
+ * 
+ * @category   	Dotsquares
+ * @package		Dotsquares_Sitemap
+ * @copyright  	Copyright (c) 2013
+ * @license		http://opensource.org/licenses/mit-license.php MIT License
+ * @author		Pankaj Pareek <pankaj.pareek@dotsquares.com>
+ */
+-->
+<config>
+	<modules>
+		<Dotsquares_Sitemap>
+			<version>0.1.0</version>
+		</Dotsquares_Sitemap>
+	</modules>
+	<global>
+		<blocks>
+			<sitemap>
+				<class>Dotsquares_Sitemap_Block</class>
+			</sitemap>
+		</blocks>
+		<helpers>
+			<sitemap>
+				<class>Dotsquares_Sitemap_Helper</class>
+			</sitemap>
+		</helpers>
+		<resources>
+			<dotsquares_sitemap_setup>
+				<setup>
+					<module>Dotsquares_Sitemap</module>
+					<class>Dotsquares_Sitemap_Model_Resource_Setup</class>
+				</setup>
+			</dotsquares_sitemap_setup>
+		</resources>
+	</global>
+	<adminhtml> 
+        <events>
+            <adminhtml_cms_page_edit_tab_main_prepare_form>
+                <observers> 
+                    <dotsquares_sitemap_observer>
+                        <type>model</type>
+                        <class>Dotsquares_Sitemap_Model_Observer</class>
+                        <method>extendForm</method>
+                    </dotsquares_sitemap_observer>
+                </observers>
+            </adminhtml_cms_page_edit_tab_main_prepare_form>
+		</events>
+     </adminhtml>
+	 <default>
+		<site_map>
+			<sitemap>
+				<enable_sitemap>1</enable_sitemap>
+				<show_cms>1</show_cms>
+				<show_dependent>0</show_dependent>
+				<show_products>1</show_products>
+				<show_category>1</show_category>
+			</sitemap>
+		</site_map>
+	</default>
+	<frontend>
+		<routers>
+			<sitemap>
+				<use>standard</use>
+				<args>
+					<module>Dotsquares_Sitemap</module>
+					<frontName>sitemap</frontName>
+				</args>
+			</sitemap>
+		</routers>
+		<layout>
+			<updates>
+				<sitemap>
+					<file>dotsquares_sitemap.xml</file>
+				</sitemap>
+			</updates>
+		</layout>
+		<translate>
+			<modules>
+				<Dotsquares_Sitemap>
+					<files>
+						<default>Dotsquares_Sitemap.csv</default>
+					</files>
+				</Dotsquares_Sitemap>
+			</modules>
+		</translate>
+	</frontend>
+</config>
