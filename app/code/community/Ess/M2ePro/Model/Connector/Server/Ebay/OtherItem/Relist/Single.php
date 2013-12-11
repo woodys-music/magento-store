@@ -9,6 +9,10 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_OtherItem_Relist_Single
 {
     // ########################################
 
+    private $mayBeDuplicateWasCreated = false;
+
+    // ########################################
+
     protected function getCommand()
     {
         return array('item','update','relist');
@@ -55,47 +59,101 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_OtherItem_Relist_Single
 
     protected function prepareResponseData($response)
     {
-        if ($this->resultType != parent::MESSAGE_TYPE_ERROR) {
+        if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
+            $this->checkTheDuplicateWasCreated();
+            return $response;
+        }
 
-            $tempParams = array(
-                'ebay_item_id' => $response['ebay_item_id'],
-                'start_date_raw' => $response['ebay_start_date_raw'],
-                'end_date_raw' => $response['ebay_end_date_raw']
+        $tempParams = array(
+            'ebay_item_id' => $response['ebay_item_id'],
+            'start_date_raw' => $response['ebay_start_date_raw'],
+            'end_date_raw' => $response['ebay_end_date_raw']
+        );
+
+        if ($response['already_active']) {
+
+            $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
+            Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
+                        ->updateAfterRelistAction($this->otherListing, $this->nativeRequestData,
+                                                array_merge($this->params,$tempParams));
+
+            $message = array(
+                // Parser hack -> Mage::helper('M2ePro')->__('Item already was started on eBay');
+                parent::MESSAGE_TEXT_KEY => 'Item already was started on eBay',
+                parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR
             );
 
-            if ($response['already_active']) {
+            $this->addProductsLogsMessage($this->otherListing, $message,
+                                          Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
+        } else {
 
-                $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
-                Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
-                            ->updateAfterRelistAction($this->otherListing, $this->nativeRequestData,
-                                                    array_merge($this->params,$tempParams));
+            Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
+                        ->updateAfterRelistAction($this->otherListing, $this->nativeRequestData,
+                                                  array_merge($this->params,$tempParams));
 
-                $message = array(
-                    // Parser hack -> Mage::helper('M2ePro')->__('Item already was started on eBay');
-                    parent::MESSAGE_TEXT_KEY => 'Item already was started on eBay',
-                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR
-                );
+            $message = array(
+                // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully relisted');
+                parent::MESSAGE_TEXT_KEY => 'Item was successfully relisted',
+                parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_SUCCESS
+            );
 
-                $this->addProductsLogsMessage($this->otherListing, $message,
-                                              Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-            } else {
-
-                Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
-                            ->updateAfterRelistAction($this->otherListing, $this->nativeRequestData,
-                                                      array_merge($this->params,$tempParams));
-
-                $message = array(
-                    // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully relisted');
-                    parent::MESSAGE_TEXT_KEY => 'Item was successfully relisted',
-                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_SUCCESS
-                );
-
-                $this->addProductsLogsMessage($this->otherListing, $message,
-                                              Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-            }
+            $this->addProductsLogsMessage($this->otherListing, $message,
+                                          Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         }
 
         return $response;
+    }
+
+    // ########################################
+
+    protected function processResponseInfo($responseInfo)
+    {
+        try {
+            parent::processResponseInfo($responseInfo);
+        } catch (Exception $exception) {
+
+            $message = array(
+                parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR,
+                parent::MESSAGE_TEXT_KEY => $exception->getMessage()
+            );
+
+            $this->addProductsLogsMessage($this->otherListing, $message,
+                                          Ess_M2ePro_Model_Log_Abstract::PRIORITY_HIGH);
+
+            if (strpos($exception->getMessage(), 'code:34') === false ||
+                $this->account->getChildObject()->isModeSandbox()) {
+                throw $exception;
+            }
+
+            $this->mayBeDuplicateWasCreated = true;
+        }
+    }
+
+    protected function checkTheDuplicateWasCreated()
+    {
+        if (!$this->mayBeDuplicateWasCreated) {
+            return;
+        }
+
+        $productAdditionalData = $this->otherListing->getAdditionalData();
+        $productAdditionalData['last_failed_action_data'] = array(
+            'native_request_data' => $this->nativeRequestData,
+            'previous_status' => $this->otherListing->getStatus(),
+            'action' => Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_RELIST,
+            'request_time' => Mage::helper('M2ePro')->getCurrentGmtDate(),
+        );
+
+        $this->otherListing->addData(array(
+            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_BLOCKED,
+            'additional_data' => json_encode($productAdditionalData),
+        ))->save();
+
+        $message = array(
+            parent::MESSAGE_TEXT_KEY => 'An error occured while listing the item. '.
+                'The item has been blocked. The next M2E Synchronization will resolve the problem.',
+            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING,
+        );
+        $this->addProductsLogsMessage($this->otherListing, $message);
     }
 
     // ########################################

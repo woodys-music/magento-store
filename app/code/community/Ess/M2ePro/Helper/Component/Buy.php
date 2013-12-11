@@ -76,7 +76,7 @@ class Ess_M2ePro_Helper_Component_Buy extends Mage_Core_Helper_Abstract
 
         $domain = $this->getCachedObject('Marketplace',$marketplaceId)->getUrl();
 
-        return 'http://'.$domain.'/pr/SellerListings.aspx?sku='.$productId;
+        return 'http://'.$domain.'/prod/'.$productId.'.html';
     }
 
     // ########################################

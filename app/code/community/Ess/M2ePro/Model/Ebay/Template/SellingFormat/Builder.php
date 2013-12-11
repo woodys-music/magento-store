@@ -186,6 +186,10 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat_Builder
             $prepared['charity'] = json_encode($src);
         }
 
+        if (isset($data['ignore_variations'])) {
+            $prepared['ignore_variations'] = (int)$data['ignore_variations'];
+        }
+
         return $prepared;
     }
 

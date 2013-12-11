@@ -55,9 +55,10 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
             !$this->getRequest()->isXmlHttpRequest()) {
 
             $lockNotification = $this->addLockNotifications();
+            $browserNotification = $this->addBrowserNotifications();
             $maintenanceNotification = $this->addMaintenanceNotifications();
 
-            $muteMessages = $lockNotification || $maintenanceNotification;
+            $muteMessages = $lockNotification || $browserNotification || $maintenanceNotification;
 
             if (!$muteMessages &&
                 Mage::helper('M2ePro/Module_Wizard')->isFinished(
@@ -78,7 +79,6 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
             }
 
             $this->addServerNotifications();
-            $this->addBrowserNotifications();
 
             if (!$muteMessages) {
                 $this->getCustomViewControllerHelper()->addMessages($this);
@@ -94,14 +94,10 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
             !$this->getRequest()->isPost() &&
             !$this->getRequest()->isXmlHttpRequest()) {
 
-            if (Mage::helper('M2ePro/Module')->isLockedByServer()) {
+            if ($this->isContentLocked()) {
                 return $this;
             }
 
-            if (Mage::helper('M2ePro/Module_Maintenance')->isEnabled() &&
-                !Mage::helper('M2ePro/Module_Maintenance')->isOwner()) {
-                return $this;
-            }
         }
 
         return parent::_addContent($block);
@@ -204,11 +200,11 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
 
     private function addBrowserNotifications()
     {
-        // Check MS Internet Explorer 6
-        if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 6.') !== false) {
-            $warning = 'Magento and M2E Pro has Internet Explorer 7 as minimal browser requirement. ';
-            $warning .= 'Please upgrade your browser.';
-            $this->_getSession()->addWarning(Mage::helper('M2ePro')->__($warning));
+        if (Mage::helper('M2ePro/Client')->isBrowserIE()) {
+            $this->_getSession()->addError(Mage::helper('M2ePro')->__(
+                'We are sorry, Internet Explorer browser is not supported. Please, use
+                 another browser (Mozilla Firefox, Google Chrome, etc.).'
+            ));
             return true;
         }
         return false;
@@ -537,6 +533,18 @@ abstract class Ess_M2ePro_Controller_Adminhtml_MainController
         $this->getLayout()->getBlock('content')->append(
             $this->getLayout()->createBlock('M2ePro/adminhtml_requirementsPopup')
         );
+    }
+
+    //#############################################
+
+    private function isContentLocked()
+    {
+        return Mage::helper('M2ePro/Client')->isBrowserIE() ||
+               Mage::helper('M2ePro/Module')->isLockedByServer() ||
+               (
+                   Mage::helper('M2ePro/Module_Maintenance')->isEnabled() &&
+                   !Mage::helper('M2ePro/Module_Maintenance')->isOwner()
+               );
     }
 
     //#############################################

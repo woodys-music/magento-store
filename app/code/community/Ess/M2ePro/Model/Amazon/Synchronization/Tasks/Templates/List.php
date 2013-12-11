@@ -85,12 +85,17 @@ class Ess_M2ePro_Model_Amazon_Synchronization_Tasks_Templates_List
 
     private function execute()
     {
-        $this->immediatelyChangedProducts();
+        $tasks = array(
+            'immediatelyChangedProducts',
+            'immediatelyNotCheckedProducts',
+        );
 
-        $this->_lockItem->setPercents(self::PERCENTS_START + 1*self::PERCENTS_INTERVAL/2);
-        $this->_lockItem->activate();
+        foreach ($tasks as $i => $task) {
+            $this->$task();
 
-        $this->immediatelyNotCheckedProducts();
+            $this->_lockItem->setPercents(self::PERCENTS_START + ($i+1)*self::PERCENTS_INTERVAL/count($tasks));
+            $this->_lockItem->activate();
+        }
     }
 
     //####################################

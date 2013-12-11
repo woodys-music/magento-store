@@ -5,8 +5,6 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
     selectedProductsIds: [],
     selectedCategoriesData: {},
 
-    primaryCategoryWasChanged: false,
-
     //----------------------------------
 
     prepareActions: function($super)
@@ -28,9 +26,6 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
     editCategorySettings: function(id)
     {
         this.selectedProductsIds = id ? [id] : this.getSelectedProductsArray();
-        this.primaryCategoryWasChanged = false;
-
-        var primaryCategoryValue = null;
 
         new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing/getCategoryChooserHtml') ,
         {
@@ -45,18 +40,11 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
 
                 this.openPopUp(title, transport.responseText);
 
-                var typeEbayMain = M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::TYPE_EBAY_MAIN');
-
                 $('cancel_button').observe('click', function() { Windows.getFocusedWindow().close(); });
-                primaryCategoryValue = EbayListingCategoryChooserHandlerObj.getSelectedCategory(typeEbayMain)['value'];
 
                 $('done_button').observe('click', function() {
                     if (!EbayListingCategoryChooserHandlerObj.validate()) {
                         return;
-                    }
-
-                    if (primaryCategoryValue != EbayListingCategoryChooserHandlerObj.getSelectedCategory(typeEbayMain)['value']) {
-                        this.primaryCategoryWasChanged = true;
                     }
 
                     this.selectedCategoriesData = EbayListingCategoryChooserHandlerObj.getInternalData();
@@ -79,8 +67,7 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
             parameters : {
                 ids: this.selectedProductsIds.join(','),
                 category_mode: EbayListingCategoryChooserHandlerObj.getSelectedCategory(typeEbayMain)['mode'],
-                category_value: EbayListingCategoryChooserHandlerObj.getSelectedCategory(typeEbayMain)['value'],
-                category_was_changed: +this.primaryCategoryWasChanged
+                category_value: EbayListingCategoryChooserHandlerObj.getSelectedCategory(typeEbayMain)['value']
             },
             onSuccess: function (transport)
             {
@@ -131,11 +118,12 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
 
     //----------------------------------
 
-    openPopUp: function(title, content)
+    openPopUp: function(title, content, params)
     {
         var self = this;
+        params = params || {};
 
-        var config = {
+        var config = Object.extend({
             draggable: true,
             resizable: true,
             closable: true,
@@ -155,7 +143,7 @@ EbayListingViewGridHandler = Class.create(ListingGridHandler, {
 
                 return true;
             }
-        };
+        }, params);
 
         try {
             if (!Windows.getFocusedWindow() || !$('modal_dialog_message')) {

@@ -35,7 +35,7 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Template_Category_Collection
         }
 
         $this->getSelect()->where($where);
-        $this->getSelect()->order('id DESC');
+        $this->getSelect()->order('create_date DESC');
 
         $templates = array();
         /* @var $template Ess_M2ePro_Model_Ebay_Template_Category */

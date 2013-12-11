@@ -55,7 +55,7 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Dispatcher
             foreach ($newSkuProducts as $newSkuProductsTemp) {
                 $sortedProductsNewSkuData = $this->sortProductsByAccountAndMarketplace($newSkuProductsTemp);
                 $results[] = $this->processGroupedProducts($sortedProductsNewSkuData,
-                                                            100,
+                                                            10,
                                                             'Ess_M2ePro_Model_Connector_Server_Buy_Product_NewSku_Multiple',
                                                             $params);
             }

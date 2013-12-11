@@ -125,13 +125,13 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
         Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_othercategory');
 
         if (empty($post['specifics_data'])) {
-            $this->setIsNeedSynchronize($oldSnapshots, $categoryModelName);
+            $this->setSynchStatusNeed($oldSnapshots, $categoryModelName);
             return;
         }
 
         $specificsData = json_decode($post['specifics_data'], true);
         if (empty($specificsData)) {
-            $this->setIsNeedSynchronize($oldSnapshots, $categoryModelName);
+            $this->setSynchStatusNeed($oldSnapshots, $categoryModelName);
             return;
         }
 
@@ -169,7 +169,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
         Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_category');
         Mage::helper('M2ePro/Data_Cache')->removeTagValues('ebay_template_othercategory');
 
-        $this->setIsNeedSynchronize($oldSnapshots, $categoryModelName);
+        $this->setSynchStatusNeed($oldSnapshots, $categoryModelName);
     }
 
     //#############################################
@@ -217,8 +217,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
                             ->addRecent(
                                 $selectedCategory['value'],
                                 $marketplaceId,
-                                $type,
-                                $selectedCategory['path']
+                                $type
                             );
                     } elseif (in_array($type, $storeCategoryTypes)) {
                         $selectedCategory['path'] = Mage::helper('M2ePro/Component_Ebay_Category_Store')
@@ -233,8 +232,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
                             ->addRecent(
                                 $selectedCategory['value'],
                                 $accountId,
-                                $type,
-                                $selectedCategory['path']
+                                $type
                             );
                     }
 
@@ -295,6 +293,8 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
         $accountId = $this->getRequest()->getParam('account_id');
         //------------------------------
 
+        Mage::helper('M2ePro/Data_Global')->setValue('chooser_category_type', $categoryType);
+
         //------------------------------
         $editBlock = $this->getLayout()->createBlock('M2ePro/adminhtml_ebay_listing_category_chooser_edit');
         $editBlock->setCategoryType($categoryType);
@@ -304,13 +304,14 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
 
         if (in_array($categoryType, $ebayCategoryTypes)) {
             $recentCategories = Mage::helper('M2ePro/Component_Ebay_Category')->getRecent(
-                $marketplaceId, $categoryType
+                $marketplaceId, $categoryType, $selectedValue
             );
         } else {
             $recentCategories = Mage::helper('M2ePro/Component_Ebay_Category')->getRecent(
-                $accountId, $categoryType
+                $accountId, $categoryType, $selectedValue
             );
         }
+
         if (empty($recentCategories)) {
             Mage::helper('M2ePro/Data_Global')->setValue('category_chooser_hide_recent', true);
         }
@@ -530,19 +531,26 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
         $selectedCategory = $this->getRequest()->getParam('selected_category');
 
         if (in_array($categoryType, Mage::helper('M2ePro/Component_Ebay_Category')->getEbayCategoryTypes())) {
-            $categories = Mage::helper('M2ePro/Component_Ebay_Category')->getRecent($marketplaceId, $categoryType);
+            $categories = Mage::helper('M2ePro/Component_Ebay_Category')->getRecent(
+                $marketplaceId, $categoryType, $selectedCategory
+            );
         } else {
-            $categories = Mage::helper('M2ePro/Component_Ebay_Category')->getRecent($accountId, $categoryType);
-        }
-
-        if (!is_null($selectedCategory) && isset($categories[(int)$selectedCategory])) {
-            unset($categories[(int)$selectedCategory]);
+            $categories = Mage::helper('M2ePro/Component_Ebay_Category')->getRecent(
+                $accountId, $categoryType, $selectedCategory
+            );
         }
 
         $this->getResponse()->setBody(json_encode($categories));
     }
 
     //#############################################
+
+    public function refreshStoreCategoriesAction()
+    {
+        $accountId = (int)$this->getRequest()->getParam('account_id');
+
+        Mage::getModel('M2ePro/Ebay_Account')->loadInstance($accountId)->updateEbayStoreInfo();
+    }
 
     public function getAttributeTypeAction()
     {
@@ -786,7 +794,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
         return $templateIds;
     }
 
-    private function setIsNeedSynchronize($oldSnapshots, $categoryModelName)
+    private function setSynchStatusNeed($oldSnapshots, $categoryModelName)
     {
         if (empty($oldSnapshots)) {
             return;
@@ -794,7 +802,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
 
         foreach ($oldSnapshots as $templateId => $oldSnapshot) {
             $model = Mage::getModel('M2ePro/Ebay_Template_' . $categoryModelName)->loadInstance((int)$templateId);
-            $model->setIsNeedSynchronize($model->getDataSnapshot(), $oldSnapshot);
+            $model->setSynchStatusNeed($model->getDataSnapshot(), $oldSnapshot);
         }
     }
 

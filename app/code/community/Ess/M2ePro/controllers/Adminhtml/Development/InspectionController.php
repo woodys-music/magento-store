@@ -38,7 +38,7 @@ class Ess_M2ePro_Adminhtml_Development_InspectionController
             return $this->_redirect('*/*/cronScheduleTable');
         }
 
-        exit(Mage::getModel('cron/schedule')->load($id)->getMessages());
+        return $this->getResponse()->setBody(Mage::getModel('cron/schedule')->load($id)->getMessages());
     }
 
     //#############################################

@@ -157,12 +157,14 @@ class Ess_M2ePro_Model_Buy_Synchronization_Tasks_Defaults_UpdateListingsProducts
 
             $newData['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
 
-            if ($newData['status'] != $existingItem['status']) {
-
+            if ($newData['status'] != $existingItem['status'] ||
+                $newData['online_qty'] != $existingItem['online_qty']) {
                 Mage::getModel('M2ePro/ProductChange')->addUpdateAction(
-                    $existingItem['product_id'],
-                    Ess_M2ePro_Model_ProductChange::CREATOR_TYPE_SYNCHRONIZATION
+                    $existingItem['product_id'], Ess_M2ePro_Model_ProductChange::CREATOR_TYPE_SYNCHRONIZATION
                 );
+            }
+
+            if ($newData['status'] != $existingItem['status']) {
 
                 $tempLogMessage = '';
                 switch ($newData['status']) {

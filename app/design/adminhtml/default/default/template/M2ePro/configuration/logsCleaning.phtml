@@ -38,6 +38,15 @@
     .columns .form-list td.value {
         width: 280px;
     }
+
+    .columns .form-list td:nth-child(3) {
+        width: 16px;
+    }
+
+    .columns .form-list td:nth-child(4) {
+        width: 90px;
+    }
+
 </style>
 
 <form id="<?php echo $this->getForm()->getId(); ?>" action="<?php echo $this->getForm()->getData('action'); ?>" method="post" enctype="multipart/form-data">
@@ -74,13 +83,13 @@
                                 <span><?php echo Mage::helper('M2ePro')->__('Activates log clearing.'); ?></span>
                             </p>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_LISTINGS; ?>_log_button_run_now_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('run_now_'.Ess_M2ePro_Model_Log_Cleaning::LOG_LISTINGS); ?>
                             </div>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_LISTINGS; ?>_log_button_clear_all_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('clear_all_'.Ess_M2ePro_Model_Log_Cleaning::LOG_LISTINGS); ?>
@@ -142,13 +151,13 @@
                                 <span><?php echo Mage::helper('M2ePro')->__('Activates log clearing.'); ?></span>
                             </p>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_OTHER_LISTINGS; ?>_log_button_run_now_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('run_now_'.Ess_M2ePro_Model_Log_Cleaning::LOG_OTHER_LISTINGS); ?>
                             </div>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_OTHER_LISTINGS; ?>_log_button_clear_all_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('clear_all_'.Ess_M2ePro_Model_Log_Cleaning::LOG_OTHER_LISTINGS); ?>
@@ -210,13 +219,13 @@
                                 <span><?php echo Mage::helper('M2ePro')->__('Activates log clearing.'); ?></span>
                             </p>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_SYNCHRONIZATIONS; ?>_log_button_run_now_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('run_now_'.Ess_M2ePro_Model_Log_Cleaning::LOG_SYNCHRONIZATIONS); ?>
                             </div>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_SYNCHRONIZATIONS; ?>_log_button_clear_all_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('clear_all_'.Ess_M2ePro_Model_Log_Cleaning::LOG_SYNCHRONIZATIONS); ?>
@@ -278,13 +287,13 @@
                                 <span><?php echo Mage::helper('M2ePro')->__('Activates log clearing.'); ?></span>
                             </p>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_ORDERS; ?>_log_button_run_now_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('run_now_'.Ess_M2ePro_Model_Log_Cleaning::LOG_ORDERS); ?>
                             </div>
                         </td>
-                        <td>
+                        <td class="value">
                             <div id="<?php echo Ess_M2ePro_Model_Log_Cleaning::LOG_ORDERS; ?>_log_button_clear_all_container">
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                 <?php echo $this->getChildHtml('clear_all_'.Ess_M2ePro_Model_Log_Cleaning::LOG_ORDERS); ?>

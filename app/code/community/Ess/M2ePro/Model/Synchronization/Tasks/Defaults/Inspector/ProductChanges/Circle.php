@@ -4,11 +4,12 @@
  * @copyright  Copyright (c) 2013 by  ESS-UA.
  */
 
-class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_Circle extends Ess_M2ePro_Model_Synchronization_Tasks
+class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_ProductChanges_Circle
+    extends Ess_M2ePro_Model_Synchronization_Tasks
 {
     const PERCENTS_START = 65;
-    const PERCENTS_END = 100;
-    const PERCENTS_INTERVAL = 35;
+    const PERCENTS_END = 85;
+    const PERCENTS_INTERVAL = 20;
 
     //####################################
 
@@ -37,19 +38,19 @@ class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_Circle extends E
         $this->_lockItem->activate();
 
         $this->_profiler->addEol();
-        $this->_profiler->addTitle('Inspector Actions');
+        $this->_profiler->addTitle('Product Changes');
         $this->_profiler->addTitle('--------------------------');
         $this->_profiler->addTimePoint(__CLASS__,'Total time');
         $this->_profiler->increaseLeftPadding(5);
 
         $this->_lockItem->setPercents(self::PERCENTS_START);
-        $this->_lockItem->setStatus(Mage::helper('M2ePro')->__('The "Inspector" action is started. Please wait...'));
+        $this->_lockItem->setStatus(Mage::helper('M2ePro')->__('The "Product Changes" action is started. Please wait...'));
     }
 
     private function cancelSynch()
     {
         $this->_lockItem->setPercents(self::PERCENTS_END);
-        $this->_lockItem->setStatus(Mage::helper('M2ePro')->__('The "Inspector" action is finished. Please wait...'));
+        $this->_lockItem->setStatus(Mage::helper('M2ePro')->__('The "Product Changes" action is finished. Please wait...'));
 
         $this->_profiler->decreaseLeftPadding(5);
         $this->_profiler->addTitle('--------------------------');
@@ -121,14 +122,14 @@ class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_Circle extends E
     private function getMinIntervalBetweenCircles()
     {
         return (int)Mage::helper('M2ePro/Module')
-                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/circle',
+                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/product_changes/circle',
                                                                 'min_interval_between_circles');
     }
 
     private function getMaxCountTimesForFullCircle()
     {
         return (int)Mage::helper('M2ePro/Module')
-                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/circle',
+                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/product_changes/circle',
                                                                 'max_count_times_for_full_circle');
     }
 
@@ -137,14 +138,14 @@ class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_Circle extends E
     private function getMinCountItemsPerOneTime()
     {
         return (int)Mage::helper('M2ePro/Module')
-                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/circle',
+                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/product_changes/circle',
                                                                 'min_count_items_per_one_time');
     }
 
     private function getMaxCountItemsPerOneTime()
     {
         return (int)Mage::helper('M2ePro/Module')
-                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/circle',
+                    ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/product_changes/circle',
                                                                 'max_count_items_per_one_time');
     }
 
@@ -153,14 +154,14 @@ class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_Circle extends E
     private function getLastListingProductId()
     {
         return Mage::helper('M2ePro/Module')
-                ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/circle',
+                ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/product_changes/circle',
                                                             'last_listing_product_id');
     }
 
     private function setLastListingProductId($listingProductId)
     {
         Mage::helper('M2ePro/Module')
-            ->getSynchronizationConfig()->setGroupValue('/defaults/inspector/circle',
+            ->getSynchronizationConfig()->setGroupValue('/defaults/inspector/product_changes/circle',
                                                         'last_listing_product_id',
                                                         (int)$listingProductId);
     }
@@ -170,14 +171,14 @@ class Ess_M2ePro_Model_Synchronization_Tasks_Defaults_Inspector_Circle extends E
     private function getLastTimeStartCircle()
     {
         return Mage::helper('M2ePro/Module')
-                   ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/circle',
+                   ->getSynchronizationConfig()->getGroupValue('/defaults/inspector/product_changes/circle',
                                                                'last_time_start_circle');
     }
 
     private function resetLastTimeStartCircle()
     {
         Mage::helper('M2ePro/Module')
-            ->getSynchronizationConfig()->setGroupValue('/defaults/inspector/circle',
+            ->getSynchronizationConfig()->setGroupValue('/defaults/inspector/product_changes/circle',
                                                         'last_time_start_circle',
                                                         Mage::helper('M2ePro')->getCurrentGmtDate());
     }

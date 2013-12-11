@@ -56,7 +56,7 @@
 
     M2ePro.translator.add(<?php echo $translations ?>);
 
-    Event.observe(window, 'load', function() {
+    var init = function() {
 
         EbayMotorSpecificHandlerObj = new EbayMotorSpecificHandler(
             <?php echo (int)$this->getRequest()->getParam('id') ?>,
@@ -66,12 +66,33 @@
         );
 
         EbayMotorSpecificHandlerObj.initPopUp('<?php echo Mage::helper('M2ePro')->escapeJs(Mage::helper('M2ePro')->__('Add Compatible Vehicles')); ?>', 'pop_up_content');
+    };
 
-    });
+    <?php if ($this->getRequest()->isXmlHttpRequest()): ?>
+        init();
+    <?php else: ?>
+        Event.observe(window, 'load', init);
+    <?php endif; ?>
 
 </script>
 
+<?php if (!$this->getRequest()->isXmlHttpRequest()): ?>
 <div id="pop_up_content" style="display: none;">
+
+    <div class="content-header skip-header">
+        <table cellspacing="0">
+            <tbody>
+            <tr>
+                <td style="width: 50%;">
+                    <h3 class="icon-head head-adminhtml-ebay-template-general-motor-specific">
+                        <?php echo Mage::helper('M2ePro')->__('Add Vehicles') ?>
+                    </h3>
+                </td>
+                <td class="form-buttons"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div id="block_notice_motors_specifics_generate_attribute_value" class="block_notices_module" title="<?php echo Mage::helper('M2ePro')->__('Add Compatible Vehicles'); ?>" style="margin-top: 15px;">
 
@@ -80,7 +101,6 @@
 <ul class=list>
     <li><b>Overwrite ePIDs in Compatibility Attribute</b> - replaces items ePIDs in the Compatibility Attribute chosen in %s > Configuration > <a target="_blank" href="%s">General</a> with selected ones.</li>
     <li><b>Add ePIDs to Compatibility Attribute</b> - adds selected items ePIDs to existing ones in Compatibility Attribute chosen in the General settings.</li>
-    <li><b>Show ePIDs</b> - displays selected items ePIDs in the text field.</li>
 </ul>
 <b>Note:</b> Compatibility items can not be replaced or removed from eBay.',
             Mage::helper('M2ePro/View_Ebay')->getMenuRootNodeLabel(),
@@ -109,24 +129,10 @@
     <div class="hor-scroll">
 
         <div id="specifics">
-            <div class="content-header skip-header">
-                <table cellspacing="0">
-                    <tbody>
-                        <tr>
-                            <td style="width: 50%;">
-                                <h3 class="icon-head head-adminhtml-ebay-template-general-motor-specific">
-                                    <?php echo Mage::helper('M2ePro')->__('Add Vehicles') ?>
-                                </h3>
-                            </td>
-                            <td class="form-buttons"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
             <div id="specifics_grid_container"></div>
         </div>
 
     </div>
 
 </div>
+<?php endif; ?>

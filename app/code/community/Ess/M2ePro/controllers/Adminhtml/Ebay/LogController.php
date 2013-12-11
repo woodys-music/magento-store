@@ -67,7 +67,7 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
         $model = Mage::getModel('M2ePro/Listing')->load($id);
 
         if (!$model->getId() && $id) {
-            exit();
+            return;
         }
 
         Mage::helper('M2ePro/Data_Global')->setValue('temp_data', $model->getData());
@@ -110,7 +110,7 @@ class Ess_M2ePro_Adminhtml_Ebay_LogController extends Ess_M2ePro_Controller_Admi
         $model = Mage::getModel('M2ePro/Listing_Other')->load($id);
 
         if (!$model->getId() && $id) {
-            exit();
+            return;
         }
 
         Mage::helper('M2ePro/Data_Global')->setValue('temp_data', $model->getData());

@@ -177,6 +177,16 @@ class Ess_M2ePro_Model_Ebay_Order extends Ess_M2ePro_Model_Component_Child_Ebay_
         return $trackingDetails;
     }
 
+    public function getGlobalShippingDetails()
+    {
+        return $this->getSettings('global_shipping_details');
+    }
+
+    public function isUseGlobalShippingProgram()
+    {
+        return count($this->getGlobalShippingDetails()) != 0;
+    }
+
     public function getCurrency()
     {
         return $this->getData('currency');

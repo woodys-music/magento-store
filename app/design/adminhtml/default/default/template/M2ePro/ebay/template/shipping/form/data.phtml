@@ -4,6 +4,16 @@
     $formData = $this->getFormData();
     $default = $this->getDefault();
 
+    /** @var Ess_M2ePro_Helper_Magento_Attribute $magentoAttributeHelper */
+    $magentoAttributeHelper = Mage::helper('M2ePro/Magento_Attribute');
+
+    $attributesByInputTypes = array(
+        'text' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text')),
+        'text_select' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text', 'select')),
+        'text_price' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text', 'price')),
+        'text_weight' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text', 'weight')),
+    );
+
     $formData = array_merge($default, $formData);
     $marketplaceData = $this->getMarketplaceData();
 
@@ -94,6 +104,12 @@
             .observe('change', EbayTemplateShippingHandlerObj.localHandlingCostChange)
             .simulate('change');
 
+        $('dispatch_time')
+            .observe('change', function() {
+                EbayTemplateShippingHandlerObj.dispatchTimeChange(this)
+            })
+            .simulate('change');
+
         if ($('local_shipping_cash_on_delivery_cost_mode')) {
             $('local_shipping_cash_on_delivery_cost_mode')
                 .observe('change', EbayTemplateShippingHandlerObj.cashOnDeliveryCostModeChange);
@@ -102,6 +118,12 @@
         if ($('local_shipping_rate_table_mode')) {
             $('local_shipping_rate_table_mode')
                 .observe('change', EbayTemplateShippingHandlerObj.localRateTableModeChange);
+        }
+
+        if ($('international_trade')) {
+            $('international_trade')
+                .observe('change', EbayTemplateShippingHandlerObj.internationalTradeChange)
+                .simulate('change');
         }
 
         $('international_shipping_mode')
@@ -360,9 +382,9 @@
                                     </optgroup>
                                 <?php endif; ?>
 
-                                <?php if (!empty($this->attributes)) : ?>
+                                <?php if (!empty($attributesByInputTypes['text'])) : ?>
                                     <optgroup label="Magento Attributes" class="simple_mode_disallowed">
-                                        <?php foreach ($this->attributes as $attribute): ?>
+                                        <?php foreach ($attributesByInputTypes['text'] as $attribute): ?>
                                             <option class="simple_mode_disallowed"
                                                     value_hack="<?php echo $attribute['code']; ?>"
                                                     value="<?php echo Ess_M2ePro_Model_Ebay_Template_Shipping::TAX_CATEGORY_MODE_ATTRIBUTE; ?>"
@@ -556,30 +578,52 @@
                     </tr>
                 <?php endif; ?>
 
+                <input type="hidden" id="dispatch_time_mode" name="shipping[dispatch_time_mode]" value="<?php echo $formData['dispatch_time_mode']; ?>">
+                <input type="hidden" id="dispatch_time_value" name="shipping[dispatch_time_value]" value="<?php echo $formData['dispatch_time_value']; ?>">
+                <input type="hidden" id="dispatch_time_attribute" name="shipping[dispatch_time_attribute]" value="<?php echo $formData['dispatch_time_attribute']; ?>">
+
                 <tr class="local-shipping-tr local-shipping-always-visible-tr">
                     <td class="label">
                         <label for="dispatch_time"><?php echo Mage::helper('M2ePro')->__('Dispatch Time'); ?>:</label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <select id="dispatch_time" name="shipping[dispatch_time]" class="M2ePro-required-when-visible">
+                        <select id="dispatch_time" class="M2ePro-required-when-visible">
+
                             <option class="empty"></option>
+
                             <?php
                             $isExceptionHandlingTimes = false;
                             foreach ($marketplaceData['dispatch'] as $index => $dispatchOption) : ?>
+
                                 <?php if($dispatchOption['ebay_id'] > 3 && !$isExceptionHandlingTimes) : ?>
                                     <optgroup label="<?php echo Mage::helper('M2ePro')->__('Exception handling times'); ?>">
                                     <?php $isExceptionHandlingTimes = true; ?>
                                 <?php endif; ?>
-                                <option value="<?php echo $dispatchOption['ebay_id']; ?>" <?php if ($formData['dispatch_time'] == $dispatchOption['ebay_id']): ?>selected="selected"<?php endif; ?>><?php if ($dispatchOption['ebay_id'] == 0) { echo Mage::helper('M2ePro')->__('Same Business Day'); } else { echo Mage::helper('M2ePro')->__(str_replace('Day','Business Day',$dispatchOption['title'])); } ?></option>
+
+                                <option mode="<?php echo Ess_M2ePro_Model_Ebay_Template_Shipping::DISPATCH_TIME_CUSTOM_VALUE; ?>" value="<?php echo $dispatchOption['ebay_id']; ?>" <?php if ($formData['dispatch_time_value'] == $dispatchOption['ebay_id']): ?>selected="selected"<?php endif; ?>><?php if ($dispatchOption['ebay_id'] == 0) { echo Mage::helper('M2ePro')->__('Same Business Day'); } else { echo Mage::helper('M2ePro')->__(str_replace('Day','Business Day',$dispatchOption['title'])); } ?></option>
+
                                 <?php if($dispatchOption['ebay_id'] > 3 && $index == count($dispatchOption) - 1) : ?>
                                     </optgroup>
                                 <?php endif; ?>
+
                             <?php endforeach; ?>
+
+                            <optgroup label="<?php echo Mage::helper('M2ePro')->__('Magento Attributes'); ?>">
+                                <?php if (isset($missingAttributes['dispatch_time_attribute'])): ?>
+                                    <option mode="<?php echo Ess_M2ePro_Model_Ebay_Template_Shipping::DISPATCH_TIME_CUSTOM_ATTRIBUTE; ?>" value="<?php echo $formData['dispatch_time_attribute'] ?>" selected="selected"><?php echo $missingAttributes['dispatch_time_attribute']; ?></option>
+                                <?php endif; ?>
+                                <?php foreach ($attributesByInputTypes['text_select'] as $attribute): ?>
+                                    <option mode="<?php echo Ess_M2ePro_Model_Ebay_Template_Shipping::DISPATCH_TIME_CUSTOM_ATTRIBUTE; ?>" value="<?php echo $attribute['code'] ?>" <?php if ($formData['dispatch_time_attribute'] == $attribute['code'] && $formData['dispatch_time_mode'] == Ess_M2ePro_Model_Ebay_Template_Shipping::DISPATCH_TIME_CUSTOM_ATTRIBUTE): ?>selected="selected"<?php endif; ?> >
+                                        <?php echo $attribute['label']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </optgroup>
+
                         </select>
                         <p class="note">
                             <span>
-                                <?php echo Mage::helper('M2ePro')->__('The dispatch time is the time between the buyer’s payment clearing and you sending the item. Buyers are increasingly expecting short dispatch times, ideally next day, but preferably within 3 working days.
-                                    <br/>Find out more about setting your <a href="http://sellercentre.ebay.co.uk/specify-your-item-location-and-dispatch-time" target="_blank">dispatch time</a>'); ?>
+                                <?php echo Mage::helper('M2ePro')->__('The dispatch time is the time between the buyer’s payment clearing and you sending the item. Buyers are increasingly expecting short dispatch times, ideally next day, but preferably within 3 working days. Click <a href="http://sellercentre.ebay.co.uk/specify-your-item-location-and-dispatch-time" target="_blank">here</a> to find out more.
+                                    <br/><b>Note:</b> Magento Attribute must contain a numeric value. If you want to set \'Same Business Day\' via attribute, set 0 in it.'); ?>
                             </span>
                         </p>
                     </td>
@@ -743,7 +787,7 @@
                                 <?php if (isset($missingAttributes[$attributeCode])): ?>
                                     <option value="<?php echo $formData[$attributeCode] ?>" selected="selected"><?php echo $missingAttributes[$attributeCode]; ?></option>
                                 <?php endif; ?>
-                                <?php foreach ($this->attributes as $attribute): ?>
+                                <?php foreach ($attributesByInputTypes['text_price'] as $attribute): ?>
                                     <option value="<?php echo $attribute['code'] ?>" <?php if ($formData[$attributeCode] == $attribute['code']): ?>selected="selected"<?php endif; ?> >
                                         <?php echo $attribute['label']; ?>
                                     </option>
@@ -797,7 +841,7 @@
                         <label for="international_trade"><?php echo Mage::helper('M2ePro')->__('eBay Site Visibility'); ?>:</label>
                     </td>
                     <td class="value">
-                        <select id="international_trade" name="shipping[international_trade]" onchange="EbayTemplateShippingHandlerObj.internationalTradeChange.call(this);">
+                        <select id="international_trade" name="shipping[international_trade]">
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Shipping::INTERNATIONAL_TRADE_NONE ?>"
                                 <?php if ($formData['international_trade'] == Ess_M2ePro_Model_Ebay_Template_Shipping::INTERNATIONAL_TRADE_NONE): ?>selected="selected"<?php endif; ?> >
                                 <?php echo Mage::helper('M2ePro')->__('None') ?>
@@ -835,6 +879,27 @@
         <div class="hor-scroll">
 
             <table class="form-list" cellspacing="0" cellpadding="0">
+
+                <?php if ($this->canDisplayGlobalShippingProgram()): ?>
+
+                    <tr>
+                        <td class="label">
+                            <label><?php echo Mage::helper('M2ePro')->__('Offer Global Shipping Program'); ?>:</label>
+                        </td>
+                        <td class="value" style="width: auto;">
+                            <select id="global_shipping_program" name="shipping[global_shipping_program]">
+                                <option value="0" <?php if (!$formData['global_shipping_program']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__('No'); ?></option>
+                                <option value="1" <?php if ($formData['global_shipping_program']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
+                            </select>
+                            <p class="note">
+                                <span><?php echo Mage::helper('M2ePro')->__(
+                                'Simplifies selling an item to an international buyer. Click <a href="http://pages.ebay.com/help/sell/shipping-globally.html" target="_blank">here</a> to find out more.'
+                                ); ?></span>
+                            </p>
+                        </td>
+                    </tr>
+
+                <?php endif; ?>
 
                 <tr>
                     <td class="label">
@@ -1124,7 +1189,7 @@
                             <?php if (isset($missingAttributes['package_size_attribute'])): ?>
                                 <option value="<?php echo $formData['package_size_attribute'] ?>" selected="selected"><?php echo $missingAttributes['package_size_attribute']; ?></option>
                             <?php endif; ?>
-                            <?php foreach ($this->attributes as $attribute): ?>
+                            <?php foreach ($attributesByInputTypes['text_select'] as $attribute): ?>
                                 <option value="<?php echo $attribute['code'] ?>" <?php if ($formData['package_size_attribute'] == $attribute['code'] && $formData['package_size_mode'] == Ess_M2ePro_Model_Ebay_Template_Shipping_Calculated::PACKAGE_SIZE_CUSTOM_ATTRIBUTE): ?>selected="selected"<?php endif; ?> >
                                     <?php echo $attribute['label']; ?>
                                 </option>
@@ -1168,7 +1233,7 @@
                             <?php if (isset($missingAttributes[$attributeCode])): ?>
                                 <option value="<?php echo $formData[$attributeCode] ?>" selected="selected"><?php echo $missingAttributes[$attributeCode]; ?></option>
                             <?php endif; ?>
-                            <?php foreach ($this->attributes as $attribute): ?>
+                            <?php foreach ($attributesByInputTypes['text'] as $attribute): ?>
                                 <option value="<?php echo $attribute['code'] ?>" <?php if ($formData[$attributeCode] == $attribute['code']): ?>selected="selected"<?php endif; ?> >
                                     <?php echo $attribute['label']; ?>
                                 </option>
@@ -1183,7 +1248,7 @@
                             <?php if (isset($missingAttributes[$attributeCode])): ?>
                                 <option value="<?php echo $formData[$attributeCode] ?>" selected="selected"><?php echo $missingAttributes[$attributeCode]; ?></option>
                             <?php endif; ?>
-                            <?php foreach ($this->attributes as $attribute): ?>
+                            <?php foreach ($attributesByInputTypes['text'] as $attribute): ?>
                                 <option value="<?php echo $attribute['code'] ?>" <?php if ($formData[$attributeCode] == $attribute['code']): ?>selected="selected"<?php endif; ?> >
                                     <?php echo $attribute['label']; ?>
                                 </option>
@@ -1198,7 +1263,7 @@
                             <?php if (isset($missingAttributes[$attributeCode])): ?>
                                 <option value="<?php echo $formData[$attributeCode] ?>" selected="selected"><?php echo $missingAttributes[$attributeCode]; ?></option>
                             <?php endif; ?>
-                            <?php foreach ($this->attributes as $attribute): ?>
+                            <?php foreach ($attributesByInputTypes['text'] as $attribute): ?>
                                 <option value="<?php echo $attribute['code'] ?>" <?php if ($formData[$attributeCode] == $attribute['code']): ?>selected="selected"<?php endif; ?> >
                                     <?php echo $attribute['label']; ?>
                                 </option>
@@ -1248,7 +1313,7 @@
                             <?php if (isset($missingAttributes['weight_attribute'])): ?>
                                 <option value="<?php echo $formData['weight_attribute'] ?>" selected="selected"><?php echo $missingAttributes['weight_attribute']; ?></option>
                             <?php endif; ?>
-                            <?php foreach ($this->attributes as $attribute): ?>
+                            <?php foreach ($attributesByInputTypes['text_weight'] as $attribute): ?>
                                 <option value="<?php echo $attribute['code'] ?>" <?php if ($formData['weight_attribute'] == $attribute['code'] && $formData['weight_mode'] == Ess_M2ePro_Model_Ebay_Template_Shipping_Calculated::WEIGHT_CUSTOM_ATTRIBUTE): ?>selected="selected"<?php endif; ?> >
                                     <?php echo $attribute['label']; ?>
                                 </option>
@@ -1401,37 +1466,37 @@
 <div style="display: none" id="magento_block_ebay_template_shipping_form_data_exclude_locations_popup">
     <div id="magento_block_ebay_template_shipping_form_data_exclude_locations_popup_content" class="entry-edit" style="padding: 7px; overflow-y: auto; overflow-x: hidden;">
 
-        <div id="excluded_locations_popup_content_general">
+        <div id="excluded_locations_popup_content_general" style="min-height: 380px;">
         <div id="block_notice_ebay_template_shipping_general_exclude_locations_popup" class="block_notices_module" title="<?php echo Mage::helper('M2ePro')->__('Excluded Shipping Locations'); ?>">
             <?php echo Mage::helper('M2ePro')->__('Select the regions or countries you don\'t ship to.'); ?>
         </div>
 
         <input type="hidden" id="excluded_locations_popup_hidden" value='' />
 
-        <?php if (isset($marketplaceData['locations_exclude']['domestic'])) : ?>
-            <div id="exclude_locations_popup_domestic">
+        <div id="exclude_locations_popup_domestic">
+            <?php if (isset($marketplaceData['locations_exclude']['domestic'])) : ?>
 
                 <h4><?php echo Mage::helper('M2ePro')->__('Domestic'); ?></h4>
 
                 <?php foreach ($marketplaceData['locations_exclude']['domestic'] as $locationCode => $locationTitle) : ?>
                     <div class="checkbox_container" style="width: 127px;">
-                        <input id="shipping_excluded_location_domestic_<?php echo $locationCode; ?>" class="shipping_excluded_location" type="checkbox" value="<?php echo $locationCode; ?>" />
+                        <input id="shipping_excluded_location_domestic_<?php echo $locationCode; ?>" class="shipping_excluded_location" type="checkbox" value="<?php echo $locationCode; ?>" location_type="domectic" />
                         <label for="shipping_excluded_location_domestic_<?php echo $locationCode; ?>"><?php echo $locationTitle; ?></label>
                     </div>
                 <?php endforeach; ?>
 
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
 
-        <?php if (isset($marketplaceData['locations_exclude']['international'])) : ?>
-            <div id="exclude_locations_popup_international">
+        <div id="exclude_locations_popup_international">
+            <?php if (isset($marketplaceData['locations_exclude']['international'])) : ?>
 
                 <h4><?php echo Mage::helper('M2ePro')->__('International'); ?></h4>
 
                 <div id="exclude_locations_international_regions">
                     <?php foreach ($marketplaceData['locations_exclude']['international'] as $regionCode => $regionTitle) : ?>
                         <div class="checkbox_container shipping_excluded_location_region_link" style="display: block;" region="<?php echo $regionCode; ?>">
-                            <input id="shipping_excluded_location_international_<?php echo $regionCode; ?>" class="shipping_excluded_location shipping_excluded_region" type="checkbox" value="<?php echo $regionCode; ?>" />
+                            <input id="shipping_excluded_location_international_<?php echo $regionCode; ?>" class="shipping_excluded_location shipping_excluded_region" type="checkbox" value="<?php echo $regionCode; ?>" location_type="international" />
                             <label><?php echo $regionTitle; ?></label>
                             <span style="display: none;">(selected)</span>
                         </div>
@@ -1444,7 +1509,7 @@
                             <div class="shipping_excluded_location_region" id="shipping_excluded_location_international_region_<?php echo $regionCode; ?>" style="display: none;">
                                 <?php foreach ($marketplaceData['locations_exclude'][$regionCode] as $locationCode => $locationTitle) : ?>
                                     <div class="checkbox_container" style="display: block;">
-                                        <input id="shipping_excluded_location_international_<?php echo $locationCode; ?>" class="shipping_excluded_location" type="checkbox" value="<?php echo $locationCode; ?>" region="<?php echo $regionCode; ?>"/>
+                                        <input id="shipping_excluded_location_international_<?php echo $locationCode; ?>" class="shipping_excluded_location" type="checkbox" value="<?php echo $locationCode; ?>" region="<?php echo $regionCode; ?>" location_type="international" />
                                         <label for="shipping_excluded_location_international_<?php echo $locationCode; ?>"><?php echo $locationTitle; ?></label>
                                     </div>
                                 <?php endforeach; ?>
@@ -1455,23 +1520,23 @@
 
                 <div style="clear: both;"></div>
 
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
 
-        <?php if (isset($marketplaceData['locations_exclude']['additional'])) : ?>
-            <div id="exclude_locations_popup_additional">
+        <div id="exclude_locations_popup_additional">
+            <?php if (isset($marketplaceData['locations_exclude']['additional'])) : ?>
 
                 <h4><?php echo Mage::helper('M2ePro')->__('Additional'); ?></h4>
 
                 <?php foreach ($marketplaceData['locations_exclude']['additional'] as $locationCode => $locationTitle) : ?>
                     <div class="checkbox_container" style="width: 127px;">
-                        <input id="shipping_excluded_location_additional_<?php echo $locationCode; ?>" class="shipping_excluded_location" type="checkbox" value="<?php echo $locationCode; ?>" />
+                        <input id="shipping_excluded_location_additional_<?php echo $locationCode; ?>" class="shipping_excluded_location" type="checkbox" value="<?php echo $locationCode; ?>" location_type="additional" />
                         <label for="shipping_excluded_location_additional_<?php echo $locationCode; ?>"><?php echo $locationTitle; ?></label>
                     </div>
                 <?php endforeach; ?>
 
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
 
         <div class="fieldset" style="margin-top: 15px;">
             <p style="margin: 0;">
@@ -1485,7 +1550,7 @@
         </div>
         </div>
 
-        <div id="excluded_locations_popup_controls" style="margin-bottom: 10px; float: right;">
+        <div id="excluded_locations_popup_controls" style="float: right;">
             <a href="javascript: void(0);" onclick="EbayTemplateShippingHandlerObj.excludeListPopup.close()">Cancel</a>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <?php echo $this->getChildHtml('save_popup_button'); ?>

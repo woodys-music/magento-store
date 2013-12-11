@@ -83,7 +83,7 @@
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Account::OTHER_LISTINGS_SYNCHRONIZATION_NO; ?>" <?php if ($formData['other_listings_synchronization'] == Ess_M2ePro_Model_Ebay_Account::OTHER_LISTINGS_SYNCHRONIZATION_NO): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('No'); ?></option>
                         </select>
                         <p class="note">
-                            <span><?php echo Mage::helper('M2ePro')->__('Allows importing 3rd Party Listings.'); ?></span>
+                            <span><?php echo Mage::helper('M2ePro')->__('Allows importing 3rd Party Listings.<br><b>Note:</b> Only active eBay Listings created less than 2 years before will be imported.'); ?></span>
                         </p>
                     </td>
                 </tr>

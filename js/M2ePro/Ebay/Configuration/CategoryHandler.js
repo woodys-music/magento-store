@@ -59,7 +59,7 @@ EbayConfigurationCategoryHandler.prototype = Object.extend(new CommonHandler(), 
         }
 
         var redirectUrl = M2ePro.url.get('adminhtml_ebay_category/index');
-        if (isEdit) {
+        if (isEdit && saveParams.category_mode && saveParams.category_value) {
             var activeTabId = null;
             if (type == 'primary') {
                 var activeTab = ebayConfigurationCategoryEditPrimaryTabsJsTabs.activeTab;
@@ -131,17 +131,21 @@ EbayConfigurationCategoryHandler.prototype = Object.extend(new CommonHandler(), 
 
     getSaveParameters: function(type)
     {
-        var categoryData = EbayListingCategoryChooserHandlerObj.getInternalData();
-
         var parameters = {
             old_category_mode: this.categoryMode,
             old_category_value: this.categoryValue,
-            category_mode: categoryData.mode,
-            category_value: categoryData.value,
+            category_mode: M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_NONE'),
             category_type: EbayListingCategoryChooserHandlerObj.singleCategoryType,
             marketplace: EbayListingCategoryChooserHandlerObj.marketplaceId,
             account: EbayListingCategoryChooserHandlerObj.accountId
         };
+
+        var categoryData = EbayListingCategoryChooserHandlerObj.getInternalData();
+
+        if (categoryData) {
+            parameters['category_mode'] = categoryData.mode;
+            parameters['category_value'] = categoryData.value;
+        }
 
         if (type == 'primary') {
             var specificsData = [];

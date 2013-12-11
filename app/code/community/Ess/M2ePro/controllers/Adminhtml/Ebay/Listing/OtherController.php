@@ -63,7 +63,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_OtherController extends Ess_M2ePro_Contr
     protected function processConnector($action, array $params = array())
     {
         if (!$ebayProductsIds = $this->getRequest()->getParam('selected_products')) {
-            exit('You should select products');
+            return $this->getResponse()->setBody('You should select products');
         }
 
         $params['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_USER;
@@ -75,18 +75,18 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_OtherController extends Ess_M2ePro_Contr
         $actionId = (int)$dispatcherObject->getLogsActionId();
 
         if ($result == Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract::STATUS_ERROR) {
-            exit(json_encode(array('result'=>'error','action_id'=>$actionId)));
+            return $this->getResponse()->setBody(json_encode(array('result'=>'error','action_id'=>$actionId)));
         }
 
         if ($result == Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract::STATUS_WARNING) {
-            exit(json_encode(array('result'=>'warning','action_id'=>$actionId)));
+            return $this->getResponse()->setBody(json_encode(array('result'=>'warning','action_id'=>$actionId)));
         }
 
         if ($result == Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract::STATUS_SUCCESS) {
-            exit(json_encode(array('result'=>'success','action_id'=>$actionId)));
+            return $this->getResponse()->setBody(json_encode(array('result'=>'success','action_id'=>$actionId)));
         }
 
-        exit(json_encode(array('result'=>'error','action_id'=>$actionId)));
+        return $this->getResponse()->setBody(json_encode(array('result'=>'error','action_id'=>$actionId)));
     }
 
     //-------------------------------------------

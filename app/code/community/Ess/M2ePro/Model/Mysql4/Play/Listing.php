@@ -47,8 +47,8 @@ class Ess_M2ePro_Model_Mysql4_Play_Listing
     public function isDifferent($newData, $oldData)
     {
         $ignoreFields = array(
-            'id', 'title',
-            'component_mode',
+            $this->getIdFieldName(),
+            'id', 'title', 'component_mode',
             'create_date', 'update_date'
         );
 

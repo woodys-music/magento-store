@@ -63,5 +63,10 @@ class Ess_M2ePro_Model_Buy_Search_Automatic_ServerRequester
         return $this->getRequesterModel()->getQueryString();
     }
 
+    protected function getRequestData()
+    {
+        return array_merge(parent::getRequestData(),$this->getRequesterModel()->getRequestData());
+    }
+
     // ########################################
 }

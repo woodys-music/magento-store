@@ -8,6 +8,10 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Order_View_Form extends Mage_Adminhtml_Blo
 {
     public $shippingAddress = array();
 
+    public $ebayWarehouseAddress = array();
+
+    public $globalShippingServiceDetails = array();
+
     public $realMagentoOrderId = NULL;
 
     public function __construct()
@@ -56,6 +60,15 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Order_View_Form extends Mage_Adminhtml_Blo
 
         $this->shippingAddress = $shippingAddress->getData();
         $this->shippingAddress['country_name'] = $shippingAddress->getCountryName();
+        // ---------------
+
+        // Global Shipping data
+        // ---------------
+        $globalShippingDetails = $this->order->getChildObject()->getGlobalShippingDetails();
+        if (!empty($globalShippingDetails)) {
+            $this->ebayWarehouseAddress = $globalShippingDetails['warehouse_address'];
+            $this->globalShippingServiceDetails = $globalShippingDetails['service_details'];
+        }
         // ---------------
 
         $this->setChild('item', $this->getLayout()->createBlock('M2ePro/adminhtml_ebay_order_view_item'));

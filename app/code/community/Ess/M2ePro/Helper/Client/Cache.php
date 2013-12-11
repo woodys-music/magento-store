@@ -22,12 +22,12 @@ class Ess_M2ePro_Helper_Client_Cache extends Ess_M2ePro_Helper_Magento_Abstract
     public function isMemchachedAvailable()
     {
         return (extension_loaded('memcache') || extension_loaded('memcached')) &&
-               (class_exists('Memcache') || class_exists('Memcached'));
+               (class_exists('Memcache', false) || class_exists('Memcached', false));
     }
 
     public function isRedisAvailable()
     {
-        return extension_loaded('redis') && class_exists('Redis');
+        return extension_loaded('redis') && class_exists('Redis', false);
     }
 
     // ################################

@@ -81,14 +81,19 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperCategory
 
         $specifics = Mage::helper('M2ePro/Component_Ebay_MotorsSpecifics')->getSpecifics($listingProduct);
 
+        if ($specifics === false) {
+            return;
+        }
+
         $notFoundAttributes = $categoryTemplate->getMagentoProduct()->getNotFoundAttributes();
         if (!empty($notFoundAttributes)) {
             Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')->addNotFoundAttributesMessage(
                 $listingProduct, Mage::helper('M2ePro')->__('Compatibility'), $notFoundAttributes
             );
-
             return;
         }
+
+        $requestData['motors_specifics'] = array();
 
         foreach ($specifics as $specific) {
 

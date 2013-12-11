@@ -93,8 +93,6 @@ class Ess_M2ePro_Adminhtml_Development_DatabaseController
         Mage::getModel('M2ePro/'.$model)->load((int)$id)->delete();
 
         $this->afterTableAction($model);
-
-        exit();
     }
 
     public function deleteTableSelectedRowsAction()
@@ -193,8 +191,6 @@ class Ess_M2ePro_Adminhtml_Development_DatabaseController
         Mage::getModel('M2ePro/'.$model)->load((int)$id)->setData($column,$value)->save();
 
         $this->afterTableAction($model);
-
-        exit();
     }
 
     private function afterTableAction($model)

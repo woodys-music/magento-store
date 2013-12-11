@@ -675,16 +675,21 @@ class Ess_M2ePro_Model_Observer_Product
         }
 
         /** @var Ess_M2ePro_Model_Observer_Category $categoryObserverModel */
-        $categoryObserverModel = Mage::getModel('M2ePro/Observer_Category');
+        $categoryObserver = Mage::getModel('M2ePro/Observer_Category');
+
+        /** @var Ess_M2ePro_Model_Observer_Ebay_Category $ebayCategoryObserver */
+        $ebayCategoryObserver = Mage::getModel('M2ePro/Observer_Ebay_Category');
 
         foreach ($websitesChanges as $websiteId => $changes) {
 
             foreach ($changes['added'] as $categoryId) {
-                $categoryObserverModel->synchProductWithAddedCategoryId($productNew,$categoryId,$websiteId);
+                $categoryObserver->synchProductWithAddedCategoryId($productNew,$categoryId,$websiteId);
+                $ebayCategoryObserver->synchProductWithAddedCategoryId($productNew,$categoryId,$websiteId);
             }
 
             foreach ($changes['deleted'] as $categoryId) {
-                $categoryObserverModel->synchProductWithDeletedCategoryId($productNew,$categoryId,$websiteId);
+                $categoryObserver->synchProductWithDeletedCategoryId($productNew,$categoryId,$websiteId);
+                $ebayCategoryObserver->synchProductWithDeletedCategoryId($productNew,$categoryId,$websiteId);
             }
         }
     }

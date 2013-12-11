@@ -15,14 +15,10 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Stop_MultipleResponser
 
             /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
 
-            $requestData = $this->getListingProductRequestNativeData($listingProduct);
-
-            $tempParams = array(
-                'status_changer' => $this->getStatusChanger()
-            );
-
             Mage::getModel('M2ePro/Connector_Server_Buy_Product_Helper')
-                        ->updateAfterStopAction($listingProduct,$requestData,$tempParams);
+                        ->updateAfterStopAction($listingProduct,
+                                                $this->getListingProductRequestNativeData($listingProduct),
+                                                $this->params);
 
             // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully stopped');
             $this->addListingsProductsLogsMessage($listingProduct, 'Item was successfully stopped',

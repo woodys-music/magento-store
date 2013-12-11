@@ -82,10 +82,17 @@ class Ess_M2ePro_Model_Buy_Search_Automatic_Requester
 
     public function getCommand()
     {
+        /** @var $listing Ess_M2ePro_Model_Buy_Listing */
+        $listing = $this->listingProduct->getListing()->getChildObject();
+
         if ($this->getCurrentStep() == self::STEP_GENERAL_ID) {
 
-            if ($this->listingProduct->getListing()->getChildObject()->isGeneralIdSellerSkuMode()) {
+            if ($listing->isGeneralIdSellerSkuMode()) {
                 return array('product','search','bySellerSku');
+            }
+
+            if ($listing->isGeneralIdWorldwideMode() || $listing->isGeneralIdGeneralIdMode()) {
+                return array('product','search','byIdentifier');
             }
         }
 
@@ -96,41 +103,34 @@ class Ess_M2ePro_Model_Buy_Search_Automatic_Requester
 
     private function calculateCurrentData()
     {
-        if (!empty($this->currentQuery) ||
-            $this->currentStep > self::STEP_MAGENTO_TITLE) {
+        if (!empty($this->currentQuery) || $this->currentStep > self::STEP_MAGENTO_TITLE) {
             return;
         }
 
+        /** @var $listing Ess_M2ePro_Model_Buy_Listing */
+        $listing = $this->listingProduct->getListing()->getChildObject();
+
+        $tempQuery = '';
         switch ($this->currentStep) {
 
             case self::STEP_GENERAL_ID:
 
-                    $tempQuery = $this->listingProduct->getChildObject()->getGeneralId();
-                    empty($tempQuery) && $tempQuery = $this->listingProduct->getChildObject()->getAddingGeneralId();
-
-                    !empty($tempQuery) && $this->currentStep = self::STEP_GENERAL_ID;
-                    !empty($tempQuery) && $this->currentQuery = (string)$tempQuery;
+                $tempQuery = $this->listingProduct->getChildObject()->getGeneralId();
+                empty($tempQuery) && $tempQuery = $this->listingProduct->getChildObject()->getAddingGeneralId();
 
                 break;
 
             case self::STEP_MAGENTO_TITLE:
 
-                    $tempQuery = '';
-                    if ($this->listingProduct->getListing()
-                             ->getChildObject()->isSearchByMagentoTitleModeEnabled()) {
-                        $tempQuery = $this->listingProduct
-                                          ->getChildObject()
-                                          ->getActualMagentoProduct()
-                                          ->getName();
-                    }
-
-                    !empty($tempQuery) && $this->currentStep = self::STEP_MAGENTO_TITLE;
-                    !empty($tempQuery) && $this->currentQuery = (string)$tempQuery;
+                if ($listing->isSearchByMagentoTitleModeEnabled()) {
+                    $tempQuery = $this->listingProduct->getChildObject()->getActualMagentoProduct()->getName();
+                }
 
                 break;
         }
 
-        empty($this->currentQuery) && $this->currentStep++;
+        !empty($tempQuery) ? $this->currentQuery = (string)$tempQuery : $this->currentStep++;
+
         $this->calculateCurrentData();
     }
 
@@ -144,6 +144,24 @@ class Ess_M2ePro_Model_Buy_Search_Automatic_Requester
     public function getQueryString()
     {
         return $this->currentQuery;
+    }
+
+    public function getRequestData()
+    {
+        /** @var $listing Ess_M2ePro_Model_Buy_Listing */
+        $listing = $this->listingProduct->getListing()->getChildObject();
+
+        $searchType = false;
+
+        if ($listing->isGeneralIdGeneralIdMode()) {
+            $searchType = Ess_M2ePro_Model_Connector_Server_Buy_Search_Items::SEARCH_TYPE_GENERAL_ID;
+        }
+
+        if ($listing->isGeneralIdWorldwideMode()) {
+            $searchType = Ess_M2ePro_Model_Connector_Server_Buy_Search_Items::SEARCH_TYPE_UPC;
+        }
+
+        return $searchType ? array('search_type' => $searchType) : array();
     }
 
     // ########################################

@@ -69,10 +69,8 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Settings_Grid
         $collection = $this->getData('listing_product_collection');
 
         if (is_null($collection)) {
-            $listingId = $this->getRequest()->getParam('listing_id');
-            $listing = Mage::helper('M2ePro/Component_Ebay')->getCachedObject('Listing',$listingId);
 
-            $listingProductIds = $listing->getData('product_add_ids');
+            $listingProductIds = $this->getListing()->getData('product_add_ids');
             $listingProductIds = array_filter((array)json_decode($listingProductIds));
 
             $collection = Mage::helper('M2ePro/Component_Ebay')
@@ -90,10 +88,7 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Settings_Grid
 
     protected function _prepareCollection()
     {
-        $listingId = $this->getRequest()->getParam('listing_id');
-        $listing = Mage::helper('M2ePro/Component_Ebay')->getCachedObject('Listing',$listingId);
-
-        $listingProductIds = $listing->getData('product_add_ids');
+        $listingProductIds = $this->getListing()->getData('product_add_ids');
         $listingProductIds = array_filter((array)json_decode($listingProductIds));
         $listingProductIds = empty($listingProductIds) ? 0 : implode(',',$listingProductIds);
 
@@ -199,7 +194,7 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Settings_Grid
         $urls = Mage::helper('M2ePro')->getControllerActions(
             'adminhtml_ebay_listing_autoAction',
             array(
-                'listing_id' => $this->getRequest()->getParam('listing_id')
+                'listing_id' => $this->getListing()->getId()
             )
         );
 
@@ -238,9 +233,18 @@ HTML;
 
     // ####################################
 
-    protected function getListingId()
+    /**
+     * @inheritdoc
+    **/
+    protected function getListing()
     {
-        return $this->getRequest()->getParam('listing_id');
+        if (is_null($this->listing)) {
+            $this->listing = Mage::helper('M2ePro/Component_Ebay')->getCachedObject(
+                'Listing', $this->getRequest()->getParam('listing_id')
+            );
+        }
+
+        return $this->listing;
     }
 
     // ####################################

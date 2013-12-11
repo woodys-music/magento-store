@@ -82,8 +82,36 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
     private function stepOne()
     {
+        if ($builderData = $this->getListingFromRequest()->getSetting('additional_data','mode_same_category_data')) {
+
+            $categoryTemplate = Mage::getModel('M2ePro/Ebay_Template_Category_Builder')->build($builderData);
+            $otherCategoryTemplate = Mage::getModel('M2ePro/Ebay_Template_OtherCategory_Builder')->build($builderData);
+
+            $this->saveModeSame($categoryTemplate, $otherCategoryTemplate, false);
+            return $this->_redirect(
+                '*/adminhtml_ebay_listing/review', array('listing_id' => $this->getRequest()->getParam('listing_id'))
+            );
+        }
+
         if ($this->getRequest()->isPost()) {
-            $this->setSessionValue('mode', $this->getRequest()->getParam('mode'));
+            $mode = $this->getRequest()->getParam('mode');
+
+            $this->setSessionValue('mode', $mode);
+
+            if ($mode == 'same') {
+                $temp = $this->getSessionValue($this->getSessionDataKey());
+                $temp['remember'] = (bool)$this->getRequest()->getParam('mode_same_remember_checkbox', false);
+                $this->setSessionValue($this->getSessionDataKey(),$temp);
+            }
+
+            if ($source = $this->getRequest()->getParam('source')) {
+                $this->getListingFromRequest()
+                    ->getParentObject()
+                    ->setSetting('additional_data',
+                                 array('ebay_category_settings_mode',$source),
+                                 $mode)
+                    ->save();
+            }
 
             return $this->_redirect('*/*/', array(
                 'step' => 2,
@@ -94,9 +122,38 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
         $this->setWizardStep('categoryStepOne');
 
+        $defaultMode = 'same';
+        if ($this->getRequest()->getParam('source') == 'categories' &&
+            Mage::helper('M2ePro/View_Ebay')->isAdvancedMode()) {
+            $defaultMode = 'category';
+        }
+
+        $mode = NULL;
+
+        $temp = $this->getListingFromRequest()->getSetting(
+            'additional_data', array('ebay_category_settings_mode',$this->getRequest()->getParam('source'))
+        );
+        $temp && $mode = $temp;
+
+        $temp = $this->getSessionValue('mode');
+        $temp && $mode = $temp;
+
+        if ($mode) {
+            if (Mage::helper('M2ePro/View_Ebay')->isSimpleMode()) {
+                !in_array($mode, array('same','product')) && $mode = $defaultMode;
+            } else {
+                !in_array($mode, array('same','category','product','manually')) && $mode = $defaultMode;
+            }
+        } else {
+            $mode = $defaultMode;
+        }
+
+        $block = $this->getLayout()->createBlock('M2ePro/adminhtml_ebay_listing_category_mode');
+        $block->setData('mode', $mode);
+
         $this->_initAction()
              ->_title(Mage::helper('M2ePro')->__('Set Your eBay Categories'))
-             ->_addContent($this->getLayout()->createBlock('M2ePro/adminhtml_ebay_listing_category_mode'))
+             ->_addContent($block)
              ->renderLayout();
     }
 
@@ -158,10 +215,8 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
             $useLastSpecifics = $this->useLastSpecifics();
 
-            $sessionData['mode_same'] = array(
-                'category' => $data,
-                'specific' => $specifics,
-            );
+            $sessionData['mode_same']['category'] = $data;
+            $sessionData['mode_same']['specific'] = $specifics;
 
             Mage::helper('M2ePro/Data_Session')->setValue($this->sessionKey, $sessionData);
 
@@ -177,14 +232,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
             $otherCategoryTemplate = Mage::getModel('M2ePro/Ebay_Template_OtherCategory_Builder')->build($builderData);
 
-            $this->assignTemplatesToProducts(
-                $categoryTemplate->getId(),
-                $otherCategoryTemplate->getId(),
-                $this->getListingFromRequest()->getAddedListingProductsIds()
-            );
-
-            $this->endWizard();
-            $this->endListingCreation($this->getListingFromRequest()->getAddedListingProductsIds());
+            $this->saveModeSame($categoryTemplate,$otherCategoryTemplate,!empty($sessionData['mode_same']['remember']));
 
             return $this->_redirect(
                 '*/adminhtml_ebay_listing/review', array('listing_id' => $this->getRequest()->getParam('listing_id'))
@@ -285,6 +333,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
         $this->_title(Mage::helper('M2ePro')->__('Select Products (eBay Categories)'));
 
         $this->getLayout()->getBlock('head')
+             ->addJs('M2ePro/Ebay/Listing/Category/GridHandler.js')
              ->addJs('M2ePro/Ebay/Listing/Category/Category/GridHandler.js');
 
          $this->_addContent($block)
@@ -317,6 +366,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
         $this->getLayout()->getBlock('head')
             ->addJs('M2ePro/Plugin/ProgressBar.js')
             ->addJs('M2ePro/Plugin/AreaWrapper.js')
+            ->addJs('M2ePro/Ebay/Listing/Category/GridHandler.js')
             ->addJs('M2ePro/Ebay/Listing/Category/Product/GridHandler.js')
             ->addJs('M2ePro/Ebay/Listing/Category/Product/SuggestedSearchHandler.js')
             ->addCss('M2ePro/css/Plugin/ProgressBar.css')
@@ -628,16 +678,8 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
             $categoryTemplate = Mage::getModel('M2ePro/Ebay_Template_Category_Builder')->build($builderData);
             $otherCategoryTemplate = Mage::getModel('M2ePro/Ebay_Template_OtherCategory_Builder')->build($builderData);
-            //------------------------------
 
-            $this->assignTemplatesToProducts(
-                $categoryTemplate->getId(),
-                $otherCategoryTemplate->getId(),
-                $this->getListingFromRequest()->getAddedListingProductsIds()
-            );
-
-            $this->endWizard();
-            $this->endListingCreation($this->getListingFromRequest()->getAddedListingProductsIds());
+            $this->saveModeSame($categoryTemplate, $otherCategoryTemplate, !empty($sessionData['remember']));
 
             return $this->_redirect(
                 '*/adminhtml_ebay_listing/review', array('listing_id' => $this->getRequest()->getParam('listing_id'))
@@ -695,7 +737,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
         if (count($templatesData) <= 0) {
 
-            $this->save();
+            $this->save($this->getSessionValue($this->getSessionDataKey()));
 
             return $this->_redirect('*/adminhtml_ebay_listing/review', array(
                 'disable_list' => true,
@@ -717,7 +759,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
         }
 
         if ($templatesExistForAll && $useLastSpecifics) {
-            $this->save();
+            $this->save($this->getSessionValue($this->getSessionDataKey()));
             return $this->_redirect('*/adminhtml_ebay_listing/review', array('_current' => true));
         }
 
@@ -1263,15 +1305,38 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
 
     public function saveAction()
     {
-        $this->save();
+        $this->save($this->getSessionValue($this->getSessionDataKey()));
     }
 
     //-----------------------------------------------
 
-    private function save()
+    private function saveModeSame($categoryTemplate, $otherCategoryTemplate, $remember)
     {
-        $sessionData = $this->getSessionValue($this->getSessionDataKey());
+        $this->assignTemplatesToProducts(
+            $categoryTemplate->getId(),
+            $otherCategoryTemplate->getId(),
+            $this->getListingFromRequest()->getAddedListingProductsIds()
+        );
 
+        if ($remember) {
+            $this->getListingFromRequest()->getParentObject()
+                ->setSetting(
+                    'additional_data', 'mode_same_category_data',
+                    array_merge(
+                        $categoryTemplate->getData(),
+                        $otherCategoryTemplate->getData(),
+                        array('specifics' => $categoryTemplate->getSpecifics())
+                    )
+                )
+                ->save();
+        }
+
+        $this->endWizard();
+        $this->endListingCreation($this->getListingFromRequest()->getAddedListingProductsIds());
+    }
+
+    private function save($sessionData)
+    {
         if ($this->getSessionValue('mode') == 'category') {
             foreach ($sessionData as $categoryId => $data) {
 

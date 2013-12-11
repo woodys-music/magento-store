@@ -449,7 +449,7 @@ class Ess_M2ePro_Adminhtml_Common_Buy_AccountController
             }
         }
 
-        exit (json_encode($result));
+        return $this->getResponse()->setBody(json_encode($result));
     }
 
     //#############################################

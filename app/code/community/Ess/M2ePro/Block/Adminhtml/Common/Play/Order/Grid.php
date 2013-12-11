@@ -56,21 +56,10 @@ class Ess_M2ePro_Block_Adminhtml_Common_Play_Order_Grid extends Mage_Adminhtml_B
         }
         //------------------------------
 
-        // Add Filter By Items State
+        // Add Not Created Magento Orders Filter
         //------------------------------
-        if ($state = $this->getRequest()->getParam('playState')) {
-            $state = (int)$state;
-
-            $dbSelect = Mage::getResourceModel('core/config')->getReadConnection()
-                ->select()
-                ->from(
-                    Mage::getResourceModel('M2ePro/Order_Item')->getMainTable(),
-                    new Zend_Db_Expr('DISTINCT `order_id`')
-                )
-                ->where('`component_mode` = ?', Ess_M2ePro_Helper_Component_Play::NICK)
-                ->where('`state` = ?', $state);
-
-            $collection->getSelect()->where('`main_table`.`state` = '.$state.' OR `main_table`.`id` IN ?', $dbSelect);
+        if ($this->getRequest()->getParam('not_created_only')) {
+            $collection->addFieldToFilter('magento_order_id', array('null' => true));
         }
         //------------------------------
 

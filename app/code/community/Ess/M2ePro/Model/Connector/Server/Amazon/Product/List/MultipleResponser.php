@@ -15,20 +15,24 @@ class Ess_M2ePro_Model_Connector_Server_Amazon_Product_List_MultipleResponser
 
             /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
 
-            $requestData = $this->getListingProductRequestNativeData($listingProduct);
-
-            $tempParams = array(
-                'status_changer' => $this->getStatusChanger()
-            );
-
             Mage::getModel('M2ePro/Connector_Server_Amazon_Product_Helper')
-                        ->updateAfterListAction($listingProduct,$requestData,$tempParams);
+                        ->updateAfterListAction($listingProduct,
+                                                $this->getListingProductRequestNativeData($listingProduct),
+                                                $this->params);
 
             // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully listed');
             $this->addListingsProductsLogsMessage($listingProduct, 'Item was successfully listed',
                                                   Ess_M2ePro_Model_Log_Abstract::TYPE_SUCCESS,
                                                   Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         }
+    }
+
+    // ########################################
+
+    protected function unsetLocks($fail = false, $message = NULL)
+    {
+        $this->removeFromQueueOfSKus();
+        parent::unsetLocks($fail,$message);
     }
 
     // ########################################
@@ -67,14 +71,6 @@ class Ess_M2ePro_Model_Connector_Server_Amazon_Product_List_MultipleResponser
         }
 
         $lockItem->setData('data',json_encode(array_unique($skus)))->save();
-    }
-
-    // ########################################
-
-    protected function unsetLocks($fail = false, $message = NULL)
-    {
-        $this->removeFromQueueOfSKus();
-        parent::unsetLocks($fail,$message);
     }
 
     // ########################################

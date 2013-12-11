@@ -4,7 +4,7 @@
  * @copyright  Copyright (c) 2013 by  ESS-UA.
  */
 
-class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Actual extends Mage_Adminhtml_Block_Widget
+class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Integration extends Mage_Adminhtml_Block_Widget
 {
     // ########################################
 
@@ -14,10 +14,10 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Actual extends Mage_Admi
 
         // Initialization block
         //------------------------------
-        $this->setId('developmentSummaryActual');
+        $this->setId('developmentDatabaseIntegration');
         //------------------------------
 
-        $this->setTemplate('M2ePro/development/info/mysql/actual.phtml');
+        $this->setTemplate('M2ePro/development/info/mysql/integration.phtml');
     }
 
     // ########################################
@@ -25,9 +25,9 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Actual extends Mage_Admi
     public function getInfoTables()
     {
         $tablesData = array_merge(
-            $this->getConfigTables(),
-            $this->getLocksAndChangeTables(),
-            $this->getAdditionalTables()
+            $this->getGeneralTables(),
+            $this->getEbayTables(),
+            $this->getAmazonTables()
         );
 
         $tablesInfo = array();
@@ -41,9 +41,9 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Actual extends Mage_Admi
 
                 $tablesInfo[$category][$table]['count'] = $connRead->fetchOne($dbSelect);
                 $tablesInfo[$category][$table]['url'] = $url = $this->getUrl(
-                                                        '*/adminhtml_development_database/manageTable',
-                                                        array('table'=>$table)
-                                                        );
+                    '*/adminhtml_development_database/manageTable',
+                    array('table'=>$table)
+                );
             }
         }
 
@@ -52,35 +52,34 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Actual extends Mage_Admi
 
     // ########################################
 
-    private function getConfigTables()
+    private function getGeneralTables()
     {
         return array(
-            'Config' => array(
-            'm2epro_primary_config',
-            'm2epro_config',
-            'm2epro_synchronization_config'
+            'General' => array(
+                'm2epro_listing',
+                'm2epro_listing_product',
             )
         );
     }
 
-    private function getLocksAndChangeTables()
+    private function getAmazonTables()
     {
         return array(
-            'Locks / Changes' => array(
-                'm2epro_lock_item',
-                'm2epro_locked_object',
-                'm2epro_product_change',
-                'm2epro_order_change'
+            'Amazon' => array(
+                'm2epro_amazon_item',
+                'm2epro_amazon_listing',
+                'm2epro_amazon_listing_product',
             )
         );
     }
 
-    private function getAdditionalTables()
+    private function getEbayTables()
     {
         return array(
-            'Additional' => array(
-            'm2epro_processing_request',
-            'm2epro_synchronization_run'
+            'Ebay' => array(
+                'm2epro_ebay_item',
+                'm2epro_ebay_listing',
+                'm2epro_ebay_listing_product',
             )
         );
     }

@@ -248,7 +248,7 @@ class Ess_M2ePro_Model_Ebay_Template_OtherCategory extends Ess_M2ePro_Model_Comp
 
     // #######################################
 
-    public function getAffectedListingProducts($asObjects = false)
+    public function getAffectedListingProducts($asObjects = false, $key = NULL)
     {
         if (is_null($this->getId())) {
             throw new LogicException('Method require loaded instance first');
@@ -257,19 +257,31 @@ class Ess_M2ePro_Model_Ebay_Template_OtherCategory extends Ess_M2ePro_Model_Comp
         $collection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Listing_Product');
         $collection->addFieldToFilter('template_other_category_id', $this->getId());
 
-        return $asObjects ? $collection->getItems() : $collection->getData();
+        if (!is_null($key)) {
+            $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns($key);
+        }
+
+        $listingProducts = $asObjects ? $collection->getItems() : $collection->getData();
+
+        if (is_null($key)) {
+            return $listingProducts;
+        }
+
+        $return = array();
+        foreach ($listingProducts as $listingProduct) {
+            isset($listingProduct[$key]) && $return[] = $listingProduct[$key];
+        }
+
+        return $return;
     }
 
-    public function setIsNeedSynchronize($newData, $oldData)
+    public function setSynchStatusNeed($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
             return;
         }
 
-        $ids = array();
-        foreach ($this->getAffectedListingProducts() as $listingProduct) {
-            $ids[] = (int)$listingProduct['id'];
-        }
+        $ids = $this->getAffectedListingProducts(false,'id');
 
         if (empty($ids)) {
             return;
@@ -280,7 +292,7 @@ class Ess_M2ePro_Model_Ebay_Template_OtherCategory extends Ess_M2ePro_Model_Comp
         Mage::getSingleton('core/resource')->getConnection('core_read')->update(
             Mage::getSingleton('core/resource')->getTableName('M2ePro/Listing_Product'),
             array(
-                'is_need_synchronize' => 1,
+                'synch_status' => Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_NEED,
                 'synch_reasons' => new Zend_Db_Expr(
                     "IF(synch_reasons IS NULL,
                         '".implode(',',$templates)."',

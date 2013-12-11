@@ -4,6 +4,12 @@
     /** @var Ess_M2ePro_Helper_Magento_Attribute $magentoAttributeHelper */
     $magentoAttributeHelper = Mage::helper('M2ePro/Magento_Attribute');
 
+    $attributesByInputTypes = array(
+        'text' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text')),
+        'text_select' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text', 'select')),
+        'text_price' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text', 'price')),
+    );
+
     $formData = $this->getFormData();
     $default = $this->getDefault();
     $formData = array_merge($default, $formData);
@@ -211,7 +217,7 @@
                                         <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['listing_type_attribute'])) ?>
                                     </option>
                                 <?php endif; ?>
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text_select'] as $attribute) : ?>
                                     <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::LISTING_TYPE_ATTRIBUTE; ?>" <?php if ($formData['listing_type'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::LISTING_TYPE_ATTRIBUTE && $attribute['code'] == $formData['listing_type_attribute']): ?>selected="selected"<?php endif; ?>>
                                         <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                     </option>
@@ -282,13 +288,13 @@
                     <td class="value" style="width: auto;">
 
                         <select id="duration_mode" name="selling_format[duration_mode]" class="required-entry select">
-                            <option id="durationId1" value="1"><?php echo '1 '.Mage::helper('M2ePro')->__('day'); ?></option>
-                            <option id="durationId3" value="3"><?php echo '3 '.Mage::helper('M2ePro')->__('days'); ?></option>
-                            <option id="durationId5" value="5"><?php echo '5 '.Mage::helper('M2ePro')->__('days'); ?></option>
-                            <option id="durationId7" value="7"><?php echo '7 '.Mage::helper('M2ePro')->__('days'); ?></option>
-                            <option id="durationId10" value="10"><?php echo '10 '.Mage::helper('M2ePro')->__('days'); ?></option>
-                            <option id="durationId30" value="30"><?php echo '30 '.Mage::helper('M2ePro')->__('days'); ?></option>
-                            <option id="durationId100" value="100"><?php echo Mage::helper('M2ePro')->__('Good Till Cancelled'); ?></option>
+
+                            <?php foreach (Mage::helper('M2ePro/Component_Ebay')->getAvailableDurations() as $id => $label) : ?>
+
+                                <option id="durationId<?php echo $id ?>" value="<?php echo $id ?>"><?php echo $label; ?></option>
+
+                            <?php endforeach; ?>
+
                         </select>
 
                         <span id="duration_attribute_span">
@@ -302,7 +308,7 @@
                                             <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['duration_attribute'])) ?>
                                         </option>
                                     <?php endif; ?>
-                                    <?php foreach($this->attributes as $attribute) : ?>
+                                    <?php foreach($attributesByInputTypes['text'] as $attribute) : ?>
                                         <option value="<?php echo $attribute['code']; ?>" <?php if ($formData['listing_type'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::LISTING_TYPE_ATTRIBUTE && $attribute['code'] == $formData['duration_attribute']): ?>selected="selected"<?php endif; ?>>
                                             <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                         </option>
@@ -335,7 +341,7 @@
                                         <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['qty_custom_attribute'])) ?>
                                     </option>
                                 <?php endif; ?>
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text'] as $attribute) : ?>
                                     <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::QTY_MODE_ATTRIBUTE; ?>" <?php if ($formData['qty_mode'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::QTY_MODE_ATTRIBUTE && $attribute['code'] == $formData['qty_custom_attribute']): ?>selected="selected"<?php endif; ?>>
                                         <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                     </option>
@@ -390,6 +396,22 @@
                     </td>
                 </tr>
 
+                <tr id="ignore_variations_value_tr" class="simple_mode_disallowed" style="display: none;">
+                    <td class="label">
+                        <label><?php echo Mage::helper('M2ePro')->__('Ignore Variations')?></label>
+                    </td>
+                    <td id="ignore_variations_value_td" class="value" style="width: auto;">
+                        <select id="ignore_variations_value" name="selling_format[ignore_variations]">
+                            <option value="0" <?php if (0 == $formData['ignore_variations']) : echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('No')?></option>
+                            <option value="1" <?php if (1 == $formData['ignore_variations']) : echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes')?></option>
+                        </select>
+                        <p class="note">
+                            <span><?php echo Mage::helper('M2ePro')->__('Select \'Yes\' to list Configurable, Grouped, Bundle and Simple with Custom options products as Simple (without variations).')?>
+                            </span>
+                        </p>
+                    </td>
+                </tr>
+
             </table>
 
         </div>
@@ -421,7 +443,7 @@
                     <li class="notice-msg">
                         <span>
                             <?php echo Mage::helper('M2ePro')->__(
-                                'eBay %s supports %s currencies. To switch currency, go to %s > Configuration > <a target="_blank" href="%s">General</a>',
+                                'eBay %s supports %s currencies. To switch the currency you want to sell for, go to %s > Configuration > <a target="_blank" href="%s">General</a>',
                                 $this->getMarketplace()->getTitle(),
                                 $currencies,
                                 Mage::helper('M2ePro/View_Ebay')->getMenuRootNodeLabel(),
@@ -489,7 +511,8 @@
                                                         <br/>This will reduce the price on eBay compared to the price on Magento,
                                                         <br/>e.g. you wish to reduce by 10% the price of a #currency_placeholder#2.00 item selling
                                                         <br/>on your Magento store.
-                                                        <br/>In the box type: “10”. The item will then go on sale for #currency_placeholder#1.80 on eBay.
+                                                        <br/>In the box type: “10”. The item will then go on sale for #currency_placeholder#1.80
+                                                        <br/>on eBay.
                                                     ')); ?>
                                                 </span>
                                             </span>
@@ -527,7 +550,7 @@
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['start_price_custom_attribute'])) ?>
                                                 </option>
                                             <?php endif; ?>
-                                            <?php foreach($this->attributes as $attribute) : ?>
+                                            <?php foreach($attributesByInputTypes['text_price'] as $attribute) : ?>
                                                 <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::PRICE_ATTRIBUTE; ?>" <?php if ($formData['start_price_mode'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::PRICE_ATTRIBUTE && $attribute['code'] == $formData['start_price_custom_attribute']): ?>selected="selected"<?php endif; ?>>
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                                 </option>
@@ -598,7 +621,7 @@
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['buyitnow_price_custom_attribute'])) ?>
                                                 </option>
                                             <?php endif; ?>
-                                            <?php foreach($this->attributes as $attribute): ?>
+                                            <?php foreach($attributesByInputTypes['text_price'] as $attribute): ?>
                                                 <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::PRICE_ATTRIBUTE; ?>" <?php if ($formData['buyitnow_price_mode'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::PRICE_ATTRIBUTE && $attribute['code'] == $formData['buyitnow_price_custom_attribute']): ?>selected="selected"<?php endif; ?>>
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                                 </option>
@@ -691,7 +714,7 @@
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['reserve_price_custom_attribute'])) ?>
                                                 </option>
                                             <?php endif; ?>
-                                            <?php foreach($this->attributes as $attribute) : ?>
+                                            <?php foreach($attributesByInputTypes['text_price'] as $attribute) : ?>
                                                 <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::PRICE_ATTRIBUTE; ?>" <?php if ($formData['reserve_price_mode'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::PRICE_ATTRIBUTE && $attribute['code'] == $formData['reserve_price_custom_attribute']): ?>selected="selected"<?php endif; ?>>
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                                 </option>
@@ -812,7 +835,7 @@
                             </select>
 
                             <?php if (!is_null($charitySelected)) : ?>
-                                <input type="hidden" id="charity_name" name="selling_format[charity_name]" value="<?php echo !is_null($charitiesDict[$selected]['name']) ? $charitiesDict[$selected]['name'] : $charitySelf['name']; ?>">
+                                <input type="hidden" id="charity_name" name="selling_format[charity_name]" value="<?php echo !is_null($charitiesDict[$charitySelected]['name']) ? $charitiesDict[$charitySelected]['name'] : $charitySelf['name']; ?>">
                             <?php endif; ?>
 
                             <p class="note">
@@ -941,7 +964,7 @@
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['best_offer_accept_attribute'])) ?>
                                                 </option>
                                             <?php endif; ?>
-                                            <?php foreach($this->attributes as $attribute) : ?>
+                                            <?php foreach($attributesByInputTypes['text_price'] as $attribute) : ?>
                                                 <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::BEST_OFFER_ACCEPT_MODE_ATTRIBUTE; ?>" <?php if ($formData['best_offer_accept_mode'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::BEST_OFFER_ACCEPT_MODE_ATTRIBUTE && $attribute['code'] == $formData['best_offer_accept_attribute']): ?>selected="selected"<?php endif; ?>>
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                                 </option>
@@ -988,7 +1011,7 @@
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($magentoAttributeHelper->getAttributeLabel($formData['best_offer_reject_attribute'])) ?>
                                                 </option>
                                             <?php endif; ?>
-                                            <?php foreach($this->attributes as $attribute) : ?>
+                                            <?php foreach($attributesByInputTypes['text_price'] as $attribute) : ?>
                                                 <option class="simple_mode_disallowed" attribute_code="<?php echo $attribute['code']; ?>" value="<?php echo Ess_M2ePro_Model_Ebay_Template_SellingFormat::BEST_OFFER_REJECT_MODE_ATTRIBUTE; ?>" <?php if ($formData['best_offer_reject_mode'] == Ess_M2ePro_Model_Ebay_Template_SellingFormat::BEST_OFFER_REJECT_MODE_ATTRIBUTE && $attribute['code'] == $formData['best_offer_reject_attribute']): ?>selected="selected"<?php endif; ?>>
                                                     <?php echo Mage::helper('M2ePro')->escapeHtml($attribute['label']); ?>
                                                 </option>

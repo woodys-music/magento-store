@@ -10,9 +10,31 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperVariations
 
     public function getRequestData(Ess_M2ePro_Model_Listing_Product $listingProduct, array $params = array())
     {
-        if (!$listingProduct->getChildObject()->isListingTypeFixed() ||
-            !$listingProduct->getChildObject()->getCategoryTemplate()->isVariationMode() ||
-            $listingProduct->getMagentoProduct()->isProductWithoutVariations()) {
+        if ($listingProduct->getMagentoProduct()->isProductWithoutVariations()) {
+            return array();
+        }
+
+        if (!$listingProduct->getChildObject()->isListingTypeFixed()) {
+            $listingProduct->addAdditionalWarningMessage(
+            'The product was listed as a simple product as it has limitation for multi-variation items. '.
+            'Reason: listing type "auction" does not support multi-variations.'
+            );
+            return array();
+        }
+
+        if ($listingProduct->getChildObject()->getEbaySellingFormatTemplate()->isIgnoreVariationsEnabled()) {
+            $listingProduct->addAdditionalWarningMessage(
+            'The product was listed as a simple product as it has limitation for multi-variation items. '.
+            'Reason: ignore variation option is enabled in selling format policy.'
+            );
+            return array();
+        }
+
+        if (!$listingProduct->getChildObject()->getCategoryTemplate()->isVariationEnabled()) {
+            $listingProduct->addAdditionalWarningMessage(
+            'The product was listed as a simple product as it has limitation for multi-variation items. '.
+            'Reason: eBay primary category allows to list only single items.'
+            );
             return array();
         }
 
@@ -53,7 +75,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperVariations
     public function getImagesData(Ess_M2ePro_Model_Listing_Product $listingProduct, array $params = array())
     {
         if (!$listingProduct->getChildObject()->isListingTypeFixed() ||
-            !$listingProduct->getChildObject()->getCategoryTemplate()->isVariationMode() ||
+            !$listingProduct->getChildObject()->isVariationMode() ||
             $listingProduct->getMagentoProduct()->isProductWithoutVariations()) {
             return array();
         }
@@ -166,12 +188,14 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperVariations
                                       $saveEbayQtySold = false)
     {
         if (!$listingProduct->getChildObject()->isListingTypeFixed() ||
-            !$listingProduct->getChildObject()->getCategoryTemplate()->isVariationMode() ||
+            !$listingProduct->getChildObject()->isVariationMode() ||
             $listingProduct->getMagentoProduct()->isProductWithoutVariations()) {
             return;
         }
 
-        if (isset($nativeRequestData['variation_image'])) {
+        $isImagesUploadError = isset($params['is_images_upload_error']) ? $params['is_images_upload_error'] : false;
+
+        if (isset($nativeRequestData['variation_image']) && !$isImagesUploadError) {
             $additionalData = $listingProduct->getAdditionalData();
             $additionalData['ebay_product_variation_images_hash'] = sha1(
                 json_encode($nativeRequestData['variation_image'])

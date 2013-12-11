@@ -39,4 +39,16 @@
         </td>
     </tr>
 
+    <tr>
+        <td class="label">
+            <label><?php echo Mage::helper('M2ePro')->__('Compilation'); ?>: </label>
+        </td>
+        <td class="value">
+            <?php if (defined('COMPILER_INCLUDE_PATH')) { ?>
+                <span style="color: red">Enabled</span>
+            <?php } else { ?>
+                <span>Disabled</span>
+            <?php } ?>
+        </td>
+    </tr>
 </table>

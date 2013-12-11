@@ -149,7 +149,7 @@
                         <label for="list_qty_value_max"><?php echo Mage::helper('M2ePro')->__('Max Item Quantity'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <input id="list_qty_value_max" name="synchronization[list_qty_value_max]" value="<?php echo $this->escapeHtml($formData['list_qty_value_max']); ?>" type="text" class="M2ePro-required-when-visible input-text validate-digits" />
+                        <input id="list_qty_value_max" name="synchronization[list_qty_value_max]" value="<?php echo $this->escapeHtml($formData['list_qty_value_max']); ?>" type="text" class="M2ePro-required-when-visible input-text validate-digits M2ePro-validate-conditions-between" />
                     </td>
                 </tr>
 

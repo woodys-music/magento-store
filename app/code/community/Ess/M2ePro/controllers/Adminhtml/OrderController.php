@@ -57,7 +57,7 @@ class Ess_M2ePro_Adminhtml_OrderController
             }
         }
 
-        exit(json_encode($regions));
+        return $this->getResponse()->setBody(json_encode($regions));
     }
 
     //#############################################

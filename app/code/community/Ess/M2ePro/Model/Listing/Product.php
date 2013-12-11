@@ -20,6 +20,10 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
     const STATUS_CHANGER_COMPONENT = 3;
     const STATUS_CHANGER_OBSERVER = 4;
 
+    const SYNCH_STATUS_OK    = 0;
+    const SYNCH_STATUS_NEED  = 1;
+    const SYNCH_STATUS_SKIP  = 2;
+
     // ########################################
 
     public $isCacheEnabled = false;
@@ -216,9 +220,24 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     //----------------------------------------
 
-    public function isNeedSynchronize()
+    public function getSynchStatus()
     {
-        return (int)$this->getData('is_need_synchronize');
+        return (int)$this->getData('synch_status');
+    }
+
+    public function isSynchStatusOk()
+    {
+        return $this->getSynchStatus() == self::SYNCH_STATUS_OK;
+    }
+
+    public function isSynchStatusNeed()
+    {
+        return $this->getSynchStatus() == self::SYNCH_STATUS_NEED;
+    }
+
+    public function isSynchStatusSkip()
+    {
+        return $this->getSynchStatus() == self::SYNCH_STATUS_SKIP;
     }
 
     //----------------------------------------
@@ -757,6 +776,27 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
         }
 
         return $variationsStocks;
+    }
+
+    // ########################################
+
+    public function addAdditionalWarningMessage($message)
+    {
+        $messages = $this->getData('__additional_warning_messages__');
+        empty($messages) && $messages = array();
+        $messages[] = $message;
+        $this->setData('__additional_warning_messages__',$messages);
+    }
+
+    public function getAdditionalWarningMessages()
+    {
+        $messages = $this->getData('__additional_warning_messages__');
+        return empty($messages) ? array() : $messages;
+    }
+
+    public function clearAdditionalWarningMessages()
+    {
+        $this->setData('__additional_warning_messages__',array());
     }
 
     // ########################################

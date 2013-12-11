@@ -39,9 +39,19 @@ class Ess_M2ePro_Model_Buy_Search_Manual_ServerRequester
 
     // ########################################
 
+    public function getCommand()
+    {
+        return $this->getRequesterModel()->getCommand();
+    }
+
     protected function getResponserParams()
     {
         return array_merge(parent::getResponserParams(),$this->getRequesterModel()->getResponserParams());
+    }
+
+    protected function getRequestData()
+    {
+        return array_merge(parent::getRequestData(),$this->getRequesterModel()->getRequestData());
     }
 
     // ########################################

@@ -570,6 +570,13 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
         return json_decode($this->getData('charity'), true);
     }
 
+    //-------------------------
+
+    public function isIgnoreVariationsEnabled()
+    {
+        return (bool)$this->getData('ignore_variations');
+    }
+
     // #######################################
 
     public function getTrackingAttributes()
@@ -641,6 +648,7 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
             'best_offer_reject_attribute' => '',
 
             'charity' => '',
+            'ignore_variations' => 0
         );
     }
 
@@ -655,7 +663,7 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
     // #######################################
 
-    public function getAffectedListingProducts($asObjects = false)
+    public function getAffectedListingProducts($asObjects = false, $key = NULL)
     {
         if (is_null($this->getId())) {
             throw new LogicException('Method require loaded instance first');
@@ -668,14 +676,15 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
 
         $listingProducts = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING_PRODUCT,
-            $this->getId(),
-            array(), $asObjects
+            $this->getId(), array(), $asObjects, $key
         );
 
-        foreach ($listingProducts as $key => $listingProduct) {
-            unset($listingProducts[$key]);
-            $listingProducts[$listingProduct['id']] = $listingProduct;
+        $ids = array();
+        foreach ($listingProducts as $listingProduct) {
+            $ids[] = is_null($key) ? $listingProduct['id'] : $listingProduct;
         }
+
+        $listingProducts && $listingProducts = array_combine($ids, $listingProducts);
 
         $listings = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING,
@@ -683,46 +692,22 @@ class Ess_M2ePro_Model_Ebay_Template_SellingFormat extends Ess_M2ePro_Model_Comp
         );
 
         foreach ($listings as $listing) {
-            $tempListingProducts = $listing->getChildObject()->getAffectedListingProducts($template,$asObjects);
+
+            $tempListingProducts = $listing->getChildObject()
+                                           ->getAffectedListingProducts($template,$asObjects,$key);
 
             foreach ($tempListingProducts as $listingProduct) {
-                $listingProducts[$listingProduct['id']] = $listingProduct;
+                $id = is_null($key) ? $listingProduct['id'] : $listingProduct;
+                !isset($listingProducts[$id]) && $listingProducts[$id] = $listingProduct;
             }
         }
 
-        return $listingProducts;
+        return array_values($listingProducts);
     }
 
-    public function setIsNeedSynchronize($newData, $oldData)
+    public function setSynchStatusNeed($newData, $oldData)
     {
-        if (!$this->getResource()->isDifferent($newData,$oldData)) {
-            return;
-        }
-
-        $ids = array();
-        foreach ($this->getAffectedListingProducts() as $listingProduct) {
-            $ids[] = (int)$listingProduct['id'];
-        }
-
-        if (empty($ids)) {
-            return;
-        }
-
-        $templates = array('sellingFormatTemplate');
-
-        Mage::getSingleton('core/resource')->getConnection('core_read')->update(
-            Mage::getSingleton('core/resource')->getTableName('M2ePro/Listing_Product'),
-            array(
-                'is_need_synchronize' => 1,
-                'synch_reasons' => new Zend_Db_Expr(
-                    "IF(synch_reasons IS NULL,
-                        '".implode(',',$templates)."',
-                        CONCAT(synch_reasons,'".','.implode(',',$templates)."')
-                    )"
-                )
-            ),
-            array('id IN ('.implode(',', $ids).')')
-        );
+        $this->getParentObject()->setSynchStatusNeed($newData, $oldData);
     }
 
     // #######################################

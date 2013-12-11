@@ -37,5 +37,23 @@ abstract class Ess_M2ePro_Model_Connector_Server_Ebay_Item_SingleAbstract
         return $result;
     }
 
+    protected function processResponseInfo($responseInfo)
+    {
+        try {
+            parent::processResponseInfo($responseInfo);
+        } catch (Exception $exception) {
+
+            $message = array(
+                parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR,
+                parent::MESSAGE_TEXT_KEY => $exception->getMessage()
+            );
+
+            $this->addListingsProductsLogsMessage($this->listingProduct, $message,
+                                                  Ess_M2ePro_Model_Log_Abstract::PRIORITY_HIGH);
+
+            throw $exception;
+        }
+    }
+
     // ########################################
 }

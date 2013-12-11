@@ -112,6 +112,7 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Listing
     // ########################################
 
     public function updateMotorsSpecificsAttributesData(
+        $listingId,
         array $listingProductIds,
         $epids,
         $overwrite = false
@@ -120,7 +121,8 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Listing
             return;
         }
 
-        $storeId = Mage_Core_Model_App::ADMIN_STORE_ID;
+        $listing = Mage::helper('M2ePro/Component_Ebay')->getCachedObject('Listing', $listingId);
+        $storeId = (int)$listing->getStoreId();
 
         $attributeSeparator = Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics::VALUE_SEPARATOR;
         $attributeValue = implode($attributeSeparator, $epids);
@@ -136,32 +138,33 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Listing
         );
 
         if ($overwrite) {
-            Mage::getSingleton('catalog/product_action')
-                ->updateAttributes(
-                    $productIds,
-                    array($motorsSpecificsAttribute => $attributeValue),
-                    $storeId
-                );
-
+            Mage::getSingleton('catalog/product_action')->updateAttributes(
+                $productIds,
+                array($motorsSpecificsAttribute => $attributeValue),
+                $storeId
+            );
             return;
         }
 
         $productCollection = Mage::getModel('catalog/product')->getCollection();
+        $productCollection->setStoreId($storeId);
         $productCollection->addFieldToFilter('entity_id', array('in' => $productIds));
         $productCollection->addAttributeToSelect($motorsSpecificsAttribute);
 
-        foreach ($productIds as $productId) {
-            $product = $productCollection->getItemByColumnValue('entity_id', $productId);
+        foreach ($productCollection->getItems() as $itemId => $item) {
 
-            if (is_null($product)) {
-                continue;
+            $currentAttributeValue = $item->getData($motorsSpecificsAttribute);
+            $newAttributeValue = $attributeValue;
+
+            if (!empty($currentAttributeValue)) {
+                $newAttributeValue = $currentAttributeValue . $attributeSeparator . $attributeValue;
             }
 
-            $product->setStoreId($storeId);
-            /** @var $magentoProduct Ess_M2ePro_Model_Magento_Product */
-            $magentoProduct = Mage::getModel('M2ePro/Magento_Product');
-            $magentoProduct->setProduct($product);
-            $magentoProduct->saveAttribute($motorsSpecificsAttribute, $attributeValue, $overwrite, $attributeSeparator);
+            Mage::getSingleton('catalog/product_action')->updateAttributes(
+                array($itemId),
+                array($motorsSpecificsAttribute => $newAttributeValue),
+                $storeId
+            );
         }
     }
 

@@ -9,6 +9,10 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_List_Single
 {
     // ########################################
 
+    private $mayBeDuplicateWasCreated = false;
+
+    // ########################################
+
     protected function getCommand()
     {
         return array('item','add','single');
@@ -69,20 +73,8 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_List_Single
            $variation->deleteInstance();
         }
 
-        $tempParams = $this->params;
-        $tempParams['logs_action_id'] = $this->logsActionId;
-        $tempParams['logs_initiator'] = Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN;
-        if ($this->params['status_changer'] == Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_UNKNOWN) {
-            $tempParams['logs_initiator'] = Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN;
-        } else if ($this->params['status_changer'] == Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_USER) {
-            $tempParams['logs_initiator'] = Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER;
-        } else {
-            $tempParams['logs_initiator'] = Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION;
-        }
-        $tempParams['logs_action'] = $this->getListingsLogsCurrentAction();
-
         $helper = Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper');
-        $tempRequestData = $helper->getListRequestData($this->listingProduct, $tempParams);
+        $tempRequestData = $helper->getListRequestData($this->listingProduct, $this->params);
         $this->logAdditionalWarningMessages($this->listingProduct);
 
         return $this->nativeRequestData = $tempRequestData;
@@ -98,6 +90,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_List_Single
     protected function prepareResponseData($response)
     {
         if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
+            $this->checkTheDuplicateWasCreated();
             return $response;
         }
 
@@ -106,7 +99,8 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_List_Single
             'start_date_raw' => $response['ebay_start_date_raw'],
             'end_date_raw' => $response['ebay_end_date_raw'],
             'is_eps_ebay_images_mode' => $response['is_eps_ebay_images_mode'],
-            'ebay_item_fees' => $response['ebay_item_fees']
+            'ebay_item_fees' => $response['ebay_item_fees'],
+            'is_images_upload_error' => $this->isImagesUploadError($this->messages)
         );
 
         Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')
@@ -123,6 +117,50 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_List_Single
                                               Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
 
         return $response;
+    }
+
+    // ########################################
+
+    protected function processResponseInfo($responseInfo)
+    {
+        try {
+            parent::processResponseInfo($responseInfo);
+        } catch (Exception $exception) {
+
+            if (strpos($exception->getMessage(), 'code:34') === false ||
+                $this->account->getChildObject()->isModeSandbox()) {
+                throw $exception;
+            }
+
+            $this->mayBeDuplicateWasCreated = true;
+        }
+    }
+
+    protected function checkTheDuplicateWasCreated()
+    {
+        if (!$this->mayBeDuplicateWasCreated) {
+            return;
+        }
+
+        $productAdditionalData = $this->listingProduct->getAdditionalData();
+        $productAdditionalData['last_failed_action_data'] = array(
+            'native_request_data' => $this->nativeRequestData,
+            'previous_status' => $this->listingProduct->getStatus(),
+            'action' => Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_LIST,
+            'request_time' => Mage::helper('M2ePro')->getCurrentGmtDate(),
+        );
+
+        $this->listingProduct->addData(array(
+            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_BLOCKED,
+            'additional_data' => json_encode($productAdditionalData),
+        ))->save();
+
+        $message = array(
+            parent::MESSAGE_TEXT_KEY => 'An error occured while listing the item. '.
+                'The item has been blocked. The next M2E Synchronization will resolve the problem.',
+            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING,
+        );
+        $this->addListingsProductsLogsMessage($this->listingProduct, $message);
     }
 
     // ########################################

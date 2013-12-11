@@ -111,7 +111,7 @@
                         <label><?php echo Mage::helper('M2ePro')->__('Product Status'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <select id="relist_status_enabled" name="synchronization[relist_status_enabled]" class="required-entry">
+                        <select id="relist_status_enabled" name="synchronization[relist_status_enabled]" class="required-entry M2ePro-validate-stop-relist-conditions-product-status">
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_STATUS_ENABLED_NONE; ?>" <?php if ($formData['relist_status_enabled'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_STATUS_ENABLED_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Any'); ?></option>
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_STATUS_ENABLED_YES; ?>" <?php if ($formData['relist_status_enabled'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_STATUS_ENABLED_YES): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Enabled'); ?></option>
                         </select>
@@ -126,7 +126,7 @@
                         <label><?php echo Mage::helper('M2ePro')->__('Stock Availability'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <select id="relist_is_in_stock" name="synchronization[relist_is_in_stock]" class="required-entry">
+                        <select id="relist_is_in_stock" name="synchronization[relist_is_in_stock]" class="required-entry M2ePro-validate-stop-relist-conditions-stock-availability">
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_IS_IN_STOCK_NONE; ?>" <?php if ($formData['relist_is_in_stock'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_IS_IN_STOCK_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Any'); ?></option>
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_IS_IN_STOCK_YES; ?>" <?php if ($formData['relist_is_in_stock'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_IS_IN_STOCK_YES): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('In Stock'); ?></option>
                         </select>
@@ -141,7 +141,7 @@
                         <label><?php echo Mage::helper('M2ePro')->__('Item Quantity'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <select id="relist_qty" name="synchronization[relist_qty]" class="required-entry">
+                        <select id="relist_qty" name="synchronization[relist_qty]" class="required-entry M2ePro-validate-stop-relist-conditions-item-qty">
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_QTY_NONE; ?>" <?php if ($formData['relist_qty'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_QTY_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Any'); ?></option>
                             <!-- <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_QTY_LESS; ?>" <?php if ($formData['relist_qty'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_QTY_LESS): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Less'); ?></option> -->
                             <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_QTY_MORE; ?>" <?php if ($formData['relist_qty'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::RELIST_QTY_MORE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('More or Equal'); ?></option>
@@ -170,7 +170,7 @@
                         <label for="relist_qty_value_max"><?php echo Mage::helper('M2ePro')->__('Max Item Quantity'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <input id="relist_qty_value_max" name="synchronization[relist_qty_value_max]" value="<?php echo $this->escapeHtml($formData['relist_qty_value_max']); ?>" type="text" class="M2ePro-required-when-visible input-text validate-digits" />
+                        <input id="relist_qty_value_max" name="synchronization[relist_qty_value_max]" value="<?php echo $this->escapeHtml($formData['relist_qty_value_max']); ?>" type="text" class="M2ePro-required-when-visible input-text validate-digits M2ePro-validate-conditions-between" />
                     </td>
                 </tr>
 

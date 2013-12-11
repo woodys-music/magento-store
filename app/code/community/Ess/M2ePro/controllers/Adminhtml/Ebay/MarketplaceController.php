@@ -58,8 +58,6 @@ class Ess_M2ePro_Adminhtml_Ebay_MarketplaceController extends Ess_M2ePro_Control
             }
             $marketplace->setData('status', $newStatus)->save();
         }
-
-        exit();
     }
 
     //#############################################
@@ -82,10 +80,10 @@ class Ess_M2ePro_Adminhtml_Ebay_MarketplaceController extends Ess_M2ePro_Control
     public function isExistDeletedCategoriesAction()
     {
         if (Mage::helper('M2ePro/Component_Ebay_Category_Ebay')->isExistDeletedCategories()) {
-            exit('1');
+            return $this->getResponse()->setBody('1');
         }
 
-        exit('0');
+        return $this->getResponse()->setBody('0');
     }
 
     //#############################################

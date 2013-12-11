@@ -55,43 +55,44 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_OtherItem_Revise_Single
 
     protected function prepareResponseData($response)
     {
-        if ($this->resultType != parent::MESSAGE_TYPE_ERROR) {
+        if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
+            return $response;
+        }
 
-            $tempParams = array(
-                'start_date_raw' => $response['ebay_start_date_raw'],
-                'end_date_raw' => $response['ebay_end_date_raw']
+        $tempParams = array(
+            'start_date_raw' => $response['ebay_start_date_raw'],
+            'end_date_raw' => $response['ebay_end_date_raw']
+        );
+
+        if ($response['already_stop']) {
+
+            $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
+            Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
+                    ->updateAfterStopAction($this->otherListing, $this->nativeRequestData,
+                                            array_merge($this->params,$tempParams));
+
+            $message = array(
+                // Parser hack -> Mage::helper('M2ePro')->__('Item was already stopped on eBay');
+                parent::MESSAGE_TEXT_KEY => 'Item was already stopped on eBay',
+                parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR
             );
 
-            if ($response['already_stop']) {
+            $this->addProductsLogsMessage($this->otherListing, $message,
+                                          Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
+        } else {
 
-                $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
-                Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
-                        ->updateAfterStopAction($this->otherListing, $this->nativeRequestData,
-                                                array_merge($this->params,$tempParams));
+            Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
+                        ->updateAfterReviseAction($this->otherListing, $this->nativeRequestData,
+                                                  array_merge($this->params,$tempParams));
 
-                $message = array(
-                    // Parser hack -> Mage::helper('M2ePro')->__('Item was already stopped on eBay');
-                    parent::MESSAGE_TEXT_KEY => 'Item was already stopped on eBay',
-                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR
-                );
+            $message = array(
+                // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully revised');
+                parent::MESSAGE_TEXT_KEY => $this->getSuccessfullyMessage(),
+                parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_SUCCESS
+            );
 
-                $this->addProductsLogsMessage($this->otherListing, $message,
-                                              Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-            } else {
-
-                Mage::getModel('M2ePro/Connector_Server_Ebay_OtherItem_Helper')
-                            ->updateAfterReviseAction($this->otherListing, $this->nativeRequestData,
-                                                      array_merge($this->params,$tempParams));
-
-                $message = array(
-                    // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully revised');
-                    parent::MESSAGE_TEXT_KEY => $this->getSuccessfullyMessage(),
-                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_SUCCESS
-                );
-
-                $this->addProductsLogsMessage($this->otherListing, $message,
-                                              Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-            }
+            $this->addProductsLogsMessage($this->otherListing, $message,
+                                          Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         }
 
         return $response;

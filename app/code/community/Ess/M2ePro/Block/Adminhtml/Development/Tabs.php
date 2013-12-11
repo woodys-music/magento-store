@@ -86,11 +86,13 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs extends Mage_Adminhtml_Block_W
             'content'   => $this->getLayout()->createBlock('M2ePro/adminhtml_development_tabs_debug')->toHtml(),
         ));
 
-        $buildBlock = $this->getLayout()->createBlock('M2ePro/adminhtml_development_tabs_build');
-        if ($buildBlock) {
+        $block = 'M2ePro/adminhtml_development_tabs_build';
+        $blockClassName = Mage::getConfig()->getBlockClassName($block);
+
+        if (class_exists($blockClassName, false) || mageFindClassFile($blockClassName)) {
             $this->addTab(Ess_M2ePro_Helper_View_Development::TAB_BUILD, array(
                 'label'     => $this->__('Build'),
-                'content'   => $buildBlock->toHtml(),
+                'content'   => $this->getLayout()->createBlock($block)->toHtml(),
             ));
         }
 

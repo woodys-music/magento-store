@@ -7,6 +7,9 @@
 class Ess_M2ePro_Model_Connector_Server_Buy_Search_Items
     extends Ess_M2ePro_Model_Connector_Server_Buy_Requester
 {
+    const SEARCH_TYPE_GENERAL_ID = 'SKU';
+    const SEARCH_TYPE_UPC        = 'UPC';
+
     // ########################################
 
     public function getCommand()

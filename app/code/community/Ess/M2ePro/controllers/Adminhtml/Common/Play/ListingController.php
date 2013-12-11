@@ -180,12 +180,12 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
                 $backUrl = $this->getUrl('*/*/view', array('id' => $listing->getId()));
             }
 
-            exit($backUrl);
+            return $this->getResponse()->setBody($backUrl);
         }
 
         //---------------
 
-        exit($listing->getId());
+        return $this->getResponse()->setBody($listing->getId());
     }
 
     public function addProductsAction()
@@ -233,16 +233,16 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             }
 
             $response = array('redirect' => $backUrl);
-            exit(json_encode($response));
+            return $this->getResponse()->setBody(json_encode($response));
         }
 
         $response = array('redirect' => '');
-        exit(json_encode($response));
+        return $this->getResponse()->setBody(json_encode($response));
     }
 
     public function getProductsFromCategoriesAction()
     {
-        $hideProductsOthersListings = (bool)$this->getRequest()->getParam('hide_products_others_listings', false);
+        $hideProductsOthersListings = (bool)$this->getRequest()->getParam('hide_products_others_listings', true);
         $listingId = $this->getRequest()->getParam('listing_id');
         $listing = Mage::helper('M2ePro/Component_Play')->getCachedObject('Listing',$listingId);
 
@@ -276,8 +276,6 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         if (!empty($products)) {
             echo implode(',', $products);
         }
-
-        exit();
     }
 
     //#############################################
@@ -587,7 +585,6 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         // Set Hide Products In Other Listings
         // ---------------------------
         $prefix = $this->getHideProductsInOtherListingsPrefix();
-
         Mage::helper('M2ePro/Data_Global')->setValue('hide_products_others_listings_prefix', $prefix);
         // ---------------------------
 
@@ -625,7 +622,6 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         // Set Hide Products In Other Listings
         // ---------------------------
         $prefix = $this->getHideProductsInOtherListingsPrefix();
-
         Mage::helper('M2ePro/Data_Global')->setValue('hide_products_others_listings_prefix', $prefix);
         // ---------------------------
 
@@ -857,7 +853,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         $model->addData($templateData)->save();
         $newData = $model->getDataSnapshot();
 
-        $model->getChildObject()->setIsNeedSynchronize($newData,$oldData);
+        $model->getChildObject()->setSynchStatusNeed($newData,$oldData);
 
         $this->_getSession()->addSuccess(Mage::helper('M2ePro')->__('The listing was successfully saved.'));
 
@@ -963,7 +959,6 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         // Set Hide Products In Other Listings
         // ---------------------------
         $prefix = $this->getHideProductsInOtherListingsPrefix();
-
         Mage::helper('M2ePro/Data_Global')->setValue('hide_products_others_listings_prefix', $prefix);
         // ---------------------------
 
@@ -1024,7 +1019,6 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             // Set Hide Products In Other Listings
             // ---------------------------
             $prefix = $this->getHideProductsInOtherListingsPrefix();
-
             Mage::helper('M2ePro/Data_Global')->setValue('hide_products_others_listings_prefix', $prefix);
             // ---------------------------
 
@@ -1120,7 +1114,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         // ---------------------------
         $prefix = $this->getHideProductsInOtherListingsPrefix();
 
-        $hideProductsOtherParam = $this->getRequest()->getPost('hide_products_others_listings', 0);
+        $hideProductsOtherParam = $this->getRequest()->getPost('hide_products_others_listings', 1);
         Mage::helper('M2ePro/Data_Session')->setValue($prefix, $hideProductsOtherParam);
 
         Mage::helper('M2ePro/Data_Global')->setValue('hide_products_others_listings_prefix', $prefix);
@@ -1184,27 +1178,35 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
 
     public function runListProductsAction()
     {
-        exit($this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_LIST));
+        return $this->getResponse()->setBody(
+            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_LIST)
+        );
     }
 
     public function runReviseProductsAction()
     {
-        exit($this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_REVISE));
+        return $this->getResponse()->setBody(
+            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_REVISE)
+        );
     }
 
     public function runRelistProductsAction()
     {
-        exit($this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_RELIST));
+        return $this->getResponse()->setBody(
+            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_RELIST)
+        );
     }
 
     public function runStopProductsAction()
     {
-        exit($this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_STOP));
+        return $this->getResponse()->setBody(
+            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_STOP)
+        );
     }
 
     public function runStopAndRemoveProductsAction()
     {
-        exit($this->processConnector(
+        return $this->getResponse()->setBody($this->processConnector(
             Ess_M2ePro_Model_Connector_Server_Play_Product_Dispatcher::ACTION_STOP, array('remove' => true)
         ));
     }
@@ -1216,7 +1218,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         $productId = $this->getRequest()->getParam('product_id');
 
         if (empty($productId)) {
-            exit('ERROR: No product id!');
+            return $this->getResponse()->setBody('ERROR: No product id!');
         }
 
         /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
@@ -1246,7 +1248,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         $query = $this->getRequest()->getParam('query');
 
         if (empty($productId)) {
-            exit('No product_id!');
+            return $this->getResponse()->setBody('No product_id!');
         }
 
         /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
@@ -1275,7 +1277,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             $message = Mage::helper('M2ePro')->__('Server is currently unavailable. Please try again later.');
             if ($result === false) {
                 $response = array('result' => 'error','data' => $message);
-                exit(json_encode($response));
+                return $this->getResponse()->setBody(json_encode($response));
             }
 
             Mage::helper('M2ePro/Data_Global')->setValue('temp_data',$result);
@@ -1293,7 +1295,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             'data' => $data
         );
 
-        exit(json_encode($response));
+        return $this->getResponse()->setBody(json_encode($response));
     }
 
     public function searchPlayIDAutoAction()
@@ -1301,7 +1303,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         $productIds = $this->getRequest()->getParam('product_ids');
 
         if (empty($productIds)) {
-            exit ('You should select one or more products');
+            return $this->getResponse()->setBody('You should select one or more products');
         }
 
         $productIds = explode(',', $productIds);
@@ -1328,11 +1330,11 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             $result = $dispatcher->runAutomatic($productsToSearch);
 
             if ($result === false) {
-                exit('1');
+                return $this->getResponse()->setBody('1');
             }
         }
 
-        exit('0');
+        return $this->getResponse()->setBody('0');
     }
 
     //--------------------------------------------
@@ -1343,7 +1345,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         $generalId = $this->getRequest()->getParam('general_id');
 
         if (empty($productId) || empty($generalId)) {
-            exit('You should provide correct parameters.');
+            return $this->getResponse()->setBody('You should provide correct parameters.');
         }
 
         /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
@@ -1366,7 +1368,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
 
             $listingProduct->save();
         }
-        exit('0');
+        return $this->getResponse()->setBody('0');
     }
 
     public function unmapFromPlayIDAction()
@@ -1374,7 +1376,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
         $productIds = $this->getRequest()->getParam('product_ids');
 
         if (empty($productIds)) {
-            exit('You should provide correct parameters.');
+            return $this->getResponse()->setBody('You should provide correct parameters.');
         }
 
         $productIds = explode(',', $productIds);
@@ -1410,7 +1412,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_ListingController
             $listingProduct->save();
         }
 
-        exit(json_encode(array(
+        return $this->getResponse()->setBody(json_encode(array(
             'type' => $type,
             'message' => $message
         )));

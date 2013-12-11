@@ -72,9 +72,8 @@
 ?>
 
 <?php if (!empty($ebayVariationIgnoreData)): ?>
-    <strong><?php echo $notificationIndex; ?>) <?php echo Mage::helper('M2ePro')->__('Ignore variation option has been removed from the settings.
-    <br/>&nbsp;&nbsp;&nbsp;&nbsp;Products variations will be always listed if eBay site supports it.
-    <br/>&nbsp;&nbsp;&nbsp;&nbsp;Below you can find the listings that used this option and ignored variations while listing variation items on eBay.
+    <strong><?php echo $notificationIndex; ?>) <?php echo Mage::helper('M2ePro')->__('Ignore variation option has been moved from eBay General template to the Selling Format policy and set to default \'No\'.
+    <br/>&nbsp;&nbsp;&nbsp;&nbsp;Below you can find the listings that used \'Yes\' in this option. Please, check their the Selling Format settings to make sure the option has the value you need.
     ') ?></strong>
     <div class="block_notices_module" title="" subtitle="" collapseable="no" hideblock="no" always_show="yes">
         <?php $tempIndex = 1; ?>

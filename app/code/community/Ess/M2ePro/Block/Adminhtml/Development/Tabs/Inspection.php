@@ -44,6 +44,9 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs_Inspection extends Mage_Adminh
         $this->setChild('magento', $this->getLayout()->createBlock(
             'M2ePro/adminhtml_development_inspection_magento'
         ));
+        $this->setChild('database_broken', $this->getLayout()->createBlock(
+            'M2ePro/adminhtml_development_inspection_databaseBrokenTables'
+        ));
         //----------------------------
 
         return parent::_beforeToHtml();

@@ -181,23 +181,28 @@ class Ess_M2ePro_Helper_Magento extends Mage_Core_Helper_Abstract
         $modules = Mage::getConfig()->getNode('modules')->asArray();
 
         $conflictedModules = array(
-            '/TBT_Enhancedgrid/i',
-            '/warp/i',
-            '/Auctionmaid_/i',
+            '/TBT_Enhancedgrid/i' => '',
+            '/warp/i' => '',
+            '/Auctionmaid_/i' => '',
 
-            '/Exactor_Tax/i',
-            '/Exactory_Core/i',
-            '/Exactor_ExactorSettings/i',
-            '/Exactor_Sales/i',
-            '/Aoe_AsyncCache/i',
-            '/Idev_OneStepCheckout/i'
+            '/Exactor_Tax/i' => '',
+            '/Exactory_Core/i' => '',
+            '/Exactor_ExactorSettings/i' => '',
+            '/Exactor_Sales/i' => '',
+            '/Aoe_AsyncCache/i' => '',
+            '/Idev_OneStepCheckout/i' => '',
+
+            '/Mercent_Sales/i' => '',
+            '/Webtex_Fba/i' => '',
         );
 
         $result = array();
-        foreach($conflictedModules as $expression) {
+        foreach($conflictedModules as $expression=>$description) {
 
             foreach ($modules as $module => $data) {
-                preg_match($expression, $module) && $result[$module] = $data;
+                if (preg_match($expression, $module)) {
+                    $result[$module] = array_merge($data, array('description'=>$description));
+                }
             }
         }
 
@@ -352,7 +357,8 @@ class Ess_M2ePro_Helper_Magento extends Mage_Core_Helper_Abstract
     {
         $paths = array(
             'app/code/local/Mage',
-            'app/code/local/Zend'
+            'app/code/local/Zend',
+            'app/code/local/Ess'
         );
 
         foreach ($paths as &$patch) {
@@ -370,8 +376,11 @@ class Ess_M2ePro_Helper_Magento extends Mage_Core_Helper_Abstract
 
         $result = array();
         foreach ($overwritesResult as $item) {
-            $originalFilePath = str_replace('/local/', '/core/', $item);
-            if (is_file($originalFilePath)) {
+
+            $isOriginalCoreFileExist = is_file(str_replace('/local/', '/core/', $item));
+            $isOriginalCommunityFileExist = is_file(str_replace('/local/', '/community/', $item));
+
+            if ($isOriginalCoreFileExist || $isOriginalCommunityFileExist) {
                 $result[] = str_replace(Mage::getBaseDir() . DS,'',$item);
             }
         }

@@ -8,6 +8,12 @@ EbayListingSettingsGridHandler = Class.create(EbayListingViewGridHandler, {
 
         this.actions = Object.extend(this.actions,{
 
+            editPrimaryCategorySettingsAction: function(id) {
+                this.editCategorySettings(id);
+            }.bind(this),
+            editStorePrimaryCategorySettingsAction: function(id) {
+                this.editCategorySettings(id);
+            }.bind(this),
             editAllSettingsAction: function (id) {
                 this.editSettings(id);
             }.bind(this),
@@ -21,11 +27,22 @@ EbayListingSettingsGridHandler = Class.create(EbayListingViewGridHandler, {
                 this.editSettings(id, 'synchronization');
             }.bind(this),
 
-            editMotorsSpecificsAction: function() {
-                EbayMotorSpecificHandlerObj.openPopUp();
-            }
+            editMotorsSpecificsAction: function(id) {
+                this.openMotorsSpecificsPopup(id);
+            }.bind(this)
 
         });
+    },
+
+    //----------------------------------
+
+    showEpidsDetails: function(content)
+    {
+        this.openPopUp(
+            M2ePro.translator.translate('Compatibility Attribute ePIDs'),
+            content,
+            {width: 500, height: 405}
+        );
     },
 
     //----------------------------------
@@ -51,6 +68,12 @@ EbayListingSettingsGridHandler = Class.create(EbayListingViewGridHandler, {
                 ebayListingTemplateEditTabsJsTabs.moveTabContentInDest();
             }.bind(this)
         });
+    },
+
+    openMotorsSpecificsPopup: function(id)
+    {
+        this.selectedProductsIds = id ? [id] : this.getSelectedProductsArray();
+        EbayMotorSpecificHandlerObj.openPopUp();
     },
 
     //----------------------------------

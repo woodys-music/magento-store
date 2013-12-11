@@ -72,41 +72,23 @@ class Ess_M2ePro_Model_Ebay_Synchronization_Tasks_Templates_Revise
 
     private function execute()
     {
-        $this->executeQtyChanged();
+        $tasks = array(
+            'executeQtyChanged',
+            'executePriceChanged',
+            'executeTitleChanged',
+            'executeSubTitleChanged',
+            'executeDescriptionChanged',
+            'executeGalleryChanged',
+            'executeNeedSynchronize',
+            'executeTotal'
+        );
 
-        $this->_lockItem->setPercents(self::PERCENTS_START + 1*self::PERCENTS_INTERVAL/8);
-        $this->_lockItem->activate();
+        foreach ($tasks as $i => $task) {
+            $this->$task();
 
-        $this->executePriceChanged();
-
-        $this->_lockItem->setPercents(self::PERCENTS_START + 2*self::PERCENTS_INTERVAL/8);
-        $this->_lockItem->activate();
-
-        //-------------------------
-
-        $this->executeTitleChanged();
-
-        $this->_lockItem->setPercents(self::PERCENTS_START + 3*self::PERCENTS_INTERVAL/8);
-        $this->_lockItem->activate();
-
-        $this->executeSubTitleChanged();
-
-        $this->_lockItem->setPercents(self::PERCENTS_START + 4*self::PERCENTS_INTERVAL/8);
-        $this->_lockItem->activate();
-
-        $this->executeDescriptionChanged();
-
-        $this->_lockItem->setPercents(self::PERCENTS_START + 5*self::PERCENTS_INTERVAL/8);
-        $this->_lockItem->activate();
-
-        $this->executeGalleryChanged();
-
-        $this->_lockItem->setPercents(self::PERCENTS_START + 6*self::PERCENTS_INTERVAL/8);
-        $this->_lockItem->activate();
-
-        //-------------------------
-
-        $this->executeIsNeedSynchronize();
+            $this->_lockItem->setPercents(self::PERCENTS_START + ($i+1)*self::PERCENTS_INTERVAL/count($tasks));
+            $this->_lockItem->activate();
+        }
     }
 
     //####################################
@@ -485,19 +467,23 @@ class Ess_M2ePro_Model_Ebay_Synchronization_Tasks_Templates_Revise
 
     //####################################
 
-    private function executeIsNeedSynchronize()
+    private function executeNeedSynchronize()
     {
         $this->_profiler->addTimePoint(__METHOD__,'Execute is need synchronize');
 
         $listingProductCollection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Listing_Product');
         $listingProductCollection->addFieldToFilter('status', Ess_M2ePro_Model_Listing_Product::STATUS_LISTED);
-        $listingProductCollection->addFieldToFilter('is_need_synchronize', 1);
+        $listingProductCollection->addFieldToFilter('synch_status', Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_NEED);
+
+        $listingProductCollection->getSelect()->limit(100);
 
         /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
         foreach ($listingProductCollection->getItems() as $listingProduct) {
 
+            $listingProduct->setData('synch_status',Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_SKIP)->save();
+
             /* @var $synchTemplate Ess_M2ePro_Model_Template_Synchronization */
-            $synchTemplate = $listingProduct->getListing()->getChildObject()->getSynchronizationTemplate();
+            $synchTemplate = $listingProduct->getChildObject()->getSynchronizationTemplate();
 
             $isRevise = false;
             foreach ($listingProduct->getSynchReasons() as $reason) {
@@ -558,13 +544,80 @@ class Ess_M2ePro_Model_Ebay_Synchronization_Tasks_Templates_Revise
                         Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_REVISE,
                         array('all_data'=>true)
                  );
-
-            $dataForUpdate = array(
-                'is_need_synchronize' => 0,
-                'synch_reasons' => null
-            );
-            $listingProduct->addData($dataForUpdate)->save();
         }
+
+        $this->_profiler->saveTimePoint(__METHOD__);
+    }
+
+    //####################################
+
+    private function executeTotal()
+    {
+        $this->_profiler->addTimePoint(__METHOD__,'Execute revise all');
+
+        $lastListingProductProcessed = Mage::helper('M2ePro/Module')->getSynchronizationConfig()->getGroupValue(
+            '/ebay/templates/revise/total/','last_listing_product_id'
+        );
+        if (is_null($lastListingProductProcessed)) {
+            return;
+        }
+
+        $itemsPerCycle = 100;
+
+        /* @var $collection Varien_Data_Collection_Db */
+        $collection = Mage::helper('M2ePro/Component_Ebay')
+            ->getCollection('Listing_Product')
+            ->addFieldToFilter('id',array('gt' => $lastListingProductProcessed))
+            ->addFieldToFilter('status', Ess_M2ePro_Model_Listing_Product::STATUS_LISTED);
+
+        $collection->getSelect()->limit($itemsPerCycle);
+        $collection->getSelect()->order('id ASC');
+
+        /* @var $listingProduct Ess_M2ePro_Model_Listing_Product */
+        foreach ($collection->getItems() as $listingProduct) {
+
+            if ($this->_runnerActions
+                     ->isExistProductAction(
+                            $listingProduct,
+                            Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_REVISE,
+                            array('all_data'=>true))
+            ) {
+                continue;
+            }
+
+            if (!$listingProduct->isRevisable()) {
+                continue;
+            }
+
+            if (!$listingProduct->getChildObject()->isSetCategoryTemplate()) {
+                continue;
+            }
+
+            if ($listingProduct->isLockedObject(NULL) ||
+                $listingProduct->isLockedObject('in_action')) {
+                continue;
+            }
+
+            $this->_runnerActions
+                 ->setProduct(
+                        $listingProduct,
+                        Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_REVISE,
+                        array('all_data'=>true)
+                 );
+        }
+
+        $lastListingProduct = $collection->getLastItem()->getId();
+        if ($collection->count() < $itemsPerCycle) {
+            Mage::helper('M2ePro/Module')->getSynchronizationConfig()->setGroupValue(
+                '/ebay/templates/revise/total/','end_date', Mage::helper('M2ePro')->getCurrentGmtDate()
+            );
+
+            $lastListingProduct = NULL;
+        }
+
+        Mage::helper('M2ePro/Module')->getSynchronizationConfig()->setGroupValue(
+            '/ebay/templates/revise/total/','last_listing_product_id', $lastListingProduct
+        );
 
         $this->_profiler->saveTimePoint(__METHOD__);
     }

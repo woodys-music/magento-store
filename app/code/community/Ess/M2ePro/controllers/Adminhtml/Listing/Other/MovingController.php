@@ -30,7 +30,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
         );
 
         $component = ucfirst(strtolower($this->getRequest()->getParam('componentMode')));
-        $movingHandlerJs = $component.'ListingOtherGridObj.movingHandler';
+        $movingHandlerJs = $component.'ListingOtherGridHandlerObj.movingHandler';
 
         $block = $this->loadLayout()->getLayout()->createBlock(
             'M2ePro/adminhtml_listing_moving_grid','',
@@ -88,7 +88,9 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
                 ->fetchAll();
 
             foreach ($tempData as $data) {
-                $data['product_id'] || exit('1');
+                if (!$data['product_id']) {
+                    return $this->getResponse()->setBody('1');
+                }
             }
 
             $listingOtherCollection->getSelect()->join(
@@ -111,7 +113,9 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
                 ->query()
                 ->fetchAll();
 
-            count($tempData) > 1 && exit('2');
+            if (count($tempData) > 1) {
+                return $this->getResponse()->setBody('2');
+            }
         }
 
         $marketplaceId = $tempData[0]['marketplace_id'];
@@ -124,7 +128,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
         );
 
         if ($componentMode == Ess_M2ePro_Helper_Component_Ebay::NICK) {
-            exit(json_encode($response));
+            return $this->getResponse()->setBody(json_encode($response));
         }
 
         $collection = Mage::helper('M2ePro/Component')
@@ -138,7 +142,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
             $response['offerListingCreation'] = true;
         }
 
-        exit(json_encode($response));
+        return $this->getResponse()->setBody(json_encode($response));
     }
 
     //#############################################
@@ -165,11 +169,13 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
             }
         }
 
-        count($failedProducts) == 0 && exit(json_encode(array(
-            'result' => 'success'
-        )));
+        if (count($failedProducts) == 0) {
+            return $this->getResponse()->setBody(json_encode(array(
+                'result' => 'success'
+            )));
+        }
 
-        exit(json_encode(array(
+        return $this->getResponse()->setBody(json_encode(array(
             'result' => 'fail',
             'failed_products' => $failedProducts
         )));
@@ -248,10 +254,11 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
             $otherListingProductInstance->deleteInstance();
         };
 
-        ($errors == 0)
-            ? exit(json_encode(array('result'=>'success')))
-            : exit(json_encode(array('result'=>'error',
-                                     'errors'=>$errors)));
+        if ($errors == 0) {
+            return $this->getResponse()->setBody(json_encode(array('result'=>'success')));
+        } else {
+            return $this->getResponse()->setBody(json_encode(array('result'=>'error', 'errors'=>$errors)));
+        }
     }
 
     //#############################################
@@ -263,7 +270,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
         $marketplaceId = (int)$this->getRequest()->getParam('marketplaceId');
 
         if (!$componentMode || !$accountId || !$marketplaceId) {
-            exit(json_encode(array(
+            return $this->getResponse()->setBody(json_encode(array(
                 'result' => 'error',
                 'message' => Mage::helper('M2ePro')->__('Component Mode or Account ID or Marketplace ID is empty.')
             )));
@@ -277,7 +284,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
         $otherListingInstance = $temp->getFirstItem();
 
         if (!$otherListingInstance->getId()) {
-            exit(json_encode(array(
+            return $this->getResponse()->setBody(json_encode(array(
                 'result' => 'error',
                 'message' => Mage::helper('M2ePro')->__('No Other Listings found.')
             )));

@@ -136,7 +136,7 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
     public function checkCustomerIdAction()
     {
         $customerId = $this->getRequest()->getParam('customer_id');
-        exit(json_encode(array(
+        return $this->getResponse()->setBody(json_encode(array(
             'ok' => (bool)Mage::getModel('customer/customer')->load($customerId)->getId()
         )));
     }
@@ -622,7 +622,7 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         $id = $this->getRequest()->getParam('id');
         $model = Mage::helper('M2ePro/Component_Ebay')->getCachedObject('Account',$id);
 
-        exit(json_encode(array(
+        return $this->getResponse()->setBody(json_encode(array(
             'ok' => (bool)$model->getChildObject()->hasFeedbackTemplate()
         )));
     }
@@ -640,14 +640,14 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         !is_null($id) && $model->load($id)->addData($data);
         $model->save();
 
-        exit('ok');
+        return $this->getResponse()->setBody('ok');
     }
 
     public function feedbackTemplateDeleteAction()
     {
         $id = $this->getRequest()->getParam('id');
         Mage::getModel('M2ePro/Ebay_Feedback_Template')->loadInstance($id)->deleteInstance();
-        exit('ok');
+        return $this->getResponse()->setBody('ok');
     }
 
     //#############################################

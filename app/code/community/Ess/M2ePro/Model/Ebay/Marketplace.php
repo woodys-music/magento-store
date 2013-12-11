@@ -129,6 +129,11 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
         return (bool)(int)$this->getData('is_calculated_shipping');
     }
 
+    public function isGlobalShippingProgramEnabled()
+    {
+        return (bool)(int)$this->getData('is_global_shipping_program');
+    }
+
     // ########################################
 
     public function getCategory($categoryId)

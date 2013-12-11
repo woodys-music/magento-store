@@ -128,16 +128,19 @@
 
                     <tr>
                         <td class="label">
-                            <label><?php echo Mage::helper('M2ePro')->__('Hide Defined Item Specifics')?>: </label>
+                            <label><?php echo Mage::helper('M2ePro')->__('Item Specifics Step')?>: </label>
                         </td>
 
                         <td class="value">
                             <select name="use_last_specifics_mode">
-                                <option value="0" <?php if (!$this->use_last_specifics_mode): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('No'); ?></option>
-                                <option value="1" <?php if ($this->use_last_specifics_mode): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
+                                <option value="0" <?php if (!$this->use_last_specifics_mode): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Show'); ?></option>
+                                <option value="1" <?php if ($this->use_last_specifics_mode): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Not Show'); ?></option>
                             </select>
                             <p class="note">
-                                <span><?php echo Mage::helper('M2ePro')->__('Do not display  eBay category Item Specifics for which the settings were set. You can change these settings in Sell On eBay->Configuration->Categories In Use'); ?></span>
+                                <span><?php echo Mage::helper('M2ePro')->__('If you do not need to change Item Specifics details every time you add products, you can skip this step (set \'Not Show\').
+                                <br>
+                                <b>Note:</b> Predefined item specifics you can view and change in Sell On eBay -> Configuration -> Categories In Use.
+                                '); ?></span>
                             </p>
                         </td>
                     </tr>
@@ -147,7 +150,7 @@
                             <?php $currency = explode(',', $data['currency']);?>
                             <tr>
                                 <td class="label">
-                                    <label><?php echo $marketplace . Mage::helper('M2ePro')->__('Currency')?>: </label>
+                                    <label><?php echo $marketplace . ' ' . Mage::helper('M2ePro')->__('Currency')?>: </label>
                                 </td>
 
                                 <td class="value">
@@ -159,7 +162,7 @@
                                     </select>
 
                                     <p class="note">
-                                        <span><?php echo Mage::helper('M2ePro')->__('Choose the currency.'); ?></span>
+                                        <span><?php echo Mage::helper('M2ePro')->__('Choose the currency you want to sell for.'); ?></span>
                                     </p>
                                 </td>
                             </tr>

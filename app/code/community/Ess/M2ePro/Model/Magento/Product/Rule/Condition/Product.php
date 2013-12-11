@@ -209,24 +209,15 @@ class Ess_M2ePro_Model_Magento_Product_Rule_Condition_Product
      */
     public function loadAttributeOptions()
     {
-        $productAttributes = Mage::getResourceSingleton('catalog/product')
-            ->loadAllAttributes()
-            ->getAttributesByCode();
+        $productAttributes = Mage::helper('M2ePro/Magento_Attribute')->getAllAsObjects();
 
         $attributes = array();
         foreach ($productAttributes as $attribute) {
             /* @var $attribute Mage_Catalog_Model_Resource_Eav_Attribute */
-            if (!$attribute->isAllowedForRuleCondition()
-                || !$attribute->getDataUsingMethod($this->_isUsedForRuleProperty)
-            ) {
-                continue;
-            }
             $attributes[$attribute->getAttributeCode()] = $attribute->getFrontendLabel();
         }
 
         $this->_addSpecialAttributes($attributes);
-
-        asort($attributes);
         $this->setAttributeOption($attributes);
 
         return $this;
@@ -441,6 +432,13 @@ class Ess_M2ePro_Model_Magento_Product_Rule_Condition_Product
     public function getValueElement()
     {
         $element = parent::getValueElement();
+
+        if ($this->isFilterCustom($this->getAttribute())
+            && $this->getCustomFilterInstance($this->getAttribute())->getInputType() == 'date'
+        ) {
+            $element->setImage(Mage::getDesign()->getSkinUrl('images/grid-cal.gif'));
+        }
+
         if (is_object($this->getAttributeObject())) {
             switch ($this->getAttributeObject()->getFrontendInput()) {
                 case 'date':
@@ -459,10 +457,17 @@ class Ess_M2ePro_Model_Magento_Product_Rule_Condition_Product
      */
     public function getExplicitApply()
     {
+        if ($this->isFilterCustom($this->getAttribute())
+            && $this->getCustomFilterInstance($this->getAttribute())->getInputType() == 'date'
+        ) {
+            return true;
+        }
+
         switch ($this->getAttribute()) {
             case 'sku': case 'category_ids':
             return true;
         }
+
         if (is_object($this->getAttributeObject())) {
             switch ($this->getAttributeObject()->getFrontendInput()) {
                 case 'date':

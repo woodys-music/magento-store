@@ -4,6 +4,15 @@
     /** @var Ess_M2ePro_Helper_Magento_Attribute $magentoAttributeHelper */
     $magentoAttributeHelper = Mage::helper('M2ePro/Magento_Attribute');
 
+    $attributesByInputTypes = array(
+        'text' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text')),
+        'text_select' => $magentoAttributeHelper->filterByInputTypes($this->attributes, array('text', 'select')),
+        'text_images' => $magentoAttributeHelper->filterByInputTypes(
+            $this->attributes,
+            array('text', 'image', 'media_image', 'gallery', 'multiline', 'textarea', 'select', 'multiselect')
+        ),
+    );
+
     $formData = $this->getFormData();
 
     $default = $this->getDefault();
@@ -147,7 +156,7 @@
                                 <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Description::CONDITION_EBAY_NOT_WORKING; ?>" <?php if ($formData['condition_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::CONDITION_MODE_EBAY && $formData['condition_value'] == Ess_M2ePro_Model_Ebay_Template_Description::CONDITION_EBAY_NOT_WORKING): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('For Parts or Not Working'); ?></option>
                             </optgroup>
                             <optgroup class="simple_mode_disallowed" label="Magento Attributes" condition_mode="<?php echo Ess_M2ePro_Model_Ebay_Template_Description::CONDITION_MODE_ATTRIBUTE; ?>">
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text_select'] as $attribute) : ?>
                                     <option class="simple_mode_disallowed" value="<?php echo $attribute['code']; ?>" <?php if ($formData['condition_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::CONDITION_MODE_ATTRIBUTE && $formData['condition_attribute'] == $attribute['code']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                                 <?php endforeach; ?>
                             </optgroup>
@@ -241,9 +250,7 @@
                 <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_NONE; ?>" <?php if ($formData['image_main_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
                 <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_PRODUCT; ?>" <?php if ($formData['image_main_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_PRODUCT): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Product Base Image'); ?></option>
                 <optgroup label="<?php echo Mage::helper('M2ePro')->__('Magento Attributes'); ?>" image_main_mode="<?php echo Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_ATTRIBUTE; ?>">
-                    <?php if(!$magentoAttributeHelper->isExistInAttributesArray($formData['image_main_attribute'], $this->attributes) && $formData['image_main_attribute'] != '') : echo '<option value="'.$formData['image_main_attribute'].'" selected="selected">'.$magentoAttributeHelper->getAttributeLabel($formData['image_main_attribute']).'</option>'; endif; ?>
-                    <?php if($formData['image_main_attribute'] == '') : echo '<option style="display: none;"></option>'; endif; ?>
-                    <?php foreach($this->attributes as $attribute) : ?>
+                    <?php foreach($attributesByInputTypes['text_images'] as $attribute) : ?>
                         <option value="<?php echo $attribute['code']; ?>" <?php if ($attribute['code'] == $formData['image_main_attribute'] && $formData['image_main_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_ATTRIBUTE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                     <?php endforeach; ?>
                 </optgroup>
@@ -255,6 +262,18 @@
                                     <br/><b>Note:</b> Media Image Attribute or Attribute should contain absolute url. e.g. http://mymagentostore.com/images/baseimage.jpg'
                                 ); ?>
                             </span>
+            </p>
+        </td>
+    </tr>
+
+    <tr id="default_image_url_tr"<?php if ($formData['image_main_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::IMAGE_MAIN_MODE_NONE): ?> style="display: none;"<?php endif; ?>>
+        <td class="label">
+            <label for="default_image_url"><?php echo Mage::helper('M2ePro')->__('Default Image Url'); ?>:</label>
+        </td>
+        <td class="value">
+            <input id="default_image_url" name="description[default_image_url]" type="text" class="input-text" value="<?php echo $formData['default_image_url']; ?>" />
+            <p class="note">
+                <span><?php echo Mage::helper('M2ePro')->__('From 30 October 2013 eBay does not allow to list products without images. If a product does not have the Main Image this image will be used instead.<br><b>Note:</b> Use absolute url. e.g. http://mymagentostore.com/images/defaultimage.jpg'); ?></span>
             </p>
         </td>
     </tr>
@@ -292,9 +311,7 @@
                     <?php endfor ?>
                 </optgroup>
                 <optgroup label="<?php echo Mage::helper('M2ePro')->__('Magento Attributes'); ?>" gallery_images_mode="<?php echo Ess_M2ePro_Model_Ebay_Template_Description::GALLERY_IMAGES_MODE_ATTRIBUTE; ?>">
-                    <?php if(!$magentoAttributeHelper->isExistInAttributesArray($formData['gallery_images_attribute'], $this->attributes) && $formData['gallery_images_attribute'] != '') : echo '<option value="'.$formData['gallery_images_attribute'].'" selected="selected">'.$magentoAttributeHelper->getAttributeLabel($formData['gallery_images_attribute']).'</option>'; endif; ?>
-                    <?php if($formData['gallery_images_attribute'] == '') : echo '<option style="display: none;"></option>'; endif; ?>
-                    <?php foreach($this->attributes as $attribute) : ?>
+                    <?php foreach($attributesByInputTypes['text_images'] as $attribute) : ?>
                         <option value="<?php echo $attribute['code']; ?>" <?php if ($attribute['code'] == $formData['gallery_images_attribute'] && $formData['gallery_images_mode'] == Ess_M2ePro_Model_Ebay_Template_Description::GALLERY_IMAGES_MODE_ATTRIBUTE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                     <?php endforeach; ?>
                 </optgroup>
@@ -319,7 +336,6 @@
         <td class="value" style="width: auto;">
             <select id="variation_configurable_images" name="description[variation_configurable_images]">
                 <option value=""><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
-                <?php if(!$magentoAttributeHelper->isExistInAttributesArray($formData['variation_configurable_images'], $this->attributes) && $formData['variation_configurable_images'] != '') : echo '<option value="'.$formData['variation_configurable_images'].'" selected="selected">'.$magentoAttributeHelper->getAttributeLabel($formData['variation_configurable_images']).'</option>'; endif; ?>
                 <?php foreach($this->attributesConfigurable as $attribute) : ?>
                     <option value="<?php echo $attribute['code']; ?>" <?php if ($attribute['code'] == $formData['variation_configurable_images']): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                 <?php endforeach; ?>
@@ -732,6 +748,23 @@
 
                                 <tr>
                                     <td class="label">
+                                        <label for="select_m2epro_attributes_span"><?php echo Mage::helper('M2ePro')->__('M2ePro Attribute');?>:</label>
+                                    </td>
+                                    <td class="value">
+                                                    <span id="select_m2epro_attributes_span">
+                                                        <select id="select_m2epro_attributes" style="width: 150px;">
+                                                            <?php foreach($this->M2eProAttributes as $code => $attribute) : ?>
+                                                                <option value="<?php echo $code; ?>"><?php echo $attribute; ?></option>
+                                                            <?php endforeach; ?>
+                                                        </select>
+                                                    </span>
+                                        &nbsp;
+                                        <?php echo $this->getChildHtml('add_m2epro_attribute_button'); ?>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td class="label">
                                         <label><?php echo Mage::helper('M2ePro')->__('Product Image(s)');?>:</label>
                                     </td>
                                     <td class="value">
@@ -910,7 +943,7 @@
                         <select id="product_details_ean" name="description[product_details][ean]">
                             <option value=""><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
                             <optgroup label="Magento Attributes">
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text'] as $attribute) : ?>
                                     <option value="<?php echo $attribute['code']; ?>" <?php if ($formData['product_details']['ean'] == $attribute['code']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                                 <?php endforeach; ?>
                             </optgroup>
@@ -931,7 +964,7 @@
                         <select id="product_details_upc" name="description[product_details][upc]">
                             <option value=""><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
                             <optgroup label="Magento Attributes">
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text'] as $attribute) : ?>
                                     <option value="<?php echo $attribute['code']; ?>" <?php if ($formData['product_details']['upc'] == $attribute['code']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                                 <?php endforeach; ?>
                             </optgroup>
@@ -952,7 +985,7 @@
                         <select id="product_details_epid" name="description[product_details][epid]">
                             <option value=""><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
                             <optgroup label="Magento Attributes">
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text'] as $attribute) : ?>
                                     <option value="<?php echo $attribute['code']; ?>" <?php if ($formData['product_details']['epid'] == $attribute['code']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                                 <?php endforeach; ?>
                             </optgroup>
@@ -973,7 +1006,7 @@
                         <select id="product_details_isbn" name="description[product_details][isbn]">
                             <option value=""><?php echo Mage::helper('M2ePro')->__('None'); ?></option>
                             <optgroup label="Magento Attributes">
-                                <?php foreach($this->attributes as $attribute) : ?>
+                                <?php foreach($attributesByInputTypes['text'] as $attribute) : ?>
                                     <option value="<?php echo $attribute['code']; ?>" <?php if ($formData['product_details']['isbn'] == $attribute['code']): ?>selected="selected"<?php endif; ?>><?php echo Mage::helper('M2ePro')->__($attribute['label']); ?></option>
                                 <?php endforeach; ?>
                             </optgroup>

@@ -164,6 +164,23 @@ class Ess_M2ePro_Helper_Component_Ebay extends Mage_Core_Helper_Abstract
 
     // ########################################
 
+    public function getAvailableDurations()
+    {
+        $helper = Mage::helper('M2ePro');
+
+        return array(
+            '1' => $helper->__('1 day'),
+            '3' => $helper->__('3 days'),
+            '5' => $helper->__('5 days'),
+            '7' => $helper->__('7 days'),
+            '10' => $helper->__('10 days'),
+            '30' => $helper->__('30 days'),
+            '100' => $helper->__('Good Till Cancelled'),
+        );
+    }
+
+    // ########################################
+
     public function clearCache()
     {
         Mage::helper('M2ePro/Data_Cache')->removeTagValues(self::NICK);

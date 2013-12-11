@@ -132,41 +132,25 @@ abstract class Ess_M2ePro_Model_Connector_Server_Protocol extends Ess_M2ePro_Mod
 
     protected function processResponseInfo($responseInfo)
     {
-        if (isset($responseInfo['result']) && is_array($responseInfo['result'])) {
+        $this->resultType = $responseInfo['result']['type'];
 
-            $resultInfo = $responseInfo['result'];
+        $internalServerErrorMessage = '';
 
-            if (isset($resultInfo['type'])) {
+        foreach ($responseInfo['result']['messages'] as $message) {
 
-                $this->resultType = $resultInfo['type'];
-
-                if (isset($resultInfo['messages']) && is_array($resultInfo['messages'])) {
-                    foreach ($resultInfo['messages'] as $message) {
-                        $this->messages[] = $message;
-                    }
-                }
+            if ($message[self::MESSAGE_TYPE_KEY] == self::MESSAGE_TYPE_ERROR &&
+                $message[self::MESSAGE_SENDER_KEY] == self::MESSAGE_SENDER_SYSTEM) {
+                $internalServerErrorMessage != '' && $internalServerErrorMessage .= ', ';
+                $internalServerErrorMessage .= $message[self::MESSAGE_TEXT_KEY];
+                continue;
             }
+
+            $this->messages[] = $message;
         }
 
-        if ($this->resultType == self::MESSAGE_TYPE_ERROR) {
-
-            $errorHasSystem = '';
-
-            foreach ($this->messages as $message) {
-                if (!isset($message[self::MESSAGE_TYPE_KEY]) || !isset($message[self::MESSAGE_SENDER_KEY])) {
-                    continue;
-                }
-                if ($message[self::MESSAGE_TYPE_KEY] == self::MESSAGE_TYPE_ERROR &&
-                    $message[self::MESSAGE_SENDER_KEY] == self::MESSAGE_SENDER_SYSTEM) {
-                    $errorHasSystem != '' && $errorHasSystem .= ', ';
-                    $errorHasSystem .= $message[self::MESSAGE_TEXT_KEY];
-                }
-            }
-
-            if ($errorHasSystem != '') {
-                // Parser hack -> Mage::helper('M2ePro')->__('Internal server error(s) [%errors%]');
-                throw new Exception("Internal server error(s) [{$errorHasSystem}]");
-            }
+        if ($internalServerErrorMessage != '') {
+            // Parser hack -> Mage::helper('M2ePro')->__('Internal server error(s) [%errors%]');
+            throw new Exception("Internal server error(s) [{$internalServerErrorMessage}]");
         }
     }
 

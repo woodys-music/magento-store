@@ -115,27 +115,30 @@ class Ess_M2ePro_Model_Magento_Product
 
     public function getStoreIds()
     {
+        $storeIds = array();
+        foreach ($this->getWebsiteIds() as $websiteId) {
+            try {
+                $websiteStores = Mage::app()->getWebsite($websiteId)->getStoreIds();
+                $storeIds = array_merge($storeIds, $websiteStores);
+            } catch (Exception $e) {
+                continue;
+            }
+        }
+        return $storeIds;
+    }
+
+    // ########################################
+
+    public function getWebsiteIds()
+    {
         $resource = Mage::getSingleton('core/resource');
         $select = $resource->getConnection('core_read')
             ->select()
             ->from($resource->getTableName('catalog/product_website'), 'website_id')
             ->where('product_id = ?', (int)$this->getProductId());
 
-        $storeIds = array();
         $websiteIds = $resource->getConnection('core_read')->fetchCol($select);
-
-        if ($websiteIds) {
-            foreach ($websiteIds as $websiteId) {
-                try {
-                    $websiteStores = Mage::app()->getWebsite($websiteId)->getStoreIds();
-                    $storeIds = array_merge($storeIds, $websiteStores);
-                } catch (Exception $e) {
-                    continue;
-                }
-            }
-        }
-
-        return $storeIds;
+        return $websiteIds ? $websiteIds : array();
     }
 
     // ########################################
@@ -623,7 +626,7 @@ class Ess_M2ePro_Model_Magento_Product
         return is_string($value) ? $value : '';
     }
 
-    public function saveAttribute($attributeCode, $attributeValue, $overwrite = false, $separator = '')
+    public function saveAttribute($attributeCode, $attributeValue)
     {
         if (!$attributeCode) {
             return;
@@ -637,15 +640,8 @@ class Ess_M2ePro_Model_Magento_Product
         }
 
         $product = $this->getProduct();
+        $product->setData($attributeCode, $attributeValue);
 
-        $oldValue = $product->getData($attributeCode);
-        $newValue = $attributeValue;
-
-        if ($oldValue && !$overwrite) {
-            $newValue = $oldValue . $separator . $newValue;
-        }
-
-        $product->setData($attributeCode, $newValue);
         $resource->saveAttribute($product, $attributeCode);
     }
 

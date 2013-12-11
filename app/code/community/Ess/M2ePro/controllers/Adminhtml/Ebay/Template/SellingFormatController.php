@@ -40,7 +40,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Template_SellingFormatController
         } catch (Exception $e) {
             $message = Mage::helper('M2ePro')->__('Error search charity');
             $response = array('result' => 'error','data' => $message);
-            exit(json_encode($response));
+            return $this->getResponse()->setBody(json_encode($response));
         }
 
         $grid = $this->getLayout()->createBlock(
@@ -57,7 +57,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Template_SellingFormatController
             $response['count'] = (int)$responseData['total_count'];
         }
 
-        exit(json_encode($response));
+        return $this->getResponse()->setBody(json_encode($response));
     }
 
 }

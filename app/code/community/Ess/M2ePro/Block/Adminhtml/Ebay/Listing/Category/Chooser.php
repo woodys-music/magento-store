@@ -78,7 +78,20 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Category_Chooser extends Mage_Admi
 
     public function getAttributes()
     {
-        return Mage::helper('M2ePro/Magento_Attribute')->getGeneralFromAllAttributeSets();
+        if (!empty($this->_attributes)) {
+            return $this->_attributes;
+        }
+
+        $attributes = Mage::helper('M2ePro/Magento_Attribute')->getGeneralFromAllAttributeSets();
+        if (empty($attributes)) {
+            return array();
+        }
+
+        $this->_attributes = Mage::helper('M2ePro/Magento_Attribute')->filterByInputTypes(
+            $attributes, array('text', 'select')
+        );
+
+        return $attributes;
     }
 
     public function setAttributes($attributes)

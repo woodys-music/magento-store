@@ -308,7 +308,8 @@ HTML;
             Mage::helper('M2ePro/Data_Global')->getValue('hide_products_others_listings_prefix')
         );
 
-        return !empty($ruleData) || $showHideProductsOption;
+        is_null($showHideProductsOption) && $showHideProductsOption = 1;
+        return !empty($ruleData) || ($this->showAdvancedFilterProductsOption && $showHideProductsOption);
     }
 
     // ####################################

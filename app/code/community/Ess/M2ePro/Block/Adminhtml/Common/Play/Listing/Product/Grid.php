@@ -117,14 +117,24 @@ class Ess_M2ePro_Block_Adminhtml_Common_Play_Listing_Product_Grid extends Mage_A
         // Hide products others listings
         //----------------------------
         $prefix = Mage::helper('M2ePro/Data_Global')->getValue('hide_products_others_listings_prefix');
+        $hideParam = Mage::helper('M2ePro/Data_Session')->getValue($prefix);
+        is_null($hideParam) && $hideParam = true;
 
-        if (Mage::helper('M2ePro/Data_Session')->getValue($prefix)) {
+        if ($hideParam) {
 
-            $dbSelect = Mage::getResourceModel('core/config')->getReadConnection()
-                ->select()
-                ->from(Mage::getResourceModel('M2ePro/Listing_Product')->getMainTable(),
-                new Zend_Db_Expr('DISTINCT `product_id`'))
-                ->where('`component_mode` = ?',Ess_M2ePro_Helper_Component_Play::NICK);
+            $dbSelect = Mage::getResourceModel('core/config')->getReadConnection()->select();
+
+            $dbSelect->from(
+                Mage::getResourceModel('M2ePro/Listing_Product')->getMainTable(),
+                new Zend_Db_Expr('DISTINCT `product_id`')
+            );
+            $dbSelect->join(
+                array('l' => Mage::getResourceModel('M2ePro/Listing')->getMainTable()), '`l`.`id` = `listing_id`', NULL
+            );
+
+            $dbSelect->where('`l`.`account_id` = ?', $listingData['account_id']);
+            $dbSelect->where('`l`.`marketplace_id` = ?', $listingData['marketplace_id']);
+            $dbSelect->where('`l`.`component_mode` = ?',Ess_M2ePro_Helper_Component_Play::NICK);
 
             $collection->getSelect()->where('`e`.`entity_id` NOT IN ('.$dbSelect->__toString().')');
 
@@ -585,7 +595,7 @@ JAVASCRIPT;
             Mage::helper('M2ePro/Data_Global')->getValue('hide_products_others_listings_prefix')
         );
 
-        return !empty($ruleData) || $showHideProductsOption;
+        return !empty($ruleData) || is_null($showHideProductsOption) || $showHideProductsOption;
     }
 
     // ####################################

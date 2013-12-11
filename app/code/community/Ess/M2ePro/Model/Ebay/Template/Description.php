@@ -558,6 +558,13 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
 
     //-------------------------
 
+    public function getDefaultImageUrl()
+    {
+        return $this->getData('default_image_url');
+    }
+
+    //-------------------------
+
     public function getVariationConfigurableImages()
     {
         return $this->getData('variation_configurable_images');
@@ -987,6 +994,11 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
         $mainImage = $this->getMainImageLink();
 
         if ($mainImage == '') {
+            $defaultImage = $this->getDefaultImageUrl();
+            if (!empty($defaultImage)) {
+                return array($defaultImage);
+            }
+
             return array();
         }
 
@@ -1104,6 +1116,7 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
             'gallery_images_mode' => self::GALLERY_IMAGES_MODE_PRODUCT,
             'gallery_images_limit' => 3,
             'gallery_images_attribute' => '',
+            'default_image_url' => '',
 
             'variation_configurable_images' => '',
             'use_supersize_images' => self::USE_SUPERSIZE_IMAGES_NO,
@@ -1134,7 +1147,7 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
 
     // #######################################
 
-    public function getAffectedListingProducts($asObjects = false)
+    public function getAffectedListingProducts($asObjects = false, $key = NULL)
     {
         if (is_null($this->getId())) {
             throw new LogicException('Method require loaded instance first');
@@ -1147,14 +1160,15 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
 
         $listingProducts = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING_PRODUCT,
-            $this->getId(),
-            array(), $asObjects
+            $this->getId(), array(), $asObjects, $key
         );
 
-        foreach ($listingProducts as $key => $listingProduct) {
-            unset($listingProducts[$key]);
-            $listingProducts[$listingProduct['id']] = $listingProduct;
+        $ids = array();
+        foreach ($listingProducts as $listingProduct) {
+            $ids[] = is_null($key) ? $listingProduct['id'] : $listingProduct;
         }
+
+        $listingProducts && $listingProducts = array_combine($ids, $listingProducts);
 
         $listings = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING,
@@ -1162,26 +1176,26 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
         );
 
         foreach ($listings as $listing) {
-            $tempListingProducts = $listing->getChildObject()->getAffectedListingProducts($template,$asObjects);
+
+            $tempListingProducts = $listing->getChildObject()
+                                           ->getAffectedListingProducts($template,$asObjects,$key);
 
             foreach ($tempListingProducts as $listingProduct) {
-                $listingProducts[$listingProduct['id']] = $listingProduct;
+                $id = is_null($key) ? $listingProduct['id'] : $listingProduct;
+                !isset($listingProducts[$id]) && $listingProducts[$id] = $listingProduct;
             }
         }
 
-        return $listingProducts;
+        return array_values($listingProducts);
     }
 
-    public function setIsNeedSynchronize($newData, $oldData)
+    public function setSynchStatusNeed($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
             return;
         }
 
-        $ids = array();
-        foreach ($this->getAffectedListingProducts() as $listingProduct) {
-            $ids[] = (int)$listingProduct['id'];
-        }
+        $ids = $this->getAffectedListingProducts(false,'id');
 
         if (empty($ids)) {
             return;
@@ -1192,7 +1206,7 @@ class Ess_M2ePro_Model_Ebay_Template_Description extends Ess_M2ePro_Model_Compon
         Mage::getSingleton('core/resource')->getConnection('core_read')->update(
             Mage::getSingleton('core/resource')->getTableName('M2ePro/Listing_Product'),
             array(
-                'is_need_synchronize' => 1,
+                'synch_status' => Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_NEED,
                 'synch_reasons' => new Zend_Db_Expr(
                     "IF(synch_reasons IS NULL,
                         '".implode(',',$templates)."',

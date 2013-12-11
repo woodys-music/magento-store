@@ -60,7 +60,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         $additionalData = $listingProduct->getAdditionalData();
         $additionalData['ebay_item_fees'] = $params['ebay_item_fees'];
         $listingProduct->setData('is_m2epro_listed_item',1);
-        $listingProduct->setData('is_need_synchronize',0);
+        $listingProduct->setData('synch_status',Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_OK);
         $listingProduct->setData('synch_reasons',NULL);
         $listingProduct->setData('additional_data', json_encode($additionalData))->save();
         //---------------------
@@ -109,6 +109,12 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
             if (!$requestData['is_variation_item']) {
                 $this->addQtyPriceData($listingProduct,$requestData,$permissions);
             }
+
+            if (isset($additionalData['is_need_relist_condition'])
+                && $additionalData['is_need_relist_condition'] == true
+            ) {
+                $this->addConditionData($listingProduct, $requestData);
+            }
         }
 
         $this->addEpsOrSelfHostedMode($listingProduct,$requestData);
@@ -129,6 +135,11 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         //---------------------
         $additionalData = $listingProduct->getAdditionalData();
         $additionalData['ebay_item_fees'] = $params['ebay_item_fees'];
+
+        if (isset($additionalData['is_need_relist_condition'])) {
+            unset($additionalData['is_need_relist_condition']);
+        }
+
         $listingProduct->setData('additional_data', json_encode($additionalData))->save();
         //---------------------
 
@@ -203,13 +214,21 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
                 unset($requestData['is_private']);
             }
 
-            !empty($deleteWarningMessage) &&
-                $this->addAdditionalWarningMessage($listingProduct,
-                    implode(', ', $deleteWarningMessage) . ' field(s) were ignored');
+            if (!empty($deleteWarningMessage)) {
+                $listingProduct->addAdditionalWarningMessage(
+                    implode(', ', $deleteWarningMessage) . ' field(s) were ignored because
+                    eBay doesn\'t allow revise the item if it has sales, bids for auction type or less than 12 hours
+                    remain before the item end.'
+                );
+            }
 
         }
 
         if (isset($requestData['bestoffer_mode']) && $requestData['bestoffer_mode']) {
+            $listingProduct->addAdditionalWarningMessage(
+                'Duration field(s) was ignored because
+                eBay doesn\'t allow revise the item if Best Offer is enabled.'
+            );
             unset($requestData['duration']);
         }
         //-------------------
@@ -238,6 +257,11 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
             } else {
                 $additionalData['ebay_item_fees'][$feeCode]['fee'] += $feeData['fee'];
             }
+        }
+
+        if ($this->isAllPermissionsEnabled($this->getPreparedPermissions(false,$params))) {
+            $listingProduct->setData('synch_status',Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_OK);
+            $listingProduct->setData('synch_reasons',NULL);
         }
 
         $listingProduct->setData('additional_data', json_encode($additionalData))->save();
@@ -348,17 +372,21 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         return $permissions;
     }
 
+    protected function isAllPermissionsEnabled(array $permissions = array())
+    {
+        foreach ($permissions as $key => $value) {
+            if (!$value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected function addVariationsData(Ess_M2ePro_Model_Listing_Product $listingProduct,
                                          array &$requestData, array $permissions, array $params = array())
     {
         /** @var Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Updater $tempUpdater */
         $tempUpdater = Mage::getModel('M2ePro/Ebay_Listing_Product_Variation_Updater');
-        $tempUpdater->setLoggingData(isset($params['logs_action_id']) ? $params['logs_action_id'] : NULL,
-                                     isset($params['logs_initiator']) ? $params['logs_initiator'] :
-                                                    Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN,
-                                     isset($params['logs_action']) ? $params['logs_action'] :
-                                                    Ess_M2ePro_Model_Listing_Log::ACTION_ADD_PRODUCT_TO_LISTING);
-
         $tempUpdater->updateVariations($listingProduct);
 
         $tempVariations = Mage::getModel('M2ePro/Connector_Server_Ebay_Item_HelperVariations')
@@ -503,7 +531,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         if (!isset($permissions['description']) || $permissions['description']) {
 
             $descriptionTemplate->getMagentoProduct()->clearNotFoundAttributes();
-            $requestData['description'] = $descriptionTemplate->getDescriptionResultValue();
+            $requestData['description'] = $listingProduct->getChildObject()->getDescription();
             $notFoundAttributes = $descriptionTemplate->getMagentoProduct()->getNotFoundAttributes();
 
             if (!empty($notFoundAttributes)) {
@@ -678,7 +706,9 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
 
         $dataForUpdate['additional_data']['is_eps_ebay_images_mode'] = $params['is_eps_ebay_images_mode'];
 
-        if (isset($nativeRequestData['images']['images'])) {
+        $isImagesUploadError = isset($params['is_images_upload_error']) ? $params['is_images_upload_error'] : false;
+
+        if (isset($nativeRequestData['images']['images']) && !$isImagesUploadError) {
             $dataForUpdate['additional_data']['ebay_product_images_hash'] = sha1(
                 json_encode($nativeRequestData['images']['images'])
             );
@@ -794,19 +824,11 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Helper
         }
 
         $message = Mage::helper('M2ePro')->__(
-            '%s: attribute(s) %s were not found in this product.',
+            '%s: attribute(s) %s were not found in this product and its value was not sent.',
             $optionTitle, implode(',',$attributesTitles)
         );
 
-        $this->addAdditionalWarningMessage($listingProduct,$message);
-    }
-
-    public function addAdditionalWarningMessage(Ess_M2ePro_Model_Listing_Product $listingProduct, $message)
-    {
-        $messages = $listingProduct->getData('__additional_warning_messages__');
-        !$messages && $messages = array();
-        $messages[] = $message;
-        $listingProduct->setData('__additional_warning_messages__',$messages);
+        $listingProduct->addAdditionalWarningMessage($message);
     }
 
     // ########################################

@@ -15,17 +15,13 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Revise_MultipleResponser
 
             /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
 
-            $requestData = $this->getListingProductRequestNativeData($listingProduct);
-
-            $tempParams = array(
-                'status_changer' => $this->getStatusChanger()
-            );
-
             Mage::getModel('M2ePro/Connector_Server_Buy_Product_Helper')
-                        ->updateAfterReviseAction($listingProduct,$requestData,$tempParams);
+                        ->updateAfterReviseAction($listingProduct,
+                                                  $this->getListingProductRequestNativeData($listingProduct),
+                                                  $this->params);
 
             // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully revised');
-            $this->addListingsProductsLogsMessage($listingProduct, $this->getSuccessfullyMessage($requestData),
+            $this->addListingsProductsLogsMessage($listingProduct, $this->getSuccessfullyMessage(),
                                                   Ess_M2ePro_Model_Log_Abstract::TYPE_SUCCESS,
                                                   Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         }

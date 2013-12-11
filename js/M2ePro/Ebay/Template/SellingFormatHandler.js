@@ -7,6 +7,22 @@ EbayTemplateSellingFormatHandler.prototype = Object.extend(new CommonHandler(), 
     {
         Validation.add('M2ePro-validate-price-coefficient', M2ePro.translator.translate('Price Change is not valid.'), function(value, el)
         {
+            var tempEl = el;
+
+            var hidden = !$(tempEl).visible();
+
+            while (!hidden) {
+                tempEl = $(tempEl).up();
+                hidden = !tempEl.visible();
+                if (tempEl == document || tempEl.hasClassName('entry-edit')) {
+                    break;
+                }
+            }
+
+            if (hidden) {
+                return true;
+            }
+
             var coefficient = el.up().next().down('input');
 
             coefficient.removeClassName('price_unvalidated');
@@ -81,6 +97,7 @@ EbayTemplateSellingFormatHandler.prototype = Object.extend(new CommonHandler(), 
         }
 
         self.updateQtyMode(this.value);
+        self.updateIgnoreVariations(this.value);
         self.updateListingDuration(this.value);
         self.updateBuyItNowPrice(this.value);
         self.updateVariationPriceTrVisibility(this.value);
@@ -96,6 +113,20 @@ EbayTemplateSellingFormatHandler.prototype = Object.extend(new CommonHandler(), 
             qtyMode.value = M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_SellingFormat::QTY_MODE_SINGLE');
             qtyMode.simulate('change');
             qtyModeTr.hide();
+        }
+    },
+
+    updateIgnoreVariations : function(listingType)
+    {
+        var ignoreVariationsValueTr = $('ignore_variations_value_tr'),
+            ignoreVariationsValue = $('ignore_variations_value');
+
+        ignoreVariationsValueTr.hide();
+
+        if (listingType == M2ePro.php.constant('Ess_M2ePro_Model_Ebay_Template_SellingFormat::LISTING_TYPE_AUCTION')) {
+            ignoreVariationsValue.value = 0;
+        } else {
+            ignoreVariationsValueTr.show();
         }
     },
 

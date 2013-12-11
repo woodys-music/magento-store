@@ -19,8 +19,8 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Template_OtherCategory
     public function isDifferent($newData, $oldData)
     {
         $ignoreFields = array(
-            'id', 'title',
-            'create_date', 'update_date'
+            $this->getIdFieldName(),
+            'title', 'create_date', 'update_date'
         );
 
         $dataConversions = array(

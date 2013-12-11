@@ -43,11 +43,55 @@ class Ess_M2ePro_Model_Buy_Search_Manual_Requester
 
     // ########################################
 
+    public function getCommand()
+    {
+        if ($this->isQueryGeneralId() || $this->isQueryUpc()) {
+            return array('product','search','byIdentifier');
+        }
+
+        return array('product','search','byQuery');
+    }
+
     public function getResponserParams()
     {
         return array(
             'listing_product_id' => $this->listingProduct->getId()
         );
+    }
+
+    public function getRequestData()
+    {
+        $searchType = false;
+
+        if ($this->isQueryGeneralId()) {
+            $searchType =  Ess_M2ePro_Model_Connector_Server_Buy_Search_Items::SEARCH_TYPE_GENERAL_ID;
+        }
+
+        if ($this->isQueryUpc()) {
+            $searchType =  Ess_M2ePro_Model_Connector_Server_Buy_Search_Items::SEARCH_TYPE_UPC;
+        }
+
+        return $searchType ? array('search_type' => $searchType) : array();
+    }
+
+    // ########################################
+
+    private function isQueryGeneralId()
+    {
+        if (empty($this->params['query'])) {
+            return false;
+        }
+
+        return preg_match('/^\d{8,9}$/', $this->params['query']);
+    }
+
+    private function isQueryUpc()
+    {
+        if (empty($this->params['query'])) {
+            return false;
+        }
+
+        return preg_match('/^(\d{12}|\d{14})$/', $this->params['query']);
     }
 
     // ########################################

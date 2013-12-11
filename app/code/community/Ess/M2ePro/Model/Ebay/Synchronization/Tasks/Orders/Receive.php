@@ -189,6 +189,11 @@ class Ess_M2ePro_Model_Ebay_Synchronization_Tasks_Orders_Receive extends Ess_M2e
         /** @var $orders Ess_M2ePro_Model_Order[] */
         $orders = array_filter($orders);
 
+        // Duplicate temp debug
+        // -----------------------------------------------
+        $this->checkDuplicateProblems($ebayOrders, $orders);
+        // -----------------------------------------------
+
         if (count($orders) == 0) {
             return;
         }
@@ -280,6 +285,77 @@ class Ess_M2ePro_Model_Ebay_Synchronization_Tasks_Orders_Receive extends Ess_M2e
         }
 
         return Ess_M2ePro_Model_Connector_Server_Ebay_Abstract::ebayTimeToString($sinceTime);
+    }
+
+    private function checkDuplicateProblems($inputOrders, $createdOrders)
+    {
+        $inputOrdersInfo = array();
+        $createdOrdersInfo = array();
+
+        try {
+
+            $inputOrdersEbayIds = array();
+            $isExistDuplicates = false;
+            foreach ($inputOrders as $inputOrder) {
+                if (in_array($inputOrder['ebay_order_id'], $inputOrdersEbayIds)) {
+                    $isExistDuplicates = true;
+                }
+
+                $itemsIds = array();
+                foreach ($inputOrder['items'] as $item) {
+                    $itemsIds[] = $item['item_id'];
+                }
+
+                $inputOrdersInfo[] = array(
+                    'ebay_order_id' => $inputOrder['ebay_order_id'],
+                    'items' => $itemsIds,
+                );
+                $inputOrdersEbayIds[] = $inputOrder['ebay_order_id'];
+            }
+
+            if ($isExistDuplicates) {
+                throw new Ess_M2ePro_Model_Order_DuplicateException('Input duplicates');
+            }
+
+            $createdOrdersIds = array();
+            $isExistDuplicates = false;
+            foreach ($createdOrders as $createdOrder) {
+                if (in_array($createdOrder->getChildObject()->getEbayOrderId(), $createdOrdersIds)) {
+                    $isExistDuplicates = true;
+                }
+
+                $itemsIds = array();
+                foreach ($createdOrder->getItemsCollection() as $item) {
+                    $itemData = $item->getChildObject()->getData();
+                    $itemsIds[] = array(
+                        'id' => $itemData['order_item_id'],
+                        'item_id' => $itemData['item_id'],
+                    );
+                }
+
+                $createdOrdersInfo[] = array(
+                    'id' => $createdOrder->getData('id'),
+                    'ebay_order_id' => $createdOrder->getData('ebay_order_id'),
+                    'items' => $itemsIds,
+                );
+                $createdOrdersIds[] = $createdOrder['ebay_order_id'];
+            }
+
+            if ($isExistDuplicates) {
+                throw new Ess_M2ePro_Model_Order_DuplicateException('Created duplicates');
+            }
+
+        } catch (Ess_M2ePro_Model_Order_DuplicateException $exception) {
+
+            $message = $exception->getMessage() . PHP_EOL .
+                'Input Orders:' . PHP_EOL .
+                print_r($inputOrdersInfo, true) . PHP_EOL .
+                'Created Orders:' . PHP_EOL .
+                print_r($createdOrdersInfo, true) . PHP_EOL;
+
+            Mage::helper('M2ePro/Module_Exception')->process(new Ess_M2ePro_Model_Order_DuplicateException($message));
+
+        } catch (Exception $exception) {}
     }
 
     //####################################

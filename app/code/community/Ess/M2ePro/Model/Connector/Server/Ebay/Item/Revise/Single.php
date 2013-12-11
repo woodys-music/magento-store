@@ -115,6 +115,8 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Revise_Single
                                                   Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         } else {
 
+            $tempParams['is_images_upload_error'] = $this->isImagesUploadError($this->messages);
+
             Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')
                         ->updateAfterReviseAction($this->listingProduct, $this->nativeRequestData,
                                                   array_merge($this->params,$tempParams));

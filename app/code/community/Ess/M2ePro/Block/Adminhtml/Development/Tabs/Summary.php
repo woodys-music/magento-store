@@ -24,8 +24,16 @@ class Ess_M2ePro_Block_Adminhtml_Development_Tabs_Summary extends Mage_Adminhtml
 
     protected function _beforeToHtml()
     {
-        $this->setChild('summary_actual', $this->getLayout()->createBlock(
-            'M2ePro/adminhtml_development_info_mysql_actual'
+        $this->setChild('actual_info', $this->getLayout()->createBlock(
+            'M2ePro/adminhtml_development_info_actual'
+        ));
+
+        $this->setChild('database_module', $this->getLayout()->createBlock(
+            'M2ePro/adminhtml_development_info_mysql_module'
+        ));
+
+        $this->setChild('database_integration', $this->getLayout()->createBlock(
+            'M2ePro/adminhtml_development_info_mysql_integration'
         ));
 
         return parent::_beforeToHtml();

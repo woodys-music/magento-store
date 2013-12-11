@@ -11,6 +11,8 @@ abstract class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract
     const STATUS_WARNING    = 2;
     const STATUS_SUCCESS    = 3;
 
+    const ERROR_CODE_IMAGES_UPLOAD_FAILED = 32704531;
+
     /**
      * @var Ess_M2ePro_Model_Listing
      */
@@ -237,17 +239,13 @@ abstract class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract
 
     protected function logAdditionalWarningMessages(Ess_M2ePro_Model_Listing_Product $listingProduct)
     {
-        $messages = $listingProduct->getData('__additional_warning_messages__');
-        !$messages && $messages = array();
-
-        foreach ($messages as $message) {
+        foreach ($listingProduct->getAdditionalWarningMessages() as $message) {
             $this->addListingsProductsLogsMessage($listingProduct,array(
                 parent::MESSAGE_TEXT_KEY => $message,
                 parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING
             ),Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         }
-
-        $listingProduct->setData('__additional_warning_messages__',NULL);
+        $listingProduct->clearAdditionalWarningMessages();
     }
 
     protected function isTheSameProductAlreadyListed(Ess_M2ePro_Model_Listing_Product $listingProduct)
@@ -298,6 +296,18 @@ abstract class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract
                                               Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
 
         return true;
+    }
+
+    // ########################################
+
+    protected function isImagesUploadError($messages)
+    {
+        foreach ($messages as $message) {
+            if ($message[parent::MESSAGE_CODE_KEY] == self::ERROR_CODE_IMAGES_UPLOAD_FAILED) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ########################################

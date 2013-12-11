@@ -20,6 +20,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
 
         $this->addLocalShippingData($shippingTemplate, $accountId, $requestData);
         $this->addInternationalShippingData($shippingTemplate, $accountId, $requestData);
+        $this->addGlobalShippingProgramData($shippingTemplate, $requestData);
         $this->addExcludedLocationsData($shippingTemplate,$requestData);
 
         if ($shippingTemplate->isLocalShippingFlatEnabled()
@@ -114,6 +115,10 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
 
         $requestData['shipping']['get_it_fast'] = $shippingTemplate->isGetItFastEnabled();
         $requestData['shipping']['dispatch_time'] = $shippingTemplate->getDispatchTime();
+
+        if ($requestData['shipping']['dispatch_time'] === '') {
+            unset($requestData['shipping']['dispatch_time']);
+        }
 
         $requestData['shipping']['local']['cash_on_delivery'] =
             $shippingTemplate->isLocalShippingCashOnDeliveryEnabled();
@@ -218,6 +223,12 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_HelperShipping
 
             $requestData['shipping']['international']['methods'][] = $tempDataMethod;
         }
+    }
+
+    protected function addGlobalShippingProgramData(Ess_M2ePro_Model_Ebay_Template_Shipping $shippingTemplate,
+                                                    array &$requestData)
+    {
+        $requestData['shipping']['global_shipping_program'] = $shippingTemplate->isGlobalShippingProgramEnabled();
     }
 
     protected function addExcludedLocationsData(Ess_M2ePro_Model_Ebay_Template_Shipping $shippingTemplate,

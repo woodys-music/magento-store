@@ -534,7 +534,7 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
 
     // #######################################
 
-    public function getAffectedListingProducts($asObjects = false)
+    public function getAffectedListingProducts($asObjects = false, $key = NULL)
     {
         if (is_null($this->getId())) {
             throw new LogicException('Method require loaded instance first');
@@ -547,14 +547,15 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
 
         $listingProducts = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING_PRODUCT,
-            $this->getId(),
-            array(), $asObjects
+            $this->getId(), array(), $asObjects, $key
         );
 
-        foreach ($listingProducts as $key => $listingProduct) {
-            unset($listingProducts[$key]);
-            $listingProducts[$listingProduct['id']] = $listingProduct;
+        $ids = array();
+        foreach ($listingProducts as $listingProduct) {
+            $ids[] = is_null($key) ? $listingProduct['id'] : $listingProduct;
         }
+
+        $listingProducts && $listingProducts = array_combine($ids, $listingProducts);
 
         $listings = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING,
@@ -562,14 +563,45 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
         );
 
         foreach ($listings as $listing) {
-            $tempListingProducts = $listing->getChildObject()->getAffectedListingProducts($template,$asObjects);
+
+            $tempListingProducts = $listing->getChildObject()
+                                           ->getAffectedListingProducts($template,$asObjects,$key);
 
             foreach ($tempListingProducts as $listingProduct) {
-                $listingProducts[$listingProduct['id']] = $listingProduct;
+                $id = is_null($key) ? $listingProduct['id'] : $listingProduct;
+                !isset($listingProducts[$id]) && $listingProducts[$id] = $listingProduct;
             }
         }
 
-        return $listingProducts;
+        return array_values($listingProducts);
+    }
+
+    // #######################################
+
+    public function setSynchStatusNeed($newData, $oldData)
+    {
+        $this->getParentObject()->setSynchStatusNeed(
+            $newData, $oldData,
+            array('sellingFormatTemplate' => 'revise_change_selling_format_template',
+                  'descriptionTemplate'   => 'revise_change_description_template',
+                  'categoryTemplate'      => 'revise_change_category_template',
+                  'paymentTemplate'       => 'revise_change_payment_template',
+                  'shippingTemplate'      => 'revise_change_shipping_template',
+                  'returnTemplate'        => 'revise_change_return_template')
+        );
+    }
+
+    public function getFullReviseSettingWhichWereEnabled($newData, $oldData)
+    {
+        return $this->getParentObject()->getFullReviseSettingWhichWereEnabled(
+            $newData, $oldData,
+            array('sellingFormatTemplate' => 'revise_change_selling_format_template',
+                  'descriptionTemplate'   => 'revise_change_description_template',
+                  'categoryTemplate'      => 'revise_change_category_template',
+                  'paymentTemplate'       => 'revise_change_payment_template',
+                  'shippingTemplate'      => 'revise_change_shipping_template',
+                  'returnTemplate'        => 'revise_change_return_template')
+        );
     }
 
     // #######################################

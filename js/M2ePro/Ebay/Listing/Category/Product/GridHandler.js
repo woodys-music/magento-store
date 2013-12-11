@@ -1,24 +1,18 @@
-EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
+EbayListingCategoryProductGridHandler = Class.create(EbayListingCategoryGridHandler, {
 
     productIdCellIndex: 1,
     productTitleCellIndex: 2,
 
-    selectedProducts: [],
-
     //----------------------------------
 
-    prepareActions: function()
+    prepareActions: function($super)
     {
-        this.actions = {
+        $super();
+
+        this.actions = Object.extend(this.actions,{
 
             getSuggestedCategoriesAction: function(id) {
                 this.getSuggestedCategories(id);
-            }.bind(this),
-            editPrimaryCategoriesAction: function(id) {
-                this.editPrimaryCategories(id);
-            }.bind(this),
-            editCategoriesAction: function(id) {
-                this.editCategories(id);
             }.bind(this),
             resetCategoriesAction: function(id) {
                 this.resetCategories(id);
@@ -28,7 +22,7 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
                 this.removeItems(ids);
             }.bind(this)
 
-        };
+        });
     },
 
     //----------------------------------
@@ -78,42 +72,14 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
 
     //----------------------------------
 
-    editPrimaryCategories: function(id)
+    editPrimaryCategories: function()
     {
-        this.selectedProductsIds = id ? [id] : this.getSelectedProductsArray();
+        this.editCategoriesByType(M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::TYPE_EBAY_MAIN'))
+    },
 
-        new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing_categorySettings/getChooserBlockHtml') ,
-        {
-            method: 'post',
-            asynchronous : true,
-            parameters : {
-                ids: this.selectedProductsIds.join(',')
-            },
-            onSuccess: function (transport)
-            {
-                var temp = document.createElement('div');
-                temp.innerHTML = transport.responseText;
-                temp.innerHTML.evalScripts();
-
-                EbayListingCategoryChooserHandlerObj.showEditPopUp(0);
-
-                EbayListingCategoryChooserHandlerObj.doneCallback = function() {
-                    this.doneCategories(EbayListingCategoryChooserHandlerObj.getInternalEbayMainData());
-                    this.getGridObj().doFilter();
-                    this.unselectAll();
-
-                    EbayListingCategoryChooserHandlerObj.doneCallback = null;
-                    EbayListingCategoryChooserHandlerObj.cancelCallback = null;
-                }.bind(this);
-
-                EbayListingCategoryChooserHandlerObj.cancelCallback = function() {
-                    EbayListingCategoryChooserHandlerObj.doneCallback = null;
-                    EbayListingCategoryChooserHandlerObj.cancelCallback = null;
-
-                    this.unselectAll();
-                }.bind(this);
-            }.bind(this)
-        });
+    editStorePrimaryCategories: function()
+    {
+        this.editCategoriesByType(M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_Category::TYPE_STORE_MAIN'))
     },
 
     //----------------------------------
@@ -170,26 +136,6 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
 
     //----------------------------------
 
-    doneCategories: function(templateData)
-    {
-        new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing_categorySettings/stepTwoSaveToSession') ,
-        {
-            method: 'post',
-            asynchronous : true,
-            parameters : {
-                ids: this.selectedProductsIds.join(','),
-                template_data: JSON.stringify(templateData)
-            },
-            onSuccess: function (transport)
-            {
-                this.unselectAll();
-                this.getGridObj().doFilter();
-
-                Windows.getFocusedWindow().close();
-            }.bind(this)
-        });
-    },
-
     showChooserPopup: function(title, content)
     {
         var config = {
@@ -222,8 +168,12 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
         }.bind(this));
 
         $('done_button').observe('click', function () {
-            EbayListingCategoryProductGridHandlerObj.doneCategories(EbayListingCategoryChooserHandlerObj.getInternalData());
-        });
+            if(!this.validate()) {
+                return;
+            }
+
+            this.saveCategoriesData(EbayListingCategoryChooserHandlerObj.getInternalData());
+        }.bind(this));
 
         $('modal_dialog_message').innerHTML.evalScripts();
     },
@@ -320,9 +270,23 @@ EbayListingCategoryProductGridHandler = Class.create(GridHandler, {
 
     //----------------------------------
 
-    getComponent: function()
+    validate: function()
     {
-        return 'ebay';
+        if($$('.main-store-empty-advice').length <= 0) {
+            return true;
+        }
+
+        $$('.main-store-empty-advice')[0].hide();
+
+        var primary = $('magento_block_ebay_listing_category_chooser_store_primary_not_selected')==null;
+        var secondary = $('magento_block_ebay_listing_category_chooser_store_secondary_not_selected')==null;
+
+        if(primary==false && secondary==true) {
+            $$('.main-store-empty-advice')[0].show();
+            return false;
+        }
+
+        return true;
     }
 
     //----------------------------------

@@ -242,6 +242,7 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
 
     private function getSortedLocationExcludeInfo()
     {
+        $sortedInfo = array();
         foreach($this->getMarketplace()->getChildObject()->getShippingLocationExcludeInfo() as $locationExcludeRecord) {
 
             $region = $locationExcludeRecord['region'];
@@ -261,7 +262,11 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
     {
         $html = '';
 
-        foreach($this->attributes as $attribute) {
+        $attributes = Mage::helper('M2ePro/Magento_Attribute')->filterByInputTypes(
+            $this->attributes, array('text', 'price')
+        );
+
+        foreach($attributes as $attribute) {
             $code = Mage::helper('M2ePro')->escapeHtml($attribute['code']);
             $html .= sprintf('<option value="%s">%s</option>', $code, $attribute['label']);
         }
@@ -281,6 +286,12 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
 
         // m2epro_ebay_template_shipping
         //------------------------------
+        $code = 'dispatch_time_attribute';
+        if (!$this->isExistInAttributesArray($formData[$code])) {
+            $label = Mage::helper('M2ePro/Magento_Attribute')->getAttributeLabel($formData[$code]);
+            $attributes[$code] = $label;
+        }
+
         $code = 'local_shipping_cash_on_delivery_cost_attribute';
         if (!$this->isExistInAttributesArray($formData[$code])) {
             $label = Mage::helper('M2ePro/Magento_Attribute')->getAttributeLabel($formData[$code]);
@@ -492,6 +503,15 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Template_Shipping_Edit_Form_Data extends M
     public function canDisplayMetricMeasurementSystemOption()
     {
         return $this->getMarketplace()->getChildObject()->isMetricMeasurementSystemEnabled();
+    }
+
+    public function canDisplayGlobalShippingProgram()
+    {
+        if (Mage::helper('M2ePro/View_Ebay')->isSimpleMode()) {
+            return false;
+        }
+
+        return $this->getMarketplace()->getChildObject()->isGlobalShippingProgramEnabled();
     }
 
     // ####################################

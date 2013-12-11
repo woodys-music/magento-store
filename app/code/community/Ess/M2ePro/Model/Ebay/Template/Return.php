@@ -157,7 +157,7 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
     public function getDefaultSettingsSimpleMode()
     {
         return array(
-            'accepted'       => 'ReturnsNotAccepted',
+            'accepted'       => 'ReturnsAccepted',
             'option'         => '',
             'within'         => '',
             'shipping_cost'  => '',
@@ -173,7 +173,7 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
 
     // #######################################
 
-    public function getAffectedListingProducts($asObjects = false)
+    public function getAffectedListingProducts($asObjects = false, $key = NULL)
     {
         if (is_null($this->getId())) {
             throw new LogicException('Method require loaded instance first');
@@ -186,14 +186,15 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
 
         $listingProducts = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING_PRODUCT,
-            $this->getId(),
-            array(), $asObjects
+            $this->getId(), array(), $asObjects, $key
         );
 
-        foreach ($listingProducts as $key => $listingProduct) {
-            unset($listingProducts[$key]);
-            $listingProducts[$listingProduct['id']] = $listingProduct;
+        $ids = array();
+        foreach ($listingProducts as $listingProduct) {
+            $ids[] = is_null($key) ? $listingProduct['id'] : $listingProduct;
         }
+
+        $listingProducts && $listingProducts = array_combine($ids, $listingProducts);
 
         $listings = $templateManager->getAffectedItems(
             Ess_M2ePro_Model_Ebay_Template_Manager::OWNER_LISTING,
@@ -201,26 +202,26 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
         );
 
         foreach ($listings as $listing) {
-            $tempListingProducts = $listing->getChildObject()->getAffectedListingProducts($template,$asObjects);
+
+            $tempListingProducts = $listing->getChildObject()
+                                           ->getAffectedListingProducts($template,$asObjects,$key);
 
             foreach ($tempListingProducts as $listingProduct) {
-                $listingProducts[$listingProduct['id']] = $listingProduct;
+                $id = is_null($key) ? $listingProduct['id'] : $listingProduct;
+                !isset($listingProducts[$id]) && $listingProducts[$id] = $listingProduct;
             }
         }
 
-        return $listingProducts;
+        return array_values($listingProducts);
     }
 
-    public function setIsNeedSynchronize($newData, $oldData)
+    public function setSynchStatusNeed($newData, $oldData)
     {
         if (!$this->getResource()->isDifferent($newData,$oldData)) {
             return;
         }
 
-        $ids = array();
-        foreach ($this->getAffectedListingProducts() as $listingProduct) {
-            $ids[] = (int)$listingProduct['id'];
-        }
+        $ids = $this->getAffectedListingProducts(false,'id');
 
         if (empty($ids)) {
             return;
@@ -231,7 +232,7 @@ class Ess_M2ePro_Model_Ebay_Template_Return extends Ess_M2ePro_Model_Component_A
         Mage::getSingleton('core/resource')->getConnection('core_read')->update(
             Mage::getSingleton('core/resource')->getTableName('M2ePro/Listing_Product'),
             array(
-                'is_need_synchronize' => 1,
+                'synch_status' => Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_NEED,
                 'synch_reasons' => new Zend_Db_Expr(
                     "IF(synch_reasons IS NULL,
                         '".implode(',',$templates)."',

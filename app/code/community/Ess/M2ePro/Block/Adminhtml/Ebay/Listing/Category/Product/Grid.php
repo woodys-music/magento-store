@@ -139,37 +139,53 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Category_Product_Grid
             'filter_condition_callback' => array($this, 'callbackColumnCategoryFilterCallback')
         ));
 
-        $this->addColumn('actions', array(
+        $actionsColumn = array(
             'header'    => Mage::helper('M2ePro')->__('Actions'),
-            'align'     => 'left',
+            'align'     => 'center',
             'width'     => '100px',
-            'filter'    => false,
-            'sortable'  => false,
             'type'      => 'text',
-            'actions'   => array(
-                array(
-                    'label' => Mage::helper('catalog')->__('Get Suggested Primary Category'),
-                    'value' => 'getSuggestedCategories'
-                ),
-                array(
-                    'label' => Mage::helper('catalog')->__('Edit Primary Category'),
-                    'value' => 'editPrimaryCategories'
-                ),
-                array(
-                    'label' => Mage::helper('catalog')->__('Edit Categories'),
-                    'value' => 'editCategories'
-                ),
-                array(
-                    'label' => Mage::helper('catalog')->__('Reset Categories'),
-                    'value' => 'resetCategories'
-                ),
-                array(
-                    'label' => Mage::helper('catalog')->__('Remove Item'),
-                    'value' => 'removeItem'
-                ),
-            ),
+            'sortable'  => false,
+            'filter'    => false,
             'frame_callback' => array($this, 'callbackColumnActions'),
+            'actions'   => array()
+        );
+
+        $actions = array(
+            array(
+                'label' => Mage::helper('catalog')->__('Get Suggested Primary Category'),
+                'value' => 'getSuggestedCategories'
+            ),
+            array(
+                'label' => Mage::helper('catalog')->__('Edit Primary Category'),
+                'value' => 'editPrimaryCategories'
+            )
+        );
+
+        if ($this->listing->getAccount()->getChildObject()->getEbayStoreCategories()) {
+            $actions[] = array(
+                'label' => Mage::helper('catalog')->__('Edit Store Primary Category'),
+                'value'   => 'editStorePrimaryCategories'
+            );
+        }
+
+        $actions = array_merge($actions, array(
+            array(
+                'label' => Mage::helper('catalog')->__('Edit Categories'),
+                'value' => 'editCategories'
+            ),
+            array(
+                'label' => Mage::helper('catalog')->__('Reset Categories'),
+                'value' => 'resetCategories'
+            ),
+            array(
+                'label' => Mage::helper('catalog')->__('Remove Item'),
+                'value' => 'removeItem'
+            ),
         ));
+
+        $actionsColumn['actions'] = $actions;
+
+        $this->addColumn('actions', $actionsColumn);
 
         return parent::_prepareColumns();
     }
@@ -189,6 +205,13 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Category_Product_Grid
             'label' => Mage::helper('M2ePro')->__('Edit Primary Categories'),
             'url'   => '',
         ));
+
+        if ($this->listing->getAccount()->getChildObject()->getEbayStoreCategories()) {
+            $this->getMassactionBlock()->addItem('editStorePrimaryCategories', array(
+                'label' => Mage::helper('M2ePro')->__('Edit Store Primary Categories'),
+                'url'   => '',
+            ));
+        }
 
         $this->getMassactionBlock()->addItem('editCategories', array(
             'label' => Mage::helper('M2ePro')->__('Edit Categories'),
@@ -606,12 +629,14 @@ HTML;
         $translations = json_encode($translations);
         //------------------------------
 
+        //------------------------------
+        $constants = Mage::helper('M2ePro')->getClassConstantAsJson('Ess_M2ePro_Helper_Component_Ebay_Category');
+        //------------------------------
+
         $getSuggested = json_encode((bool)Mage::helper('M2ePro/Data_Global')->getValue('get_suggested'));
 
         $commonJs = <<<HTML
 <script type="text/javascript">
-    M2ePro.translator.add({$translations});
-
     EbayListingCategoryProductGridHandlerObj.afterInitPage();
     EbayListingCategoryProductGridHandlerObj.getGridMassActionObj().setGridIds('{$this->getGridIdsJson()}');
 </script>
@@ -621,7 +646,10 @@ HTML;
         if (!$this->getRequest()->isXmlHttpRequest()) {
             $additionalJs = <<<HTML
 <script type="text/javascript">
+
     M2ePro.url.add({$urls});
+    M2ePro.translator.add({$translations});
+    M2ePro.php.setConstants({$constants},'Ess_M2ePro_Helper_Component_Ebay_Category');
 
     WrapperObj = new AreaWrapper('products_container');
     ProgressBarObj = new ProgressBar('products_progress_bar');

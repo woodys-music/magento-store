@@ -71,12 +71,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Stop_Single
     protected function prepareResponseData($response)
     {
         if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
-
-            if (isset($this->params['remove']) && (bool)$this->params['remove']) {
-                $this->listingProduct->addData(array('status'=>Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED))->save();
-                $this->listingProduct->deleteInstance();
-            }
-
+            $this->checkAndRemoveNeededItems();
             return $response;
         }
 
@@ -114,12 +109,20 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Stop_Single
                                                   Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         }
 
-        if (isset($this->params['remove']) && (bool)$this->params['remove']) {
-            $this->listingProduct->addData(array('status'=>Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED))->save();
-            $this->listingProduct->deleteInstance();
+        $this->checkAndRemoveNeededItems();
+        return $response;
+    }
+
+    // ########################################
+
+    protected function checkAndRemoveNeededItems()
+    {
+        if (!isset($this->params['remove']) || !(bool)$this->params['remove']) {
+            return;
         }
 
-        return $response;
+        $this->listingProduct->addData(array('status'=>Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED))->save();
+        $this->listingProduct->deleteInstance();
     }
 
     // ########################################

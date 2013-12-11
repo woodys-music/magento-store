@@ -296,6 +296,11 @@ JAVASCRIPT;
 
     public function getRowUrl($row)
     {
+        if ($row->getData('is_exist') && $row->getData('has_model')) {
+            return $this->getUrl(
+                '*/adminhtml_development_database/manageTable', array('table'=>$row->getData('table_name'))
+            );
+        }
         return false;
     }
 

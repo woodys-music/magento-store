@@ -8,19 +8,14 @@ class Ess_M2ePro_Helper_Magento_Attribute extends Ess_M2ePro_Helper_Magento_Abst
 {
     // ################################
 
-    public function getAll($returnType = self::RETURN_TYPE_ARRAYS)
+    public function getAll()
     {
         $attributeCollection = Mage::getResourceModel('catalog/product_attribute_collection')
             ->addVisibleFilter()
             ->setOrder('frontend_label', Varien_Data_Collection_Db::SORT_ORDER_ASC);
 
-        $attributes = $this->_convertCollectionToReturnType($attributeCollection, $returnType);
-        if ($returnType != self::RETURN_TYPE_ARRAYS) {
-            return $attributes;
-        }
-
         $resultAttributes = array();
-        foreach ($attributes as $attribute) {
+        foreach ($attributeCollection->getItems() as $attribute) {
             $resultAttributes[] = array(
                 'code' => $attribute['attribute_code'],
                 'label' => $attribute['frontend_label']
@@ -28,6 +23,16 @@ class Ess_M2ePro_Helper_Magento_Attribute extends Ess_M2ePro_Helper_Magento_Abst
         }
 
         return $resultAttributes;
+    }
+
+    public function getAllAsObjects()
+    {
+        $attributes = Mage::getResourceModel('catalog/product_attribute_collection')
+            ->addVisibleFilter()
+            ->setOrder('frontend_label', Varien_Data_Collection_Db::SORT_ORDER_ASC)
+            ->getItems();
+
+        return $attributes;
     }
 
     // --------------------------------
@@ -297,6 +302,38 @@ class Ess_M2ePro_Helper_Magento_Attribute extends Ess_M2ePro_Helper_Magento_Abst
             }
         }
         return false;
+    }
+
+    public function filterByInputTypes(array $attributes, array $inputTypes)
+    {
+        if (empty($attributes)) {
+            return array();
+        }
+
+        if (empty($inputTypes)) {
+            return $attributes;
+        }
+
+        $attributeCodes = array();
+        foreach ($attributes as $attribute) {
+            $attributeCodes[] = $attribute['code'];
+        }
+
+        $attributeCollection = Mage::getResourceModel('catalog/product_attribute_collection')
+            ->addFieldToFilter('attribute_code', array('in' => $attributeCodes))
+            ->addFieldToFilter('frontend_input', array('in' => $inputTypes))
+            ->setOrder('frontend_label', Varien_Data_Collection_Db::SORT_ORDER_ASC);
+
+        $filteredAttributes = $attributeCollection->toArray();
+        $resultAttributes = array();
+        foreach ($filteredAttributes['items'] as $attribute) {
+            $resultAttributes[] = array(
+                'code' => $attribute['attribute_code'],
+                'label' => $attribute['frontend_label'],
+            );
+        }
+
+        return $resultAttributes;
     }
 
     // ################################

@@ -366,14 +366,17 @@ STATUS;
 
         }
 
+        if ($tempListingProductModel->getStatus() != $tempEbayChanges['status'] ||
+            $tempListingProductModel->getChildObject()->getOnlineQty() != $tempEbayChanges['online_qty'] ||
+            $tempListingProductModel->getChildObject()->getOnlineQtySold() != $tempEbayChanges['online_qty_sold']) {
+            Mage::getModel('M2ePro/ProductChange')->addUpdateAction(
+                $tempListingProductModel->getProductId(), Ess_M2ePro_Model_ProductChange::CREATOR_TYPE_SYNCHRONIZATION
+            );
+        }
+
         if ($tempEbayChanges['status'] != $tempListingProductModel->getStatus()) {
 
             $tempEbayChanges['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
-
-            Mage::getModel('M2ePro/ProductChange')->addUpdateAction(
-                $tempListingProductModel->getProductId(),
-                Ess_M2ePro_Model_ProductChange::CREATOR_TYPE_SYNCHRONIZATION
-            );
 
             $tempLogMessage = '';
             switch ($tempEbayChanges['status']) {

@@ -92,9 +92,7 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Helper
         //---------------------
         $dataForUpdate = array(
             'sku' => $nativeRequestData['sku'],
-            'condition' => $nativeRequestData['condition'],
-            'is_need_synchronize' => 0,
-            'synch_reasons' => NULL
+            'condition' => $nativeRequestData['condition']
         );
 
         if (($nativeRequestData['product_id_type']+1) ==
@@ -125,15 +123,6 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Helper
     public function updateAfterRelistAction(Ess_M2ePro_Model_Listing_Product $listingProduct,
                                             array $nativeRequestData = array(), array $params = array())
     {
-        // Save additional info
-        //---------------------
-        $dataForUpdate = array(
-            'is_need_synchronize' => 0,
-            'synch_reasons' => NULL
-        );
-        $listingProduct->addData($dataForUpdate);
-        //---------------------
-
         // Update Listing Product
         //---------------------
         $this->updateProductAfterAction($listingProduct,
@@ -147,29 +136,8 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Helper
 
     public function getReviseRequestData(Ess_M2ePro_Model_Listing_Product $listingProduct, array $params = array())
     {
-        // Set permissions
-        //-----------------
-        $permissions = array(
-            'general'=>true,
-            'qty'=>true,
-            'price'=>true
-        );
-
-        if (isset($params['only_data'])) {
-            foreach ($permissions as &$value) {
-                $value = false;
-            }
-            $permissions = array_merge($permissions,$params['only_data']);
-        }
-
-        if (isset($params['all_data'])) {
-            foreach ($permissions as &$value) {
-                $value = true;
-            }
-        }
-        //-----------------
-
         $requestData = array();
+        $permissions = $this->getPreparedPermissions($params);
 
         // Get SKU Info
         //-------------------
@@ -294,6 +262,40 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Helper
 
     // ########################################
 
+    protected function getPreparedPermissions(array $params = array())
+    {
+        $permissions = array(
+            'general'=>true,
+            'qty'=>true,
+            'price'=>true
+        );
+
+        if (isset($params['only_data'])) {
+            foreach ($permissions as &$value) {
+                $value = false;
+            }
+            $permissions = array_merge($permissions,$params['only_data']);
+        }
+
+        if (isset($params['all_data'])) {
+            foreach ($permissions as &$value) {
+                $value = true;
+            }
+        }
+
+        return $permissions;
+    }
+
+    protected function isAllPermissionsEnabled(array $permissions = array())
+    {
+        foreach ($permissions as $key => $value) {
+            if (!$value) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected function checkRequiredRequestParams(Ess_M2ePro_Model_Listing_Product $listingProduct, &$requestData)
     {
         if (!isset($requestData['sku'])) {
@@ -395,6 +397,11 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_Helper
             'status' => Ess_M2ePro_Model_Listing_Product::STATUS_LISTED,
             'ignore_next_inventory_synch' => 1
         );
+
+        if ($this->isAllPermissionsEnabled($this->getPreparedPermissions($params['params']))) {
+            $dataForUpdate['synch_status'] = Ess_M2ePro_Model_Listing_Product::SYNCH_STATUS_OK;
+            $dataForUpdate['synch_reasons'] = NULL;
+        }
 
         isset($params['status_changer']) && $dataForUpdate['status_changer'] = (int)$params['status_changer'];
         $startDate !== false && $dataForUpdate['start_date'] = $startDate;

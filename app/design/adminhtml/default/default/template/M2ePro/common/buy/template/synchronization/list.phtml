@@ -45,7 +45,12 @@ $isEdit = !!$this->getRequest()->getParam('id');
 
     M2ePro.translator.add(<?php echo json_encode(array(
         'Add Synchronization Template.' => $this->__('Add Synchronization Template.'),
-        'Wrong time format string.' => $this->__('Wrong time format string.')
+        'Wrong time format string.' => $this->__('Wrong time format string.'),
+
+        'Must be greater than "Min".' => $this->__('Must be greater than "Min".'),
+        'Inconsistent settings in Revise and Stop rules.' => $this->__('Inconsistent settings in Revise and Stop rules.'),
+        'Inconsistent settings in Revise and Stop rules.' => $this->__('Inconsistent settings in Revise and Stop rules.'),
+        'Inconsistent settings in Revise and Stop rules.' => $this->__('Inconsistent settings in Revise and Stop rules.')
     )); ?>);
 
     M2ePro.formData.id = '<?php echo $this->getRequest()->getParam('id'); ?>';
@@ -214,7 +219,7 @@ $isEdit = !!$this->getRequest()->getParam('id');
                         <label for="list_qty_value_max"><?php echo Mage::helper('M2ePro')->__('Max Item Quantity'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <input id="list_qty_value_max" name="list_qty_value_max" value="<?php echo $this->escapeHtml($formData['list_qty_value_max']); ?>" type="text" class="M2ePro-required-when-visible input-text validate-digits" />
+                        <input id="list_qty_value_max" name="list_qty_value_max" value="<?php echo $this->escapeHtml($formData['list_qty_value_max']); ?>" type="text" class="M2ePro-required-when-visible input-text validate-digits M2ePro-validate-conditions-between" />
                     </td>
                 </tr>
 

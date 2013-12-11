@@ -142,7 +142,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_ProductAddController
         $prefix = $this->getHideProductsInOtherListingsPrefix();
 
         if ($this->getRequest()->isPost()) {
-            $hideProductsOtherParam = $this->getRequest()->getPost('hide_products_others_listings', 0);
+            $hideProductsOtherParam = $this->getRequest()->getPost('hide_products_others_listings', 1);
             Mage::helper('M2ePro/Data_Session')->setValue($prefix, $hideProductsOtherParam);
         }
 
@@ -181,7 +181,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_ProductAddController
         $prefix = $this->getHideProductsInOtherListingsPrefix();
 
         if ($this->getRequest()->isPost()) {
-            $hideProductsOtherParam = $this->getRequest()->getPost('hide_products_others_listings', 0);
+            $hideProductsOtherParam = $this->getRequest()->getPost('hide_products_others_listings', 1);
             Mage::helper('M2ePro/Data_Session')->setValue($prefix, $hideProductsOtherParam);
         }
 

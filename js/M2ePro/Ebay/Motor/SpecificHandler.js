@@ -20,19 +20,21 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
 
     initProductGrid: function()
     {
-        var grid = window[this.productsGridId + 'JsObject'];
+        var self = this;
+        var grid = eval(self.productsGridId + 'JsObject');
+
         if (!grid.massaction) {
-            grid.massaction = window[this.productsGridId + '_massactionJsObject'];
+            grid.massaction = eval(self.productsGridId + '_massactionJsObject');
         }
     },
 
     initSpecificGrid: function()
     {
         var self = this;
-        var grid = window[this.specificsGridId + 'JsObject'];
+        var grid = eval(self.specificsGridId + 'JsObject');
 
         if (!grid.massaction) {
-            grid.massaction = window[this.specificsGridId + '_massactionJsObject'];
+            grid.massaction = eval(self.specificsGridId + '_massactionJsObject');
         }
 
         grid.massaction.updateCount = grid.massaction.updateCount.wrap(
@@ -41,6 +43,9 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
 
                 $('attribute_content').value = grid.massaction.getCheckedValues()
                     .replace(/,/g, M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics::VALUE_SEPARATOR'));
+
+                $('attribute_content').value == ''
+                    ? $('generate_attribute_content_container').hide() : $('generate_attribute_content_container').show();
             }
         );
 
@@ -66,10 +71,6 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
 
                 case 'add_to_attribute':
                     self.addSpecificsToProducts(false);
-                    break;
-
-                case 'copy_attribute_value':
-                    $('generate_attribute_content_container').show();
                     break;
             }
         };
@@ -116,7 +117,10 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
             return;
         }
 
-        var isSpecificsGridExists = $(self.specificsGridId) != null;
+        var isSpecificsGridExists = false;
+        if ($(self.specificsGridId) != null && $('specifics_grid_container').innerHTML != '') {
+            isSpecificsGridExists = true;
+        }
 
         if (!isSpecificsGridExists) {
             self.loadSpecificsGrid();
@@ -154,16 +158,16 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
 
     closeCallback: function()
     {
+        var self = this;
+
         $(document.body).appendChild($(this.popUpBlockId).hide());
 
-        var specificsGrid = window[this.specificsGridId + 'JsObject'];
+        var specificsGrid = eval(self.specificsGridId + 'JsObject');
         specificsGrid.massaction.unselectAll();
         specificsGrid.massaction.select.value = '';
 
-        var productsGrid = window[this.productsGridId + 'JsObject'];
+        var productsGrid = eval(self.productsGridId + 'JsObject');
         productsGrid.massaction.unselectAll();
-
-        $('generate_attribute_content_container').hide();
 
         $('attribute_content').value = '';
     },
@@ -173,8 +177,8 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
     addSpecificsToProducts: function(overwrite)
     {
         var self = this;
-        var specificsGrid = window[this.specificsGridId + 'JsObject'];
-        var productsGrid = window[this.productsGridId + 'JsObject'];
+        var specificsGrid = eval(self.specificsGridId + 'JsObject');
+        var productsGrid = eval(self.productsGridId + 'JsObject');
 
         new Ajax.Request( M2ePro.url.get('adminhtml_ebay_listing/updateMotorsSpecificsAttributes') ,
         {
@@ -182,7 +186,7 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
             asynchronous : true,
             parameters : {
                 listing_id: this.listingId,
-                listing_product_ids: productsGrid.massaction.getCheckedValues(),
+                listing_product_ids: EbayListingSettingsGridHandlerObj.selectedProductsIds.toString(),
                 epids: specificsGrid.massaction.getCheckedValues(),
                 overwrite: overwrite ? 'yes' : 'no'
             },

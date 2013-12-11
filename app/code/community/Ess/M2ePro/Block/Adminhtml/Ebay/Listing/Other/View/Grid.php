@@ -140,10 +140,11 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
             'type' => 'options',
             'sortable' => false,
             'options' => array(
-                Ess_M2ePro_Model_Listing_Product::STATUS_LISTED => Mage::helper('M2ePro')->__('Listed'),
-                Ess_M2ePro_Model_Listing_Product::STATUS_SOLD => Mage::helper('M2ePro')->__('Sold'),
-                Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED => Mage::helper('M2ePro')->__('Stopped'),
-                Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED => Mage::helper('M2ePro')->__('Finished')
+                Ess_M2ePro_Model_Listing_Product::STATUS_LISTED   => Mage::helper('M2ePro')->__('Listed'),
+                Ess_M2ePro_Model_Listing_Product::STATUS_SOLD     => Mage::helper('M2ePro')->__('Sold'),
+                Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED  => Mage::helper('M2ePro')->__('Stopped'),
+                Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED => Mage::helper('M2ePro')->__('Finished'),
+                Ess_M2ePro_Model_Listing_Product::STATUS_BLOCKED  => Mage::helper('M2ePro')->__('Pending')
             ),
             'frame_callback' => array($this, 'callbackColumnStatus')
         ));
@@ -421,6 +422,10 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
 
             case Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED:
                 $value = '<span style="color: blue;">' . $value . '</span>';
+                break;
+
+            case Ess_M2ePro_Model_Listing_Product::STATUS_BLOCKED:
+                $value = '<span style="color: orange;">'.$value.'</span>';
                 break;
 
             default:

@@ -108,33 +108,47 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_AutoActionController
         $specific->setCategoryMode($categoryMode);
         $specific->setCategoryValue($categoryValue);
 
+        $categoryWasChanged = false;
+
         $template = $this->getCategoryTemplate($autoMode, $listing);
-        $otherTemplate = $this->getOtherCategoryTemplate($autoMode, $listing);
 
-        if (is_null($template)) {
-            $this->getResponse()->setBody($specific->toHtml());
-            return;
+        if (!$template) {
+            $categoryWasChanged = true;
+        } else {
+            if ($categoryMode == Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_EBAY &&
+                $template->getData('category_main_id') != $categoryValue) {
+                $categoryWasChanged = true;
+            }
+
+            if ($categoryMode == Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_EBAY &&
+                $template->getData('category_main_id') != $categoryValue) {
+                $categoryWasChanged = true;
+            }
         }
 
-        if ($categoryMode == Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_EBAY
-            && $template->getData('category_main_id') != $categoryValue
-        ) {
-            $this->getResponse()->setBody($specific->toHtml());
-            return;
+        if ($categoryWasChanged) {
+            $templateData = array(
+                'category_main_id' => 0,
+                'category_main_mode' => $categoryMode,
+                'category_main_attribute' => ''
+            );
+
+            if ($categoryMode == Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_EBAY) {
+                $templateData['category_main_id'] = $categoryValue;
+            } else if ($categoryMode == Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_ATTRIBUTE) {
+                $templateData['category_main_attribute'] = $categoryValue;
+            }
+
+            $existingTemplates = Mage::getModel('M2ePro/Ebay_Template_Category')->getCollection()
+                ->getItemsByPrimaryCategories(array($templateData));
+
+            $template = reset($existingTemplates);
         }
 
-        if ($categoryMode == Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_ATTRIBUTE
-            && $template->getData('category_main_attribute') != $categoryValue
-        ) {
-            $this->getResponse()->setBody($specific->toHtml());
-            return;
+        if ($template) {
+            $specific->setInternalData($template->getData());
+            $specific->setSelectedSpecifics($template->getSpecifics());
         }
-
-        $data = $template->getData();
-        $otherTemplate && $data = array_merge($data, $otherTemplate->getData());
-
-        $specific->setInternalData($data);
-        $specific->setSelectedSpecifics($template->getSpecifics());
 
         $this->getResponse()->setBody($specific->toHtml());
     }
@@ -425,7 +439,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_AutoActionController
         $title = $this->getRequest()->getParam('title');
 
         if ($title == '') {
-            exit(json_encode(array('unique' => false)));
+            return $this->getResponse()->setBody(json_encode(array('unique' => false)));
         }
 
         $collection = Mage::getModel('M2ePro/Ebay_Listing_Auto_Category_Group')
@@ -437,7 +451,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_AutoActionController
             $collection->addFieldToFilter('id', array('neq' => $groupId));
         }
 
-        exit(json_encode(array('unique' => !(bool)$collection->getSize())));
+        return $this->getResponse()->setBody(json_encode(array('unique' => !(bool)$collection->getSize())));
     }
 
     //#############################################

@@ -29,8 +29,6 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_NewSku_MultipleResponser
 
             /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
 
-            $requestData = $this->getListingProductRequestNativeData($listingProduct);
-
             if (!isset($this->responseBody['skus'][$listingProduct->getId().'-id'])) {
 
                 // Parser hack -> Mage::helper('M2ePro')->__('New SKU was not added');
@@ -41,12 +39,12 @@ class Ess_M2ePro_Model_Connector_Server_Buy_Product_NewSku_MultipleResponser
                 continue;
             }
 
-            $tempParams = array(
-                'general_id' => $this->responseBody['skus'][$listingProduct->getId().'-id']
-            );
-
             Mage::getModel('M2ePro/Connector_Server_Buy_Product_Helper')
-                        ->updateAfterNewSkuAction($listingProduct,$requestData,$tempParams);
+                        ->updateAfterNewSkuAction($listingProduct,
+                                                  $this->getListingProductRequestNativeData($listingProduct),
+                                                  array_merge($this->params,array(
+                                                      'general_id' => $this->responseBody['skus'][$listingProduct->getId().'-id']
+                                                  )));
 
             // Parser hack -> Mage::helper('M2ePro')->__('New SKU was successfully added');
             $this->addListingsProductsLogsMessage($listingProduct, 'New SKU was successfully added',

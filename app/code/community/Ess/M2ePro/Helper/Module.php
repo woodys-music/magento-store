@@ -66,7 +66,7 @@ class Ess_M2ePro_Helper_Module extends Mage_Core_Helper_Abstract
 
     public function getRevision()
     {
-        $revision = '5534';
+        $revision = '5777';
 
         if ($revision == str_replace('|','#','|REVISION|')) {
             $revision = (int)exec('svnversion');
@@ -208,7 +208,7 @@ class Ess_M2ePro_Helper_Module extends Mage_Core_Helper_Abstract
                     'sign' => '>=',
                     'value' => (Mage::helper('M2ePro/Magento')->isGoEdition()           ? '1.9.0.0' :
                                (Mage::helper('M2ePro/Magento')->isEnterpriseEdition()   ? '1.7.0.0' :
-                               (Mage::helper('M2ePro/Magento')->isProfessionalEdition() ? '1.7.0.0' : '1.4.0.0')))
+                               (Mage::helper('M2ePro/Magento')->isProfessionalEdition() ? '1.7.0.0' : '1.4.1.0')))
                 ),
                 'current' => array(
                     'value' => Mage::helper('M2ePro/Magento')->getVersion(false),

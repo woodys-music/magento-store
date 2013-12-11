@@ -7,7 +7,10 @@
 class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
     extends Ess_M2ePro_Model_Connector_Server_Ebay_Item_SingleAbstract
 {
-    const RELIST_ERROR_ITEM_CANNOT_BE_ACCESSED = 17;
+    const RELIST_ERROR_ITEM_CANNOT_BE_ACCESSED  = 17;
+    const RELIST_ERROR_CONDITION_REQUIRED       = 21916884;
+
+    private $mayBeDuplicateWasCreated = false;
 
     // ########################################
 
@@ -75,7 +78,8 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
     protected function prepareResponseData($response)
     {
         if ($this->resultType == parent::MESSAGE_TYPE_ERROR) {
-            $this->checkAndLogErrorMessage();
+            $this->checkTheDuplicateWasCreated();
+            $this->checkAndLogErrorMessages();
             return $response;
         }
 
@@ -90,6 +94,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
         if ($response['already_active']) {
 
             $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
+
             Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')
                         ->updateAfterListAction($this->listingProduct, $this->nativeRequestData,
                                                 array_merge($this->params,$tempParams));
@@ -104,6 +109,7 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
                                                   Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
         } else {
 
+            $tempParams['is_images_upload_error'] = $this->isImagesUploadError($this->messages);
             Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')
                         ->updateAfterRelistAction($this->listingProduct, $this->nativeRequestData,
                                                   array_merge($this->params,$tempParams));
@@ -123,26 +129,105 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Relist_Single
 
     // ########################################
 
-    private function checkAndLogErrorMessage()
+    protected function processResponseInfo($responseInfo)
+    {
+        try {
+            parent::processResponseInfo($responseInfo);
+        } catch (Exception $exception) {
+
+            if (strpos($exception->getMessage(), 'code:34') === false ||
+                $this->account->getChildObject()->isModeSandbox()) {
+                throw $exception;
+            }
+
+            $this->mayBeDuplicateWasCreated = true;
+        }
+    }
+
+    protected function checkTheDuplicateWasCreated()
+    {
+        if (!$this->mayBeDuplicateWasCreated) {
+            return;
+        }
+
+        $productAdditionalData = $this->listingProduct->getAdditionalData();
+        $productAdditionalData['last_failed_action_data'] = array(
+            'native_request_data' => $this->nativeRequestData,
+            'previous_status' => $this->listingProduct->getStatus(),
+            'action' => Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_RELIST,
+            'request_time' => Mage::helper('M2ePro')->getCurrentGmtDate(),
+        );
+
+        $this->listingProduct->addData(array(
+            'status' => Ess_M2ePro_Model_Listing_Product::STATUS_BLOCKED,
+            'additional_data' => json_encode($productAdditionalData),
+        ))->save();
+
+        $message = array(
+            parent::MESSAGE_TEXT_KEY => 'An error occured while listing the item. '.
+                'The item has been blocked. The next M2E Synchronization will resolve the problem.',
+            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING,
+        );
+        $this->addListingsProductsLogsMessage($this->listingProduct, $message);
+    }
+
+    // ########################################
+
+    private function checkAndLogErrorMessages()
     {
         foreach ($this->messages as $message) {
-            if ($message[parent::MESSAGE_SENDER_KEY] == parent::MESSAGE_SENDER_COMPONENT &&
-                $message[parent::MESSAGE_CODE_KEY] == self::RELIST_ERROR_ITEM_CANNOT_BE_ACCESSED) {
-
-                $this->listingProduct
-                    ->addData(array('status' => Ess_M2ePro_Model_Listing_Product::STATUS_NOT_LISTED))->save();
-
-                $message = array(
-                    // Parser hack -> Mage::helper('M2ePro')->__('This item cannot be accessed on eBay. M2E set Not Listed status.');
-                    parent::MESSAGE_TEXT_KEY => 'This item cannot be accessed on eBay. M2E set Not Listed status.',
-                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING
-                );
-
-                $this->addListingsProductsLogsMessage($this->listingProduct, $message,
-                                                      Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-                break;
-            }
+            $this->checkAndLogNotAccessedError($message);
+            $this->checkAndLogConditionError($message);
         }
+    }
+
+    // ------------------------------------------
+
+    private function checkAndLogNotAccessedError($message)
+    {
+        if ($message[parent::MESSAGE_SENDER_KEY] != parent::MESSAGE_SENDER_COMPONENT ||
+            $message[parent::MESSAGE_CODE_KEY] != self::RELIST_ERROR_ITEM_CANNOT_BE_ACCESSED) {
+            return;
+        }
+
+        $this->listingProduct
+             ->setData('status', Ess_M2ePro_Model_Listing_Product::STATUS_NOT_LISTED)
+             ->save();
+
+        $message = array(
+            // ->__('This item cannot be accessed on eBay. M2E set Not Listed status.');
+            parent::MESSAGE_TEXT_KEY => 'This item cannot be accessed on eBay. M2E set Not Listed status.',
+            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING
+        );
+
+        $this->addListingsProductsLogsMessage(
+            $this->listingProduct, $message,Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM
+        );
+    }
+
+    private function checkAndLogConditionError($message)
+    {
+        if ($message[parent::MESSAGE_SENDER_KEY] != parent::MESSAGE_SENDER_COMPONENT ||
+            $message[parent::MESSAGE_CODE_KEY] != self::RELIST_ERROR_CONDITION_REQUIRED) {
+            return;
+        }
+
+        $productAdditionalData = $this->listingProduct->getAdditionalData();
+        $productAdditionalData['is_need_relist_condition'] = true;
+
+        $this->listingProduct
+             ->setData('additional_data', json_encode($productAdditionalData))
+             ->save();
+
+        $message = array(
+            parent::MESSAGE_TEXT_KEY => 'M2E was not able to send Condition on eBay. Please try to perform the Relist' .
+                                        ' action once more.',
+            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_WARNING
+        );
+
+        $this->addListingsProductsLogsMessage(
+            $this->listingProduct, $message,Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM
+        );
     }
 
     // ########################################

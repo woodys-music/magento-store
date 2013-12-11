@@ -101,84 +101,75 @@ class Ess_M2ePro_Model_Connector_Server_Ebay_Item_Stop_Multiple
 
     protected function prepareResponseData($response)
     {
-        if ($this->resultType != parent::MESSAGE_TYPE_ERROR && isset($response['result'])) {
+        if ($this->resultType == parent::MESSAGE_TYPE_ERROR || !isset($response['result'])) {
+            $this->checkAndRemoveNeededItems();
+            return $response;
+        }
 
-            foreach ($response['result'] as $tempIdProduct=>$tempResultProduct) {
+        foreach ($response['result'] as $tempIdProduct=>$tempResultProduct) {
 
-                $listingProductInArray = NULL;
-                foreach ($this->listingsProducts as $listingProduct) {
-                    /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
-                    if ($tempIdProduct == $listingProduct->getId()) {
-                        $listingProductInArray = $listingProduct;
-                        break;
-                    }
-                }
+            if (is_null($listingProductInArray = $this->getListingProductFromArray($tempIdProduct))) {
+                continue;
+            }
 
-                if (is_null($listingProductInArray)) {
-                    continue;
-                }
+            if (!$this->isResultSuccess($tempResultProduct)) {
+                continue;
+            }
 
-                $resultSuccess = true;
-                if (isset($tempResultProduct['messages'])){
-                    foreach ($tempResultProduct['messages'] as $message) {
-                        if ($message[parent::MESSAGE_TYPE_KEY] == parent::MESSAGE_TYPE_ERROR) {
-                            $resultSuccess = false;
-                            break;
-                        }
-                    }
-                }
+            $tempParams = array(
+               'end_date_raw' => $tempResultProduct['ebay_end_date_raw']
+            );
 
-                if ($resultSuccess) {
+            if ($tempResultProduct['already_stop']) {
+                $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
+            }
 
-                    $tempParams = array(
-                        'end_date_raw' => $tempResultProduct['ebay_end_date_raw']
-                    );
+            Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')->updateAfterStopAction(
+                $listingProductInArray,
+                $this->nativeRequestData['items'][$listingProductInArray->getId()],
+                array_merge($this->params,$tempParams)
+            );
 
-                    if ($tempResultProduct['already_stop']) {
-                        $tempParams['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
-                    }
+            if ($tempResultProduct['already_stop']) {
 
-                    Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Helper')->updateAfterStopAction(
-                        $listingProductInArray,
-                        $this->nativeRequestData['items'][$listingProductInArray->getId()],
-                        array_merge($this->params,$tempParams)
-                    );
+                $message = array(
+                    // Parser hack -> Mage::helper('M2ePro')->__('Item was already stopped on eBay');
+                    parent::MESSAGE_TEXT_KEY => 'Item was already stopped on eBay',
+                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR
+                );
 
-                    if ($tempResultProduct['already_stop']) {
+                $this->addListingsProductsLogsMessage($listingProductInArray, $message,
+                                                      Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
+            } else {
 
-                        $message = array(
-                            // Parser hack -> Mage::helper('M2ePro')->__('Item was already stopped on eBay');
-                            parent::MESSAGE_TEXT_KEY => 'Item was already stopped on eBay',
-                            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_ERROR
-                        );
+                $message = array(
+                    // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully stopped');
+                    parent::MESSAGE_TEXT_KEY => 'Item was successfully stopped',
+                    parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_SUCCESS
+                );
 
-                        $this->addListingsProductsLogsMessage($listingProductInArray, $message,
-                                                              Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-                    } else {
-
-                        $message = array(
-                            // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully stopped');
-                            parent::MESSAGE_TEXT_KEY => 'Item was successfully stopped',
-                            parent::MESSAGE_TYPE_KEY => parent::MESSAGE_TYPE_SUCCESS
-                        );
-
-                        $this->addListingsProductsLogsMessage($listingProductInArray, $message,
-                                                              Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
-                    }
-                }
+                $this->addListingsProductsLogsMessage($listingProductInArray, $message,
+                                                      Ess_M2ePro_Model_Log_Abstract::PRIORITY_MEDIUM);
             }
         }
 
-        if (isset($this->params['remove']) && (bool)$this->params['remove']) {
-
-            foreach ($this->listingsProducts as $listingProduct) {
-                /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
-                $listingProduct->addData(array('status'=>Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED))->save();
-                $listingProduct->deleteInstance();
-            }
-        }
-
+        $this->checkAndRemoveNeededItems();
         return $response;
+    }
+
+    // ########################################
+
+    protected function checkAndRemoveNeededItems()
+    {
+        if (!isset($this->params['remove']) || !(bool)$this->params['remove']) {
+            return;
+        }
+
+        foreach ($this->listingsProducts as $listingProduct) {
+            /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
+            $listingProduct->addData(array('status'=>Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED))->save();
+            $listingProduct->deleteInstance();
+        }
     }
 
     // ########################################

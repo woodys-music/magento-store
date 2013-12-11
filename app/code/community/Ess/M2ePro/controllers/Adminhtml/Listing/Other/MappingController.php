@@ -25,7 +25,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MappingController
         $productOtherId = $this->getRequest()->getPost('otherProductId');
 
         if ((!$productId && !$sku) || !$productOtherId || !$componentMode) {
-            exit();
+            return;
         }
 
         $collection = Mage::getModel('catalog/product')->getCollection();
@@ -34,7 +34,9 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MappingController
         $sku && $collection->addFieldToFilter('sku', $sku);
 
         $tempData = $collection->getSelect()->query()->fetch();
-        $tempData || exit('1');
+        if (!$tempData) {
+            return $this->getResponse()->setBody('1');
+        }
 
         $productId || $productId = $tempData['entity_id'];
 
@@ -44,7 +46,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MappingController
 
         $productOtherInstance->mapProduct($productId, Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER);
 
-        exit('0');
+        return $this->getResponse()->setBody('0');
     }
 
     public function unmapAction()
@@ -82,11 +84,11 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MappingController
         $productIds = $this->getRequest()->getParam('product_ids');
 
         if (empty($productIds)) {
-            exit ('You should select one or more products');
+            return $this->getResponse()->setBody('You should select one or more products');
         }
 
         if (empty($componentMode)) {
-            exit ('Component is not defined.');
+            return $this->getResponse()->setBody('Component is not defined.');
         }
 
         $productIds = explode(',', $productIds);
@@ -110,7 +112,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MappingController
         $mappingModel->initialize();
 
         if (!$mappingModel->autoMapOtherListingsProducts($productsForMapping)) {
-            exit('1');
+            return $this->getResponse()->setBody('1');
         }
     }
 

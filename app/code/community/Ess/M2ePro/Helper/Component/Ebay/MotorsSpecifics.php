@@ -17,6 +17,11 @@ class Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics extends Mage_Core_Helper_
         $attributeCode  = Mage::helper('M2ePro/Module')->getConfig()->getGroupValue(
             '/ebay/motor/', 'motors_specifics_attribute'
         );
+
+        if (empty($attributeCode)) {
+            return false;
+        }
+
         $attributeValue = $listingProduct->getMagentoProduct()->getAttributeValue($attributeCode);
 
         if (empty($attributeValue)) {
