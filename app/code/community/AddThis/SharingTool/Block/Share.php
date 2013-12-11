@@ -32,7 +32,7 @@ class AddThis_SharingTool_Block_Share extends Mage_Core_Block_Template
     
     public function getPubId(){
     	 
-    	return Mage::getStoreConfig('sharing_tool/general/pubid');
+    	return Mage::getStoreConfig('plugins_general/general/pubid');
     }
     
     public function getMenuVersion(){
@@ -108,21 +108,6 @@ class AddThis_SharingTool_Block_Share extends Mage_Core_Block_Template
     public function getUiLanguage(){
     
     	return Mage::getStoreConfig('sharing_tool/api/ui_language');
-    }
-    
-    public function getUiOffsetTop(){
-    
-    	return Mage::getStoreConfig('sharing_tool/api/ui_offset_top');
-    }
-    
-    public function getUiOffsetLeft(){
-    
-    	return Mage::getStoreConfig('sharing_tool/api/ui_offset_left');
-    }    
-    
-    public function getUiCss(){
-    
-    	return Mage::getStoreConfig('sharing_tool/api/ui_use_css');
     }
     
     public function getDataTrackClick(){

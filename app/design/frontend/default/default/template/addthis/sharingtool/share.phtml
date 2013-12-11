@@ -19,7 +19,8 @@
 /**General Options*/
 	$plugin_enabled = $this->getPluginEnabledStatus();
 	$pubid = $this->getPubId();
-	$menu_version = 300;
+	if(!$pubid)
+		$pubid = "xa-525fbbd6215b4f1a";			
 	
 /**Custom Share*/		
 	$custom_url = $this->getCustomUrl();
@@ -63,15 +64,14 @@
 <!-- AddThis Button BEGIN -->
 
 <!-- AddThis API Config -->
-
 <script type='text/javascript'>
-var addthis_product = 'mag-1.0.1';
+var addthis_product = 'mag-sp-2.0.0';
 var addthis_config 	= {
 <?php
 	if($pubid):
 		echo "pubid : '".$pubid."'\n";
 	else:
-		echo "pubid : 'unknown'\n";
+		echo "pubid : 'xa-525fbbd6215b4f1a'\n";
 	endif;
 	if($services_exclude):
 		echo ", services_exclude : '".$services_exclude."'\n";
@@ -100,15 +100,6 @@ var addthis_config 	= {
 	if($ui_language != 'auto'):
 		echo ", ui_language : '".$ui_language."'\n";
 	endif;
-	if($ui_offset_top):
-		echo ", ui_offset_top : ".$ui_offset_top."\n";
-	endif;
-	if($ui_offset_left):
-		echo ", ui_offset_left : ".$ui_offset_left."\n";
-	endif;
-	if($ui_use_css == 0):
-		echo ", ui_use_css : false \n";
-	endif;
 	if($data_track_clickback == 0):
 		echo ", data_track_clickback : false \n";
 	endif;
@@ -119,7 +110,6 @@ var addthis_config 	= {
 		echo ", data_ga_tracker : '".$data_ga_tracker."'\n";
 	endif;
 ?>
-
 }
 </script>
 <!-- AddThis API Config END -->
@@ -209,11 +199,25 @@ var addthis_config 	= {
 <a class="addthis_button_preferred_4"></a>
 <a class="addthis_button_compact"></a>
 <a class="addthis_counter addthis_bubble_style"></a>
-</div>  
+</div>
 <?php
  	}//switch ends	
 ?>
-<script type="text/javascript" src="https://s7.addthis.com/js/<?php echo $menu_version;?>/addthis_widget.js"></script>
+
+<script>
+	var ats_widget =  function(){
+	    if(typeof addthis_conf == 'undefined'){
+	        var at_script = document.createElement('script');
+	        at_script.src = '//s7.addthis.com/js/300/addthis_widget.js#pubid=<?php echo urlencode($pubid) ?>';
+	        document.getElementsByTagName('head')[0].appendChild(at_script);
+	        var addthis_product = 'mag-sp-2.0.0';
+	    }
+	};
+	if(window.addEventListener)
+		window.addEventListener('load',ats_widget);        
+	else                
+		window.attachEvent('onload',ats_widget);           	    
+</script>	    
 <!-- AddThis Button END -->
 <?php
 endif; //if plugin not enabled
