@@ -1,37 +1,28 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
 class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
 {
-
     public function getPost()
     {
         if (!$this->hasData('post')) {
-           
-           if ($this->getPostId()) {
-               $post = Mage::getModel('blog/post')->load($this->getPostId());
-           } else {
+            if ($this->getPostId()) {
+                $post = Mage::getModel('blog/post')->load($this->getPostId());
+            } else {
                 $post = Mage::getSingleton('blog/post');
-           }
- 
-            $category = Mage::getSingleton('blog/cat')->load($this->getRequest()->getParam(self::$_catUriParam), "identifier");
- 
+            }
+            $category = Mage::getSingleton('blog/cat')->load(
+                $this->getRequest()->getParam(self::$_catUriParam), "identifier"
+            );
             if ($category->getIdentifier()) {
-                $post->setAddress($this->getBlogUrl(null, array(self::$_catUriParam => $category->getIdentifier(), self::$_postUriParam => $post->getIdentifier())));
+                $post->setAddress(
+                    $this->getBlogUrl(
+                        null,
+                        array(
+                            self::$_catUriParam  => $category->getIdentifier(),
+                            self::$_postUriParam => $post->getIdentifier()
+                        )
+                    )
+                );
             } else {
                 $post->setAddress($this->getBlogUrl($post->getIdentifier()));
             }
@@ -55,16 +46,14 @@ class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
     {
         if (!$this->hasData('commentCollection')) {
             $collection = Mage::getModel('blog/comment')
-                    ->getCollection()
-                    ->addPostFilter($this->getPost()->getPostId())
-                    ->setOrder('created_time', 'DESC')
-                    ->addApproveFilter(2);
-
-            $collection->setPageSize((int) Mage::helper('blog')->commentsPerPage());
-
+                ->getCollection()
+                ->addPostFilter($this->getPost()->getPostId())
+                ->setOrder('created_time', 'DESC')
+                ->addApproveFilter(2)
+            ;
+            $collection->setPageSize((int)Mage::helper('blog')->commentsPerPage());
             $this->setData('commentCollection', $collection);
         }
-
         return $this->getData('commentCollection');
     }
 
@@ -95,43 +84,49 @@ class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
 
     protected function _beforeToHtml()
     {
-        Mage::helper('blog/toolbar')->create($this, array(
-            'orders' => array('created_time' => $this->__('Created At'), 'email' => $this->__('Added By')),
-            'default_order' => 'created_time',
-            'dir' => 'desc',
-            'limits' => self::$_helper->commentsPerPage(),
-            'method' => 'getComment'
-                )
+        Mage::helper('blog/toolbar')->create(
+            $this,
+            array(
+                 'orders'        => array('created_time' => $this->__('Created At'), 'email' => $this->__('Added By')),
+                 'default_order' => 'created_time',
+                 'dir'           => 'desc',
+                 'limits'        => self::$_helper->commentsPerPage(),
+                 'method'        => 'getComment'
+            )
         );
-
         return $this;
     }
 
     protected function _prepareCrumbs()
     {
         $breadcrumbs = $this->getCrumbs();
-
         if ($breadcrumbs) {
-
             $helper = $this->_helper();
-
-            $breadcrumbs->addCrumb('blog', array(
-                'label' => $helper->getTitle(),
-                'title' => $this->__('Return to %s', $helper->getTitle()),
-                'link' => Mage::getUrl($helper->getRoute()))
+            $breadcrumbs->addCrumb(
+                'blog',
+                array(
+                     'label' => $helper->getTitle(),
+                     'title' => $this->__('Return to %s', $helper->getTitle()),
+                     'link'  => Mage::getUrl($helper->getRoute()),
+                )
             );
 
             $title = trim($this->getCategory()->getTitle());
             if ($title) {
-                $breadcrumbs->addCrumb('cat', array(
-                    'label' => $title,
-                    'title' => $this->__('Return to %s', $title),
-                    'link' => Mage::getUrl($helper->getRoute(), array('cat' => $this->getCategory()->getIdentifier())))
+                $breadcrumbs->addCrumb(
+                    'cat',
+                    array(
+                         'label' => $title,
+                         'title' => $this->__('Return to %s', $title),
+                         'link'  => Mage::getUrl(
+                             $helper->getRoute(), array('cat' => $this->getCategory()->getIdentifier())
+                         ),
+                    )
                 );
             }
 
-            $breadcrumbs->addCrumb('blog_page', array(
-                'label' => htmlspecialchars_decode($this->getPost()->getTitle()))
+            $breadcrumbs->addCrumb(
+                'blog_page', array('label' => htmlspecialchars_decode($this->getPost()->getTitle()))
             );
         }
 
@@ -141,7 +136,9 @@ class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
     protected function getCategory()
     {
         if (!$this->hasData('postCategory')) {
-            $this->setData('postCategory', Mage::getSingleton('blog/cat')->load($this->getRequest()->getParam('cat'), "identifier"));
+            $this->setData(
+                'postCategory', Mage::getSingleton('blog/cat')->load($this->getRequest()->getParam('cat'), "identifier")
+            );
         }
 
         return $this->getData('postCategory');
@@ -156,7 +153,11 @@ class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
 
     public function setCommentDetails($name, $email, $comment)
     {
-        return $this->setData('commentName', $name)->setData('commentEmail', $email)->setData('commentComment', $comment);
+        return $this
+            ->setData('commentName', $name)
+            ->setData('commentEmail', $email)
+            ->setData('commentComment', $comment)
+        ;
     }
 
     public function getCommentText()
@@ -175,8 +176,9 @@ class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
     public function getCommentEmail()
     {
         $blogPostModelFromSession = Mage::getSingleton('customer/session')->getBlogPostModel();
-        if ($blogPostModelFromSession)
+        if ($blogPostModelFromSession) {
             return $blogPostModelFromSession->getEmail();
+        }
 
         if (!empty($this->_data['commentEmail'])) {
             return $this->_data['commentEmail'];
@@ -201,5 +203,4 @@ class AW_Blog_Block_Post extends AW_Blog_Block_Abstract
         }
         return trim($name);
     }
-
 }

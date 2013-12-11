@@ -1,11 +1,7 @@
 <?php
-
-$installer = $this;
 /* @var $installer Mage_Core_Model_Resource_Setup */
-
+$installer = $this;
 $installer->startSetup();
-
-
 try {
     $post = Mage::getModel('blog/post')->loadByIdentifier('Hello');
 
@@ -85,8 +81,6 @@ try {
 <p><a href="http://ecommerce.aheadworks.com?utm_source=AW_Blog&amp;utm_medium=welcome_post&amp;utm_campaign=welcome_post"><img style="align: center;" src="http://media.aheadworks.com/catalog/mc_banner.png" alt="" width="685px" /></a></p>
 ');
 
-
-
     $cats = Mage::getModel('blog/cat')->getCollection();
     foreach ($cats as $cat) {
         if ($cat->getIdentifier() == 'news') {
@@ -96,9 +90,8 @@ try {
     }
 
     $post->save();
-} catch (Exception $exc) {
-    
+} catch (Exception $e) {
+    Mage::logException($e);
 }
 
 $installer->endSetup();
-

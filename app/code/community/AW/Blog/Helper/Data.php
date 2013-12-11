@@ -1,23 +1,7 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
 class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
 {
-
     const XML_PATH_ENABLED = 'blog/blog/enabled';
     const XML_PATH_FOOTER_ENABLED = 'blog/blog/footerEnabled';
     const XML_CRUMBS_ENABLED = 'blog/blog/blogcrumbs';
@@ -36,7 +20,7 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
     const XML_DEFAULT_POST_SORT = "blog/blog/sorter";
 
     /* menus and links */
-    const XML_PATH_LAYOUT = 'blog/blog/layout';  
+    const XML_PATH_LAYOUT = 'blog/blog/layout';
     const XML_RECENT_SIZE = 'blog/menu/recent';
     /* metadata */
     const XML_PATH_TITLE = 'blog/blog/title';
@@ -44,7 +28,7 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
     const XML_PATH_DESCRIPTION = 'blog/blog/description';
     const DEFAULT_PAGE_COUNT = 10;
     const DEFAULT_ROOT = 'blog';
-    
+
     /* url constants */
     const CATEGORY_URI_PARAM = 'cat';
     const POST_URI_PARAM = 'post';
@@ -69,7 +53,7 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
     {
         return $this->conf(self::XML_PATH_TITLE, $store);
     }
-    
+
     public function getTitle($store = null)
     {
         return $this->isTitle($store);
@@ -85,11 +69,6 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
         return $this->conf(self::XML_PATH_DESCRIPTION, $store);
     }
 
-    public function isMenuLeft($store = null)
-    {
-        return $this->conf(self::XML_PATH_MENU_LEFT, $store);
-    }
-    
     public function isBookmarksPost($store = null)
     {
         return $this->conf(self::XML_PATH_BOOKMARKS_POST, $store);
@@ -161,7 +140,7 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
 
         return $count;
     }
-    
+
     public function getRecentPage($store = null)
     {
         $count = trim($this->conf(self::XML_RECENT_SIZE, $store));
@@ -172,7 +151,6 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
 
         return $count;
     }
-
 
     public function getUserName()
     {
@@ -188,11 +166,11 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
         }
         return $route;
     }
-    
-    public function getRouteUrl($store = null) {
-        
+
+    public function getRouteUrl($store = null)
+    {
         return Mage::getUrl($this->getRoute($store), array('_store' => $store));
-         
+
     }
 
     public function getStoreIdByCode($storeCode)
@@ -216,43 +194,50 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
         return $customer->getEmail();
     }
 
-    /*
-     * Recursively searches and replaces all occurrences of search in subject values replaced with the given replace value
+    /**
+     * Recursively searches and replaces all occurrences of search in subject values
+     * replaced with the given replace value
+     *
      * @param string $search The value being searched for
      * @param string $replace The replacement value
      * @param array $subject Subject for being searched and replaced on
      * @return array Array with processed values
      */
-
     public function recursiveReplace($search, $replace, $subject)
     {
-        if (!is_array($subject))
+        if (!is_array($subject)) {
             return $subject;
+        }
 
-        foreach ($subject as $key => $value)
-            if (is_string($value))
+        foreach ($subject as $key => $value) {
+            if (is_string($value)) {
                 $subject[$key] = str_replace($search, $replace, $value);
-            elseif (is_array($value))
+            } elseif (is_array($value)) {
                 $subject[$key] = self::recursiveReplace($search, $replace, $value);
+            }
+        }
 
         return $subject;
     }
 
-    public function extensionEnabled($extension_name)
+    public function extensionEnabled($extensionName)
     {
-        $modules = (array) Mage::getConfig()->getNode('modules')->children();
-        if (!isset($modules[$extension_name])
-                || $modules[$extension_name]->descend('active')->asArray() == 'false'
-                || Mage::getStoreConfig('advanced/modules_disable_output/' . $extension_name)
-        )
+        $modules = (array)Mage::getConfig()->getNode('modules')->children();
+        if (
+            !isset($modules[$extensionName])
+            || $modules[$extensionName]->descend('active')->asArray() == 'false'
+            || Mage::getStoreConfig('advanced/modules_disable_output/' . $extensionName)
+        ) {
             return false;
+        }
         return true;
     }
 
     public function addRss($head, $path)
     {
-        if ($head instanceof Mage_Page_Block_Html_Head)
+        if ($head instanceof Mage_Page_Block_Html_Head) {
             $head->addItem("rss", $path, 'title="' . Mage::getStoreConfig(self::XML_PATH_TITLE) . '"');
+        }
     }
 
     public function getRssEnabled()
@@ -276,7 +261,8 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
 
     public function filterWYS($text)
     {
-        $processorModelName = version_compare(Mage::getVersion(), '1.3.3.0', '>') ? 'widget/template_filter' : 'core/email_template_filter';
+        $processorModelName = version_compare(Mage::getVersion(), '1.3.3.0', '>') ? 'widget/template_filter'
+            : 'core/email_template_filter';
         $processor = Mage::getModel($processorModelName);
         if ($processor instanceof Mage_Core_Model_Email_Template_Filter) {
             return $processor->filter($text);
@@ -311,10 +297,21 @@ class AW_Blog_Helper_Data extends Mage_Core_Helper_Abstract
             $url = Mage::getBaseUrl() . ltrim($url, '/');
 
             Mage::app()->getFrontController()->getResponse()
-                    ->setRedirect($url)
-                    ->sendResponse();
+                ->setRedirect($url)
+                ->sendResponse();
             exit;
         }
     }
 
+    /**
+     * Check is AW_Mobile installed
+     *
+     * @return bool
+     */
+    public function isMobileInstalled()
+    {
+        return $this->isModuleOutputEnabled('AW_Mobile')
+            && @class_exists('AW_Mobile_Block_Catalog_Product_List_Toolbar')
+        ;
+    }
 }

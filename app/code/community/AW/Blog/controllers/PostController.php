@@ -1,26 +1,11 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
 require_once 'recaptcha/recaptchalib-aw.php';
 
-class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
-
-    public function preDispatch() {
-
+class AW_Blog_PostController extends Mage_Core_Controller_Front_Action
+{
+    public function preDispatch()
+    {
         parent::preDispatch();
 
         if (!Mage::helper('blog')->getEnabled()) {
@@ -28,9 +13,9 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
         }
     }
 
-    protected function _validateData($data) {
+    protected function _validateData($data)
+    {
         $errors = array();
-
         $helper = Mage::helper('blog');
 
         if (!Zend_Validate::is($data->getUser(), 'NotEmpty')) {
@@ -53,8 +38,8 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
         return $errors;
     }
 
-    public function viewAction() {
-
+    public function viewAction()
+    {
         $identifier = $this->getRequest()->getParam('identifier', $this->getRequest()->getParam('id', false));
 
         $helper = Mage::helper('blog');
@@ -73,25 +58,28 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
                 return;
             }
 
-
             if (!$session->isLoggedIn() && Mage::getStoreConfig('blog/comments/login')) {
                 $session->addError($helper->__('You must be logged in to comment.'));
                 if (!Mage::helper('blog/post')->renderPage($this, $identifier)) {
                     $this->_forward('NoRoute');
                 }
                 return;
-            } else if ($session->isLoggedIn() && Mage::getStoreConfig('blog/comments/login')) {
-                $model->setUser($helper->getUserName());
-                $model->setEmail($helper->getUserEmail());
+            } else {
+                if ($session->isLoggedIn() && Mage::getStoreConfig('blog/comments/login')) {
+                    $model->setUser($helper->getUserName());
+                    $model->setEmail($helper->getUserEmail());
+                }
             }
 
             try {
-
                 if (Mage::getStoreConfig('blog/recaptcha/enabled') && !$session->isLoggedIn()) {
                     $publickey = Mage::getStoreConfig('blog/recaptcha/publickey');
                     $privatekey = Mage::getStoreConfig('blog/recaptcha/privatekey');
 
-                    $resp = recaptcha_check_answer($privatekey, $_SERVER["REMOTE_ADDR"], $data["recaptcha_challenge_field"], $data["recaptcha_response_field"]);
+                    $resp = recaptcha_check_answer(
+                        $privatekey, $_SERVER["REMOTE_ADDR"], $data["recaptcha_challenge_field"],
+                        $data["recaptcha_response_field"]
+                    );
 
                     if (!$resp->is_valid) {
                         if ($resp->error == "incorrect-captcha-sol") {
@@ -105,7 +93,6 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
                         return;
                     }
                 }
-
 
                 $errors = $this->_validateData($model);
                 if (!empty($errors)) {
@@ -124,36 +111,42 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
                 if (Mage::getStoreConfig('blog/comments/approval')) {
                     $model->setStatus(2);
                     $session->addSuccess($helper->__('Your comment has been submitted.'));
-                } else if ($session->isLoggedIn() && Mage::getStoreConfig('blog/comments/loginauto')) {
-                    $model->setStatus(2);
-                    $session->addSuccess($helper->__('Your comment has been submitted.'));
                 } else {
-                    $model->setStatus(1);
-                    $session->addSuccess($helper->__('Your comment has been submitted and is awaiting approval.'));
+                    if ($session->isLoggedIn() && Mage::getStoreConfig('blog/comments/loginauto')) {
+                        $model->setStatus(2);
+                        $session->addSuccess($helper->__('Your comment has been submitted.'));
+                    } else {
+                        $model->setStatus(1);
+                        $session->addSuccess($helper->__('Your comment has been submitted and is awaiting approval.'));
+                    }
                 }
                 $model->save();
 
-                $comment_id = $model->getCommentId();
+                $commentId = $model->getCommentId();
             } catch (Exception $e) {
                 if (!Mage::helper('blog/post')->renderPage($this, $identifier)) {
                     $this->_forward('NoRoute');
                 }
             }
 
-            if (Mage::getStoreConfig('blog/comments/recipient_email') != null && $model->getStatus() == 1 && isset($comment_id)) {
+            if (Mage::getStoreConfig('blog/comments/recipient_email') != null && $model->getStatus() == 1
+                && isset($commentId)
+            ) {
                 $translate = Mage::getSingleton('core/translate');
                 /* @var $translate Mage_Core_Model_Translate */
                 $translate->setTranslateInline(false);
                 try {
-                    $data["url"] = Mage::getUrl('blog/manage_comment/edit/id/' . $comment_id);
+                    $data["url"] = Mage::getUrl('blog/manage_comment/edit/id/' . $commentId);
                     $postObject = new Varien_Object();
                     $postObject->setData($data);
                     $mailTemplate = Mage::getModel('core/email_template');
                     /* @var $mailTemplate Mage_Core_Model_Email_Template */
                     $mailTemplate->setDesignConfig(array('area' => 'frontend'))
-                            ->sendTransactional(
-                                    Mage::getStoreConfig('blog/comments/email_template'), Mage::getStoreConfig('blog/comments/sender_email_identity'), Mage::getStoreConfig('blog/comments/recipient_email'), null, array('data' => $postObject)
-                    );
+                        ->sendTransactional(
+                            Mage::getStoreConfig('blog/comments/email_template'),
+                            Mage::getStoreConfig('blog/comments/sender_email_identity'),
+                            Mage::getStoreConfig('blog/comments/recipient_email'), null, array('data' => $postObject)
+                        );
                     $translate->setTranslateInline(true);
                 } catch (Exception $e) {
                     $translate->setTranslateInline(true);
@@ -174,7 +167,8 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
         }
     }
 
-    public function noRouteAction($coreRoute = null) {
+    public function noRouteAction($coreRoute = null)
+    {
         $this->getResponse()->setHeader('HTTP/1.1', '404 Not Found');
         $this->getResponse()->setHeader('Status', '404 File not found');
 
@@ -183,5 +177,4 @@ class AW_Blog_PostController extends Mage_Core_Controller_Front_Action {
             $this->_forward('defaultNoRoute');
         }
     }
-
 }

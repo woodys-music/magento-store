@@ -1,20 +1,5 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
 class AW_Blog_Block_Tags extends Mage_Core_Block_Template
 {
     protected function _construct()
@@ -54,19 +39,19 @@ class AW_Blog_Block_Tags extends Mage_Core_Block_Template
 
     public function getTagWeight($tag, $isMin = null)
     {
-        $max_weight = $this->getMaxCount();
+        $maxWeight = $this->getMaxCount();
 
         $count = $tag->getTagFinalCount();
 
-        if ($max_weight) {
-            $k = ($count / (intval($max_weight)));
+        if ($maxWeight) {
+            $k = ($count / (intval($maxWeight)));
         } else {
             $k = 0.1;
         }
 
         if (!$isMin) {
             $weight = $this->getTagWeight($this->getMinTag(), 1);
-            if ((int) $weight) {
+            if ((int)$weight) {
                 $k = $k / $weight;
             } else {
                 $k = 0.1;
@@ -81,5 +66,4 @@ class AW_Blog_Block_Tags extends Mage_Core_Block_Template
         $route = Mage::helper('blog')->getRoute();
         return Mage::getUrl($route . "/tag/" . urlencode($tag->getTag()));
     }
-
 }

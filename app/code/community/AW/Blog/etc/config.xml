@@ -2,7 +2,7 @@
 <config>
     <modules>
         <AW_Blog>
-            <version>1.2.2</version>
+            <version>1.3.0</version>
         </AW_Blog>
     </modules>
     <admin>
@@ -58,13 +58,13 @@
         <menu>
             <blog module="blog">
                 <title>Blog</title>
-                <sort_order>71</sort_order>               
+                <sort_order>71</sort_order>
                 <children>
                     <new module="blog">
                         <title>Add Post</title>
                         <sort_order>0</sort_order>
                         <action>blog_admin/manage_blog/new</action>
-                    </new>					
+                    </new>
                     <posts module="blog">
                         <title>Posts</title>
                         <sort_order>10</sort_order>
@@ -171,7 +171,7 @@
                     </tag>
 
 
-                    <lblog> 
+                    <lblog>
                         <table>blog</table>
                     </lblog>
                     <lpost>
@@ -192,7 +192,7 @@
 
                     <lcat_store>
                         <table>blog_cat_store</table>
-                    </lcat_store>                
+                    </lcat_store>
 
                 </entities>
             </blog_mysql4>
@@ -207,7 +207,7 @@
                 <class>AW_Blog_Block</class>
             </blog>
             <rss>
-                <rewrite/>
+                <rewrite></rewrite>
                 <drewrite>
                     <list>AW_Blog_Block_Rss_List</list>
                 </drewrite>
@@ -266,7 +266,7 @@
                     </add_blog_section>
                 </observers>
             </sitemap_add_xml_block_to_the_end>
-        </events> 
+        </events>
         <template>
             <email>
                 <blog_comments_email_template translate="label" module="blog">
@@ -277,8 +277,6 @@
             </email>
         </template>
     </global>
-
-
     <default>
         <sitemap>
             <blog>
@@ -301,7 +299,6 @@
                 <useshortcontent>1</useshortcontent>
                 <rss>1</rss>
                 <rssimage>images/BlogLogo.png</rssimage>
-                <userte>1</userte>
                 <parse_cms>0</parse_cms>
                 <categories_urls>1</categories_urls>
             </blog>
@@ -314,15 +311,4 @@
             </menu>
         </blog>
     </default>
-    
-    <phpunit>
-        <suite>
-            <modules>
-                <AW_Blog/>
-            </modules>
-        </suite>
-    </phpunit>
-
-    
-    
 </config>

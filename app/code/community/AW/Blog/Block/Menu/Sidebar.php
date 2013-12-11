@@ -1,23 +1,7 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
 class AW_Blog_Block_Menu_Sidebar extends AW_Blog_Block_Abstract
 {
-
     public function getRecent()
     {
         // widget declaration
@@ -29,52 +13,46 @@ class AW_Blog_Block_Menu_Sidebar extends AW_Blog_Block_Abstract
         }
 
         if ($size) {
-            $collection = clone self::$_collection; 
+            $collection = clone self::$_collection;
             $collection->setPageSize($size);
 
             foreach ($collection as $item) {
                 $item->setAddress($this->getBlogUrl($item->getIdentifier()));
             }
-
             return $collection;
         }
-
         return false;
     }
 
     public function getCategories()
     {
         $collection = Mage::getModel('blog/cat')
-                ->getCollection()
-                ->addStoreFilter(Mage::app()->getStore()->getId())
-                ->setOrder('sort_order', 'asc');
-      
-        foreach ($collection as $item) {            
+            ->getCollection()
+            ->addStoreFilter(Mage::app()->getStore()->getId())
+            ->setOrder('sort_order', 'asc')
+        ;
+        foreach ($collection as $item) {
             $item->setAddress($this->getBlogUrl(array(self::$_catUriParam, $item->getIdentifier())));
         }
-        
         return $collection;
     }
-    
-    protected function _beforeToHtml() {
-        
+
+    protected function _beforeToHtml()
+    {
         return $this;
-        
     }
-    
+
     protected function _toHtml()
     {
         if (self::$_helper->getEnabled()) {
-
             $parent = $this->getParentBlock();
-
             if (!$parent) {
                 return null;
             }
 
             $showLeft = Mage::getStoreConfig('blog/menu/left');
             $showRight = Mage::getStoreConfig('blog/menu/right');
-            
+
             $isBlogPage = Mage::app()->getRequest()->getModuleName() == AW_Blog_Helper_Data::DEFAULT_ROOT;
 
             $leftAllowed = ($isBlogPage && ($showLeft == 2)) || ($showLeft == 1);
@@ -90,5 +68,4 @@ class AW_Blog_Block_Menu_Sidebar extends AW_Blog_Block_Abstract
             return parent::_toHtml();
         }
     }
-
 }

@@ -15,10 +15,10 @@
     </blog_admin_manage_blog_index>
     <blog_admin_manage_blog_edit>
         <update handle="editor" />
-    </blog_admin_manage_blog_edit>	
+    </blog_admin_manage_blog_edit>
     <blog_admin_manage_blog_new>
         <update handle="editor" />
-    </blog_admin_manage_blog_new>		
+    </blog_admin_manage_blog_new>
     <blog_admin_manage_comment_index>
         <reference name="content">
             <block type="blog/manage_comment" name="comment" />
@@ -26,6 +26,7 @@
     </blog_admin_manage_comment_index>
     <blog_admin_manage_cat_index>
         <reference name="content">
+            <block type="adminhtml/store_switcher" name="store_switcher" before="-" />
             <block type="blog/manage_cat" name="cat" />
         </reference>
     </blog_admin_manage_cat_index>

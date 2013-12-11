@@ -1,66 +1,58 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
 abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
 {
-
     const LINK_TYPE_FOOTER = 'footer';
-    
+
     const LINK_TYPE_HEADER = 'top';
-    
+
     protected static $_helper;
-    
+
     protected static $_collection;
-    
+
     protected static $_catUriParam = AW_Blog_Helper_Data::CATEGORY_URI_PARAM;
-    
+
     protected static $_postUriParam = AW_Blog_Helper_Data::POST_URI_PARAM;
-    
+
     protected static $_tagUriParam = AW_Blog_Helper_Data::TAG_URI_PARAM;
-    
+
     protected function _construct()
-    {        
+    {
         if (!self::$_helper) {
             self::$_helper = Mage::helper('blog');
         }
         if (!self::$_collection) {
             self::$_collection = $this->_prepareCollection();
-        }       
+        }
     }
 
     protected function _processCollection($collection, $category = false)
-    {        
+    {
         /* add category to url */
         $categoryUrl = self::$_helper->isCategoryUrl();
         /* use short content for posts */
         $shortContent = self::$_helper->useShortContent();
         /* readMoreCount */
-        $readMoreCount = (int) self::$_helper->readMoreCount();    
+        $readMoreCount = (int)self::$_helper->readMoreCount();
         /* cache (run-time) all categories related to products */
         $this->_prepareRelatedCategories($collection);
 
         foreach ($collection as $item) {
-           
+
             $this->_prepareData($item)->_prepareDates($item);
             /* prepare urls depnding on mode */
-            if ($category && $categoryUrl) {        
-                $item->setAddress($this->getBlogUrl(null,array(self::$_catUriParam => $category->getIdentifier(), self::$_postUriParam => $item->getIdentifier())));
+            if ($category && $categoryUrl) {
+                $item->setAddress(
+                    $this->getBlogUrl(
+                        null,
+                        array(
+                             self::$_catUriParam  => $category->getIdentifier(),
+                             self::$_postUriParam => $item->getIdentifier()
+                        )
+                    )
+                );
             } else {
-                $item->setAddress($this->getBlogUrl($item->getIdentifier()));               
+                $item->setAddress($this->getBlogUrl($item->getIdentifier()));
             }
             /* prepare short content fields */
             if ($shortContent) {
@@ -68,7 +60,11 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
                     $item->setPostContent($item->getShortContent() . $this->_getReadMoreLink($item));
                 }
             } elseif ($readMoreCount) {
-                $strManager = new AW_Blog_Helper_Substring(array('input' => self::$_helper->filterWYS($item->getPostContent())));
+                $strManager = new AW_Blog_Helper_Substring(
+                    array(
+                         'input' => self::$_helper->filterWYS($item->getPostContent())
+                    )
+                );
                 $content = $strManager->getHtmlSubstr($readMoreCount);
                 if ($strManager->getSymbolsCount() == $readMoreCount) {
                     $content .= $this->_getReadMoreLink($item);
@@ -101,13 +97,19 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
         if (self::$_helper->isCrumbs()) {
             $crumbs = $this->getLayout()->getBlock('breadcrumbs');
             if ($crumbs) {
-                return $crumbs->addCrumb('home', array('label' => $this->__('Home'), 'title' => $this->__('Go to Home Page'), 'link' => Mage::getBaseUrl()));
+                return $crumbs->addCrumb(
+                    'home',
+                    array(
+                        'label' => $this->__('Home'),
+                        'title' => $this->__('Go to Home Page'),
+                        'link'  => Mage::getBaseUrl(),
+                    )
+                );
             }
         }
-
         return false;
     }
-    
+
     public function getBlogUrl($route = null, $params = array())
     {
         $blogRoute = self::$_helper->getRoute();
@@ -116,12 +118,12 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
                 $item = urlencode($item);
                 $blogRoute .= "/{$item}";
             }
-        } else {           
+        } else {
             $blogRoute .= "/{$route}";
         }
-        
-        foreach($params as $key => $value) {            
-            $value = urlencode($value);            
+
+        foreach ($params as $key => $value) {
+            $value = urlencode($value);
             $blogRoute .= "{$key}/{$value}/";
         }
 
@@ -134,13 +136,15 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
     }
 
     protected function _beforeToHtml()
-    {        
-        $this->_helper('blog/toolbar')->create($this, array(
-            'orders' => array('created_time' => $this->__('Created At'), 'user' => $this->__('Added By')),
-            'default_order' => 'created_time',
-            'dir' => 'desc',
-            'limits' => self::$_helper->postsPerPage()
-                )
+    {
+        $this->_helper('blog/toolbar')->create(
+            $this,
+            array(
+                'orders'        => array('created_time' => $this->__('Created At'), 'user' => $this->__('Added By')),
+                'default_order' => 'created_time',
+                'dir'           => 'desc',
+                'limits'        => self::$_helper->postsPerPage(),
+            )
         );
 
         return parent::_beforeToHtml();
@@ -166,8 +170,8 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
     }
 
     protected function _getReadMoreLink($item)
-    {      
-        return '<a class="aw-blog-read-more" href="'.$item->getAddress().'">'.$this->__('Read More').'</a>';
+    {
+        return '<a class="aw-blog-read-more" href="' . $item->getAddress() . '">' . $this->__('Read More') . '</a>';
     }
 
     public function getPreparedCollection()
@@ -176,14 +180,16 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
     }
 
     public function addBlogLink($type)
-    {       
+    {
         if (self::$_helper->isEnabled()) {
             $title = self::$_helper->isTitle();
-            if($this->getParentBlock()) {
+            if ($this->getParentBlock()) {
                 if ($type == self::LINK_TYPE_HEADER) {
                     $this->getParentBlock()->addLink($title, self::$_helper->getRoute(), $title, true);
                 } else {
-                    $this->getParentBlock()->addLink($title, self::$_helper->getRoute(), $title, true, array(), 15, null, 'class="top-link-blog"');
+                    $this->getParentBlock()->addLink(
+                        $title, self::$_helper->getRoute(), $title, true, array(), 15, null, 'class="top-link-blog"'
+                    );
                 }
             }
         }
@@ -222,7 +228,10 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
 
         foreach ($categories as &$category) {
             $category['posts'] = explode(',', $category['posts']);
-            $category['data'] = array('title' => $category['title'], 'url' => $this->getBlogUrl(null, array(self::$_catUriParam => $category['identifier'])));
+            $category['data'] = array(
+                'title' => $category['title'],
+                'url'   => $this->getBlogUrl(null, array(self::$_catUriParam => $category['identifier']))
+            );
         }
 
         $this->setAllRelatedCategories($categories);
@@ -252,20 +261,16 @@ abstract class AW_Blog_Block_Abstract extends Mage_Core_Block_Template
         if (!$this->getData('cached_collection')) {
 
             $collection = Mage::getModel('blog/blog')->getCollection()
-                    ->addPresentFilter()
-                    ->addEnableFilter(AW_Blog_Model_Status::STATUS_ENABLED)
-                    ->addStoreFilter()
-                    ->joinComments()
-                    ->setOrder('created_time', 'desc');
+                ->addPresentFilter()
+                ->addEnableFilter(AW_Blog_Model_Status::STATUS_ENABLED)
+                ->addStoreFilter()
+                ->joinComments()
+                ->setOrder('created_time', 'desc');
 
-            $collection->getSelect()->group('main_table.post_id');
-
-            $collection->setPageSize((int) self::$_helper->postsPerPage());
+            $collection->setPageSize((int)self::$_helper->postsPerPage());
 
             $this->setData('cached_collection', $collection);
         }
-
         return $this->getData('cached_collection');
     }
-
 }

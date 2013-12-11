@@ -1,35 +1,20 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
-class AW_Blog_Controller_Router extends Mage_Core_Controller_Varien_Router_Abstract {
-
-    public function initControllerRouters($observer) {
+class AW_Blog_Controller_Router extends Mage_Core_Controller_Varien_Router_Abstract
+{
+    public function initControllerRouters($observer)
+    {
         $front = $observer->getEvent()->getFront();
-
         $blog = new AW_Blog_Controller_Router();
         $front->addRouter('blog', $blog);
     }
 
-    public function match(Zend_Controller_Request_Http $request) {
-        
+    public function match(Zend_Controller_Request_Http $request)
+    {
         if (!Mage::app()->isInstalled()) {
             Mage::app()->getFrontController()->getResponse()
-                    ->setRedirect(Mage::getUrl('install'))
-                    ->sendResponse();
+                ->setRedirect(Mage::getUrl('install'))
+                ->sendResponse();
             exit;
         }
 
@@ -41,11 +26,9 @@ class AW_Blog_Controller_Router extends Mage_Core_Controller_Varien_Router_Abstr
 
         $identifier = $request->getPathInfo();
 
-
         if (substr(str_replace("/", "", $identifier), 0, strlen($route)) != $route) {
             return false;
         }
-
 
         $identifier = substr_replace($request->getPathInfo(), '', 0, strlen("/" . $route . "/"));
         $identifier = str_replace('.html', '', $identifier);
@@ -53,8 +36,8 @@ class AW_Blog_Controller_Router extends Mage_Core_Controller_Varien_Router_Abstr
 
         if ($identifier == '') {
             $request->setModuleName('blog')
-                    ->setControllerName('index')
-                    ->setActionName('index');
+                ->setControllerName('index')
+                ->setActionName('index');
             return true;
         }
 
@@ -77,20 +60,19 @@ class AW_Blog_Controller_Router extends Mage_Core_Controller_Varien_Router_Abstr
             }
             $identifier = str_replace('/', '', $identifier);
 
-
             if ($rss) {
                 $request->setModuleName('blog')
-                        ->setControllerName('rss')
-                        ->setActionName('index')
-                        ->setParam('tag', $identifier);
+                    ->setControllerName('rss')
+                    ->setActionName('index')
+                    ->setParam('tag', $identifier);
                 return true;
             } else {
 
                 $identifier = str_replace('/', '', $identifier);
                 $request->setModuleName('blog')
-                        ->setControllerName('index')
-                        ->setActionName('list')
-                        ->setParam('tag', $identifier);
+                    ->setControllerName('index')
+                    ->setActionName('list')
+                    ->setParam('tag', $identifier);
                 return true;
             }
         } elseif (substr($identifier, 0, strlen('cat/')) == 'cat/') {
@@ -121,72 +103,76 @@ class AW_Blog_Controller_Router extends Mage_Core_Controller_Varien_Router_Abstr
 
             if ($rss) {
                 $request->setModuleName('blog')
-                        ->setControllerName('rss')
-                        ->setActionName('index')
-                        ->setParam('identifier', $identifier);
-            } else if (isset($postident)) {
-                $post = Mage::getSingleton('blog/post');
-                if (!$post->load($postident)->getId()) {
-                    return false;
-                }
+                    ->setControllerName('rss')
+                    ->setActionName('index')
+                    ->setParam('identifier', $identifier);
+            } else {
+                if (isset($postident)) {
+                    $post = Mage::getSingleton('blog/post');
+                    if (!$post->load($postident)->getId()) {
+                        return false;
+                    }
 
-                $request->setModuleName('blog')
+                    $request->setModuleName('blog')
                         ->setControllerName('post')
                         ->setActionName('view')
                         ->setParam('identifier', $postident)
                         ->setParam('cat', $identifier);
-                return true;
-            } else {
-                $request->setModuleName('blog')
+                    return true;
+                } else {
+                    $request->setModuleName('blog')
                         ->setControllerName('cat')
                         ->setActionName('view')
                         ->setParam('identifier', $identifier);
-                if (isset($page)) {
-                    $request->setParam('page', $page);
-                }
-            }
-            return true;
-        } else if (substr($identifier, 0, strlen('page/')) == 'page/') {
-            $identifier = substr_replace($identifier, '', 0, strlen('page/'));
-
-            $request->setModuleName('blog')
-                    ->setControllerName('index')
-                    ->setActionName('index');
-            if (isset($page)) {
-                $request->setParam('page', $page);
-            }
-            return true;
-        } else if (substr($identifier, 0, strlen('rss')) == 'rss') {
-            $identifier = substr_replace($identifier, '', 0, strlen('rss/'));
-
-            $request->setModuleName('blog')
-                    ->setControllerName('rss')
-                    ->setActionName('index');
-            return true;
-        } else {
-
-            $identifier = str_replace('/', '', $identifier);
-
-            $post = Mage::getSingleton('blog/post');
-            if (!$post->load($identifier)->getId()) {
-                if (!$post->load($identifier . ".htm")->getId()) {
-                    if (!$post->load($identifier . ".html")->getId()) {
-                        return false;
+                    if (isset($page)) {
+                        $request->setParam('page', $page);
                     }
                 }
             }
-
-            $request->setModuleName('blog')
-                    ->setControllerName('post')
-                    ->setActionName('view')
-                    ->setParam('identifier', $identifier);
-            if (isset($page)) {
-                $request->setParam('page', $page);
-            }
             return true;
-        }
+        } else {
+            if (substr($identifier, 0, strlen('page/')) == 'page/') {
+                $identifier = substr_replace($identifier, '', 0, strlen('page/'));
 
+                $request->setModuleName('blog')
+                    ->setControllerName('index')
+                    ->setActionName('index');
+                if (isset($page)) {
+                    $request->setParam('page', $page);
+                }
+                return true;
+            } else {
+                if (substr($identifier, 0, strlen('rss')) == 'rss') {
+                    $identifier = substr_replace($identifier, '', 0, strlen('rss/'));
+
+                    $request->setModuleName('blog')
+                        ->setControllerName('rss')
+                        ->setActionName('index');
+                    return true;
+                } else {
+
+                    $identifier = str_replace('/', '', $identifier);
+
+                    $post = Mage::getSingleton('blog/post');
+                    if (!$post->load($identifier)->getId()) {
+                        if (!$post->load($identifier . ".htm")->getId()) {
+                            if (!$post->load($identifier . ".html")->getId()) {
+                                return false;
+                            }
+                        }
+                    }
+
+                    $request->setModuleName('blog')
+                        ->setControllerName('post')
+                        ->setActionName('view')
+                        ->setParam('identifier', $identifier);
+                    if (isset($page)) {
+                        $request->setParam('page', $page);
+                    }
+                    return true;
+                }
+            }
+        }
         return false;
     }
-
 }

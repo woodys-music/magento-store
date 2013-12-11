@@ -1,25 +1,11 @@
 <?xml version="1.0"?>
-<!--
-/**
- * Magento
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Open Software License (OSL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/osl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@magentocommerce.com so we can send you a copy immediately.
- *
- * @category   Mage
- * @package    AW_Blog
- * @copyright  Copyright (c) 2004-2007 Irubin Consulting Inc. DBA Varien (http://www.varien.com)
- * @license    http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
- */
--->
 <config>
+    <tabs>
+        <awall translate="label" module="blog">
+            <label>aheadWorks Extensions</label>
+            <sort_order>300</sort_order>
+        </awall>
+    </tabs>
     <sections>
         <blog translate="label" module="blog">
             <label>Blog</label>
@@ -73,7 +59,7 @@
                         </description>
                         <route translate="label content">
                             <label>Route to Blog</label>
-                            <comment>eg. "news" will make the blog accessible from domain.com/news. Must not contain any slashes. Blank for default</comment>
+                            <comment>Must NOT contain any slashes. "news" makes the blog accessible from domain.com/news. Leave blank for default value.</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>4</sort_order>
                             <show_in_default>1</show_in_default>
@@ -109,34 +95,34 @@
                         </blogcrumbs>
                         <readmore translate="label">
                             <label>Summary Character Count</label>
-                            <comment>Number of characters in a post to display before it is truncated and the read more link added. 0 for Unlimited.</comment>
+                            <comment>Number of characters in a post to be displayed before it is truncated and the Read More link is added. 0 for unlimited.</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>24</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </readmore> 
+                        </readmore>
                         <useshortcontent translate="label comment">
-                            <label>Use short content field</label>
-                            <comment>If turned on additional "short content field" will be taken instead of truncated main post.</comment>
+                            <label>Use Short Content Field</label>
+                            <comment>If enabled, additional "Short Content Field" is taken instead of truncated main post.</comment>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>27</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </useshortcontent>    
+                        </useshortcontent>
                         <parse_cms translate="label">
-                            <label>Parse CMS tags in post contents</label>
+                            <label>Parse CMS Tags in Post Contents</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>29</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </parse_cms>                                            
+                        </parse_cms>
                         <perpage translate="label">
-                            <label>Posts Per Page</label>
+                            <label>Posts per Page</label>
                             <comment>Comma-separated</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>30</sort_order>
@@ -163,7 +149,7 @@
                             <show_in_store>1</show_in_store>
                         </bookmarkslist>
                         <categories_urls translate="label">
-                            <label>Use categories id in posts URLs</label>
+                            <label>Use Categories ID in Posts URLs</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>40</sort_order>
@@ -201,7 +187,7 @@
                         </enable>
                         <image translate="label">
                             <label>RSS Feed Image</label>
-                            <comment>Relative to current skin directory eg. images/rsslogo.jpg</comment>
+                            <comment>Relative to current skin directory, e.g. images/rsslogo.jpg</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>40</sort_order>
                             <show_in_default>1</show_in_default>
@@ -247,7 +233,7 @@
                         </login>
                         <approval translate="label">
                             <label>Auto Approve Comments</label>
-                            <comment>All comments will appear immediately without the need for approval by admin.</comment>
+                            <comment>If enabled, all comments appear immediately without admin approval.</comment>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>26</sort_order>
@@ -257,7 +243,7 @@
                         </approval>
                         <loginauto translate="label">
                             <label>Logged in Auto Approve Comments</label>
-                            <comment>Only comments made by users that are logged in will automaticlly be approved.</comment>                            
+                            <comment>Only comments added by logged in users will be approved automatically</comment>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>30</sort_order>
@@ -266,7 +252,7 @@
                             <show_in_store>1</show_in_store>
                         </loginauto>
                         <recipient_email translate="label">
-                            <label>Send Emails To</label>
+                            <label>Send Emails to</label>
                             <frontend_type>text</frontend_type>
                             <sort_order>40</sort_order>
                             <show_in_default>1</show_in_default>
@@ -292,7 +278,7 @@
                             <show_in_store>1</show_in_store>
                         </email_template>
                         <page_count>
-                            <label>Comments per page</label>
+                            <label>Comments per Page</label>
                             <frontend_type>text</frontend_type>
                             <comment>Comma-separated</comment>
                             <sort_order>70</sort_order>
@@ -382,27 +368,27 @@
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
                         </top>
-                        
+
                         <category translate="label">
-                            <label>Enable Categories menu</label>
+                            <label>Enable Categories Menu</label>
                             <frontend_type>select</frontend_type>
                             <source_model>adminhtml/system_config_source_yesno</source_model>
                             <sort_order>21</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
                             <show_in_store>1</show_in_store>
-                        </category>                     
-                        
+                        </category>
+
                         <tagcloud_size>
-                            <label>Tags to display</label>
-                            <comment>The number of tags to display in tag cloud. 0 Will disable tag cloud</comment>
+                            <label>Tags to Display</label>
+                            <comment>The number of tags to display in tag cloud. 0 disables tag cloud</comment>
                             <frontend_type>text</frontend_type>
                             <sort_order>29</sort_order>
                             <show_in_default>1</show_in_default>
                             <show_in_website>1</show_in_website>
-                            <show_in_store>1</show_in_store>                        
+                            <show_in_store>1</show_in_store>
                         </tagcloud_size>
-                        
+
                         <recent translate="label">
                             <label>Recent Posts</label>
                             <comment>The number of recent post to be displayed in the menu. 0 to disable.</comment>

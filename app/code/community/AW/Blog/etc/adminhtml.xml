@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config>    
+<config>
     <menu>
         <blog module="blog">
             <title>Blog</title>
@@ -72,5 +72,5 @@
                 </children>
             </admin>
         </resources>
-    </acl>   
+    </acl>
 </config>

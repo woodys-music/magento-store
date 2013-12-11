@@ -1,48 +1,38 @@
 <?php
 
-/**
- * aheadWorks Co.
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the EULA
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://ecommerce.aheadworks.com/LICENSE-L.txt
- *
- * @category   AW
- * @package    AW_Blog
- * @copyright  Copyright (c) 2009-2010 aheadWorks Co. (http://www.aheadworks.com)
- * @license    http://ecommerce.aheadworks.com/LICENSE-L.txt
- */
-class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
-
-    public function preDispatch() {
+class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action
+{
+    public function preDispatch()
+    {
         parent::preDispatch();
     }
 
-    protected function _isAllowed() {
+    protected function _isAllowed()
+    {
         return Mage::getSingleton('admin/session')->isAllowed('admin/blog/posts');
     }
 
-    protected function _initAction() {
-        $this->loadLayout()
-                ->_setActiveMenu('blog/posts');
+    protected function _initAction()
+    {
+        $this
+            ->loadLayout()
+            ->_setActiveMenu('blog/posts')
+        ;
 
         return $this;
     }
 
-    public function indexAction() {
-
+    public function indexAction()
+    {
         $this->displayTitle('Posts');
-
-
-        $this->_initAction()
-                ->renderLayout();
+        $this
+            ->_initAction()
+            ->renderLayout()
+        ;
     }
 
-    public function editAction() {
-
+    public function editAction()
+    {
         $id = $this->getRequest()->getParam('id');
         $model = Mage::getModel('blog/blog')->load($id);
 
@@ -60,8 +50,10 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
 
             $this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
-            $this->_addContent($this->getLayout()->createBlock('blog/manage_blog_edit'))
-                    ->_addLeft($this->getLayout()->createBlock('blog/manage_blog_edit_tabs'));
+            $this
+                ->_addContent($this->getLayout()->createBlock('blog/manage_blog_edit'))
+                ->_addLeft($this->getLayout()->createBlock('blog/manage_blog_edit_tabs'))
+            ;
 
             $this->getLayout()->getBlock('head')->setCanLoadTinyMce(true);
 
@@ -72,8 +64,8 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
         }
     }
 
-    public function newAction() {
-
+    public function newAction()
+    {
         $id = $this->getRequest()->getParam('id');
         $model = Mage::getModel('blog/blog')->load($id);
 
@@ -90,25 +82,28 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
 
         $this->getLayout()->getBlock('head')->setCanLoadExtJs(true);
 
-        $this->_addContent($this->getLayout()->createBlock('blog/manage_blog_edit'))
-                ->_addLeft($this->getLayout()->createBlock('blog/manage_blog_edit_tabs'));
-
+        $this
+            ->_addContent($this->getLayout()->createBlock('blog/manage_blog_edit'))
+            ->_addLeft($this->getLayout()->createBlock('blog/manage_blog_edit_tabs'))
+        ;
         $this->getLayout()->getBlock('head')->setCanLoadTinyMce(true);
-
         $this->renderLayout();
     }
 
-    public function duplicateAction() {
+    public function duplicateAction()
+    {
         $oldIdentifier = $this->getRequest()->getParam('identifier');
         $i = 1;
         $newIdentifier = $oldIdentifier . $i;
-        while (Mage::getModel('blog/post')->loadByIdentifier($newIdentifier)->getData())
+        while (Mage::getModel('blog/post')->loadByIdentifier($newIdentifier)->getData()) {
             $newIdentifier = $oldIdentifier . ++$i;
+        }
         $this->getRequest()->setPost('identifier', $newIdentifier);
         $this->_forward('save');
     }
 
-    public function saveAction() {
+    public function saveAction()
+    {
         if ($data = $this->getRequest()->getPost()) {
             $model = Mage::getModel('blog/post');
             if (isset($data['tags'])) {
@@ -126,8 +121,6 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
                 }
                 $tags = array_unique($tags);
 
-
-
                 $commonTags = array_intersect($tags, $originalTags);
                 $removedTags = array_diff($originalTags, $commonTags);
                 $addedTags = array_diff($tags, $commonTags);
@@ -143,17 +136,18 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
                     unset($data['stores']);
                     $data['stores'] = array();
                     $stores = Mage::getSingleton('adminhtml/system_store')->getStoreCollection();
-                    foreach ($stores as $store)
+                    foreach ($stores as $store) {
                         $data['stores'][] = $store->getId();
+                    }
                 }
             }
 
-
-            $model->setData($data)
-                    ->setId($this->getRequest()->getParam('id'));
+            $model
+                ->setData($data)
+                ->setId($this->getRequest()->getParam('id'))
+            ;
 
             try {
-
                 $format = Mage::app()->getLocale()->getDateTimeFormat(Mage_Core_Model_Locale::FORMAT_TYPE_MEDIUM);
                 if (isset($data['created_time']) && $data['created_time']) {
                     $dateFrom = Mage::app()->getLocale()->date($data['created_time'], $format);
@@ -163,16 +157,30 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
                     $model->setCreatedTime(Mage::getModel('core/date')->gmtDate());
                 }
 
-
-                if ($this->getRequest()->getParam('user') == NULL) {
-                    $model->setUser(Mage::getSingleton('admin/session')->getUser()->getFirstname() . " " . Mage::getSingleton('admin/session')->getUser()->getLastname())
-                            ->setUpdateUser(Mage::getSingleton('admin/session')->getUser()->getFirstname() . " " . Mage::getSingleton('admin/session')->getUser()->getLastname());
+                if ($this->getRequest()->getParam('user') == null) {
+                    $model
+                        ->setUser(
+                            Mage::getSingleton('admin/session')->getUser()->getFirstname() . " " . Mage::getSingleton(
+                                'admin/session'
+                            )->getUser()->getLastname()
+                        )
+                        ->setUpdateUser(
+                            Mage::getSingleton('admin/session')->getUser()->getFirstname() . " " . Mage::getSingleton(
+                                'admin/session'
+                            )->getUser()->getLastname()
+                        )
+                    ;
                 } else {
-                    $model->setUpdateUser(Mage::getSingleton('admin/session')->getUser()->getFirstname() . " " . Mage::getSingleton('admin/session')->getUser()->getLastname());
+                    $model
+                        ->setUpdateUser(
+                            Mage::getSingleton('admin/session')->getUser()->getFirstname() . " " . Mage::getSingleton(
+                                'admin/session'
+                            )->getUser()->getLastname()
+                        )
+                    ;
                 }
 
                 $model->save();
-
 
                 /* recount affected tags */
                 if (isset($data['stores'])) {
@@ -191,10 +199,9 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
                     }
                 }
 
-
-
-
-                Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('blog')->__('Post was successfully saved'));
+                Mage::getSingleton('adminhtml/session')->addSuccess(
+                    Mage::helper('blog')->__('Post was successfully saved')
+                );
                 Mage::getSingleton('adminhtml/session')->setFormData(false);
 
                 if ($this->getRequest()->getParam('back')) {
@@ -214,12 +221,15 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
         $this->_redirect('*/*/');
     }
 
-    public function deleteAction() {
-        $postId = (int) $this->getRequest()->getParam('id');
+    public function deleteAction()
+    {
+        $postId = (int)$this->getRequest()->getParam('id');
         if ($postId) {
             try {
                 $this->_postDelete($postId);
-                Mage::getSingleton('adminhtml/session')->addSuccess(Mage::helper('adminhtml')->__('Post was successfully deleted'));
+                Mage::getSingleton('adminhtml/session')->addSuccess(
+                    Mage::helper('adminhtml')->__('Post was successfully deleted')
+                );
                 $this->_redirect('*/*/');
             } catch (Exception $e) {
                 Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
@@ -229,7 +239,8 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
         $this->_redirect('*/*/');
     }
 
-    public function massDeleteAction() {
+    public function massDeleteAction()
+    {
         $blogIds = $this->getRequest()->getParam('blog');
         if (!is_array($blogIds)) {
             Mage::getSingleton('adminhtml/session')->addError(Mage::helper('adminhtml')->__('Please select post(s)'));
@@ -239,9 +250,9 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
                     $this->_postDelete($postId);
                 }
                 Mage::getSingleton('adminhtml/session')->addSuccess(
-                        Mage::helper('adminhtml')->__(
-                                'Total of %d record(s) were successfully deleted', count($blogIds)
-                        )
+                    Mage::helper('adminhtml')->__(
+                        'Total of %d record(s) were successfully deleted', count($blogIds)
+                    )
                 );
             } catch (Exception $e) {
                 Mage::getSingleton('adminhtml/session')->addError($e->getMessage());
@@ -250,20 +261,23 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
         $this->_redirect('*/*/index');
     }
 
-    protected function _postDelete($postId) {
+    protected function _postDelete($postId)
+    {
         $model = Mage::getModel('blog/blog')->load($postId);
         $_tags = explode(',', $model->getData('tags'));
         $model->delete();
         $_stores = Mage::getSingleton('adminhtml/system_store')->getStoreCollection();
         foreach ($_tags as $tag) {
-            foreach ($_stores as $store)
+            foreach ($_stores as $store) {
                 if (trim($tag)) {
                     Mage::getModel('blog/tag')->loadByName($tag, $store->getId())->refreshCount();
                 }
+            }
         }
     }
 
-    public function massStatusAction() {
+    public function massStatusAction()
+    {
         $blogIds = $this->getRequest()->getParam('blog');
         if (!is_array($blogIds)) {
             Mage::getSingleton('adminhtml/session')->addError($this->__('Please select post(s)'));
@@ -272,14 +286,15 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
 
                 foreach ($blogIds as $blogId) {
                     $blog = Mage::getModel('blog/blog')
-                            ->load($blogId)
-                            ->setStatus($this->getRequest()->getParam('status'))
-                            ->setStores('')
-                            ->setIsMassupdate(true)
-                            ->save();
+                        ->load($blogId)
+                        ->setStatus($this->getRequest()->getParam('status'))
+                        ->setStores('')
+                        ->setIsMassupdate(true)
+                        ->save()
+                    ;
                 }
                 $this->_getSession()->addSuccess(
-                        $this->__('Total of %d record(s) were successfully updated', count($blogIds))
+                    $this->__('Total of %d record(s) were successfully updated', count($blogIds))
                 );
             } catch (Exception $e) {
 
@@ -289,8 +304,8 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
         $this->_redirect('*/*/index');
     }
 
-    protected function displayTitle($data = null, $root = 'Blog') {
-
+    protected function displayTitle($data = null, $root = 'Blog')
+    {
         if (!Mage::helper('blog')->magentoLess14()) {
             if ($data) {
                 if (!is_array($data)) {
@@ -306,5 +321,4 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action {
         }
         return $this;
     }
-
 }
