@@ -48,13 +48,21 @@ class AW_Blog_Model_Mysql4_Blog_Collection extends Mage_Core_Model_Mysql4_Collec
 
     public function joinComments()
     {
-        $commentCountExpression = new Zend_Db_Expr('COUNT(IF(comments_table.status = 2,comments_table.post_id, NULL))');
+        $select = new Zend_Db_Select($connection = Mage::getSingleton('core/resource')->getConnection('read'));
+        $select
+            ->from(
+                Mage::getSingleton('core/resource')->getTableName('blog/comment'),
+                array('post_id', 'comment_count' => new Zend_Db_Expr('COUNT(IF(status = 2, post_id, NULL))'))
+            )
+            ->group('post_id')
+        ;
+
         $this
             ->getSelect()
             ->joinLeft(
-                array('comments_table' => $this->getTable('blog/comment')),
-                'main_table.post_id = comments_table.post_id',
-                array('comment_count' => $commentCountExpression)
+                array('comments_select' => $select),
+                'main_table.post_id = comments_select.post_id',
+                'comment_count'
             )
         ;
         return $this;
