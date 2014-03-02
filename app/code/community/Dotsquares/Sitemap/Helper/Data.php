@@ -102,7 +102,10 @@ class Dotsquares_Sitemap_Helper_Data extends Mage_Core_Helper_Abstract{
 				null,
 				'left')
 			->addAttributeToFilter('category_id', array('in' => $categories));
-		$collection->getSelect()->group('e.entity_id');		 
+		$collection->getSelect()->group('e.entity_id');	
+
+		Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($collection); 
+		Mage::getSingleton('catalog/product_visibility')->addVisibleInCatalogFilterToCollection($collection); 		
 		
 		return $collection;
 	}	
