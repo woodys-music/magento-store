@@ -18,6 +18,28 @@
             <groups>
                 <general translate="label" module="pluginsgeneral">
                     <label>General</label>
+            		<comment><![CDATA[<label id="at-messages"></label>
+					<script>
+					Event.observe(window, "load", function(){
+						window.checkProUser = function (arg) {
+							if (JSON.stringify(arg) == '{}'){
+								document.getElementById('at-messages').innerHTML = "AddThis Pro now available - start your trial at <a href='http://www.addthis.com' target='_blank' >www.addthis.com</a> and get premium widgets, personalized content recommendations, advanced customization options and priority support.";
+							}else{
+								document.getElementById('at-messages').innerHTML = "Since You are an AddThis Pro user, your SmartLayers configuration options will be overwritten by those in your AddThis Pro <a href='https://www.addthis.com/dashboard#gallery' target='_blank'>Tool Gallery</a>.";
+							}
+						};
+						var AtProConfig = function () { 
+						  var at_json = document.createElement('script');
+						  var at_pub = document.getElementById('plugins_general_general_pubid').value;
+						  at_pub = (at_pub!="")? at_pub:"Your-Profile-ID";
+						  at_json.src = decodeURIComponent('http://q.addthis.com/feeds/1.0/config.json?pubid='+at_pub+'%26callback=window.checkProUser');
+						  document.body.appendChild(at_json);
+						}
+						AtProConfig();
+						document.getElementById('plugins_general_general_pubid').onblur = AtProConfig;
+					});
+					</script>
+					]]></comment>                    
                     <sort_order>800</sort_order>
                     <show_in_default>1</show_in_default>
                     <show_in_website>1</show_in_website>

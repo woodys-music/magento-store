@@ -84,17 +84,6 @@
                 </smartlayers>
             </updates>
         </layout>
-         <events>
-	         <core_block_abstract_to_html_after>
-	             <observers>
-	                 <smartlayers>
-	                         <type>singleton</type>
-	                         <class>smartlayers/observer</class>
-	                         <method>addButtonsHtml</method>
-	                 </smartlayers>
-	             </observers>
-	         </core_block_abstract_to_html_after>
-         </events>
    </frontend>
    <adminhtml>
         <acl>
