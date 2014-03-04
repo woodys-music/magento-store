@@ -18,7 +18,7 @@ Disallow: /includes/
 Disallow: /js/
 Disallow: /lib/
 Disallow: /magento/
-Disallow: /media/
+# Disallow: /media/
 Disallow: /pkginfo/
 Disallow: /report/
 Disallow: /scripts/
@@ -31,7 +31,7 @@ Disallow: /var/
 Disallow: /index.php/
 Disallow: /catalog/product_compare/
 Disallow: /catalog/category/view/
-Disallow: /catalog/product/view/
+# Disallow: /catalog/product/view/
 Disallow: /catalogsearch/
 Disallow: /checkout/
 Disallow: /control/
