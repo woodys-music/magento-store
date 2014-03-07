@@ -1988,3 +1988,8 @@ img#alphassl {
     margin-bottom:10px;
 }
 
+img#alphassl, img#paypalpayments {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}

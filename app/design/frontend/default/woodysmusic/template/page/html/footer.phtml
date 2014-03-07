@@ -27,36 +27,23 @@
 <div class="footer-container">
     <div class="footer">
         <?php echo $this->getChildHtml('bottomContainer') ?>
-
         <div class="footer-links">
-        
-  <?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('footerLinks')->toHtml() ?>
-  
-        <div class="payment">
-        <img src="<?php echo $this->getSkinUrl('images/alphassl.gif'); ?>" alt="256-bit enabled Secure Site SSL by AlphaSSL" id="alphassl" />
-        <img src="<?php echo $this->getSkinUrl('images/paypal.gif'); ?>" alt="Secure Credit Card Paymet with PayPal" />
+            <?php echo $this->getLayout()->createBlock('cms/block')->setBlockId('footerLinks')->toHtml() ?>
+            <div class="payment">
+                <img src="<?php echo $this->getSkinUrl('images/alphassl.gif'); ?>" alt="256-bit enabled Secure Site SSL by AlphaSSL" title="256-bit enabled Secure Site SSL by AlphaSSL" id="alphassl" />
+                <img src="<?php echo $this->getSkinUrl('images/paypal.gif'); ?>" alt="Secure Credit Card Payments with PayPal" title="Secure Credit Card Payments with PayPal" id="paypalpayments" />
+            </div>            
         </div>
-            
-        
-            <?php //echo $this->getChildHtml('cms_footer_links') ?>
-            <?php //echo $this->getChildHtml('footer_links') ?>
-            <?php //echo $this->getChildHtml('newsletter') ?>
-            <!--  -->
-        </div>
-       
     </div>
- 
-           
 </div>
- <div class="copyright">
-        <div class="f-left">
-            <address><?php echo $this->getCopyright() ?></address></div>
-
-<div class="f-right">
-<a href="https://www.facebook.com/pages/Woodys-Music/376828519061810" target="_blank"><img src="https://cache.addthiscdn.com/icons/v1/thumbs/32x32/facebook.png" alt="Woody's Music on Facebook"/></a>
-<a href="https://twitter.com/WoodysMusicBN" target="_blank"><img src="https://cache.addthiscdn.com/icons/v1/thumbs/32x32/twitter.png" alt="Woody's Music on Twitter"/></a>
+<div class="copyright">
+    <div class="f-left">
+        <address><?php echo $this->getCopyright() ?></address>
+    </div>
+    <div class="f-right">
+        <a href="https://www.facebook.com/pages/Woodys-Music/376828519061810" target="_blank"><img src="https://cache.addthiscdn.com/icons/v1/thumbs/32x32/facebook.png" alt="Woody's Music on Facebook" title="Woody's Music on Facebook"/></a>
+        <a href="https://twitter.com/WoodysMusicBN" target="_blank"><img src="https://cache.addthiscdn.com/icons/v1/thumbs/32x32/twitter.png" alt="Woody's Music on Twitter" title="Woody's Music on Twitter"/></a>
+    </div>
+    <div style="clear:both;"></div>
 </div>
 
-            <div style="clear:both;"></div>
-            </div>
-  
