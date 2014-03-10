@@ -28,14 +28,14 @@ Disallow: /stats/
 Disallow: /var/
 
 # Paths (clean URLs)
-Disallow: /index.php/
+# Disallow: /index.php/
 Disallow: /catalog/product_compare/
-Disallow: /catalog/category/view/
+# Disallow: /catalog/category/view/
 # Disallow: /catalog/product/view/
 Disallow: /catalogsearch/
 Disallow: /checkout/
 Disallow: /control/
-Disallow: /contacts/
+# Disallow: /contacts/
 Disallow: /customer/
 Disallow: /customize/
 Disallow: /newsletter/
@@ -43,8 +43,8 @@ Disallow: /poll/
 Disallow: /review/
 Disallow: /sendfriend/
 Disallow: /tag/
-Disallow: /wishlist/
-Disallow: /catalog/product/gallery/
+# Disallow: /wishlist/
+# Disallow: /catalog/product/gallery/
 
 # Files
 Disallow: /gremlin_cron.php
@@ -60,5 +60,5 @@ Disallow: /STATUS.txt
 # Paths (no clean URLs)
 Disallow: /*.js$
 Disallow: /*.css$
-Disallow: /*.php$
+# Disallow: /*.php$
 Disallow: /*?SID=
