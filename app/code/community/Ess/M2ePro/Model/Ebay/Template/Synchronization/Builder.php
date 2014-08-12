@@ -131,8 +131,8 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization_Builder
             $prepared['revise_update_description'] = (int)$data['revise_update_description'];
         }
 
-        if (isset($data['revise_update_gallery'])) {
-            $prepared['revise_update_gallery'] = (int)$data['revise_update_gallery'];
+        if (isset($data['revise_update_images'])) {
+            $prepared['revise_update_images'] = (int)$data['revise_update_images'];
         }
 
         //------------------------------
@@ -274,13 +274,11 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization_Builder
                 if (!empty($data['schedule_week_settings'][$weekDay]['time_from']) &&
                     !empty($data['schedule_week_settings'][$weekDay]['time_to'])) {
 
+                    $timeInfo = $data['schedule_week_settings'][$weekDay];
+
                     $weekSettings[$weekDay] = array(
-                        'time_from' => Mage::helper('M2ePro')->timezoneDateToGmt(
-                            $data['schedule_week_settings'][$weekDay]['time_from'],false,'H:i:s'
-                        ),
-                        'time_to' => Mage::helper('M2ePro')->timezoneDateToGmt(
-                            $data['schedule_week_settings'][$weekDay]['time_to'],false,'H:i:s'
-                        )
+                        'time_from' => date('H:i:s', strtotime($timeInfo['time_from'])),
+                        'time_to'   => date('H:i:s', strtotime($timeInfo['time_to']))
                     );
                 }
             }

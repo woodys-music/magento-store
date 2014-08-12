@@ -6,10 +6,12 @@
 
 class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
 {
+    // ##########################################################
+
     /** @var $order Ess_M2ePro_Model_Ebay_Order */
     protected $order = NULL;
 
-    // ########################################
+    // ##########################################################
 
     public function getCheckoutMethod()
     {
@@ -21,14 +23,15 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
         return self::CHECKOUT_GUEST;
     }
 
-    // ########################################
+    // ##########################################################
 
     public function getBuyerEmail()
     {
-        return $this->order->getBuyerEmail();
+        $addressData = $this->order->getShippingAddress()->getRawData();
+        return $addressData['email'];
     }
 
-    // ########################################
+    // ##########################################################
 
     public function getCustomer()
     {
@@ -70,6 +73,65 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
         return $customer;
     }
 
+    public function getAddressData()
+    {
+        if (!$this->order->isUseGlobalShippingProgram()) {
+            return parent::getAddressData();
+        }
+
+        $rawAddressData = $this->order->getGlobalShippingWarehouseAddress()->getRawData();
+        $globalShippingDetails = $this->order->getGlobalShippingDetails();
+
+        $addressData = array();
+
+        $recipientNameParts = $this->getNameParts($rawAddressData['recipient_name']);
+        $addressData['firstname'] = $recipientNameParts['firstname'];
+        $addressData['lastname']  = $recipientNameParts['lastname'];
+
+        $customerNameParts = $this->getNameParts($rawAddressData['buyer_name']);
+        $addressData['customer_firstname'] = $customerNameParts['firstname'];
+        $addressData['customer_lastname']  = $customerNameParts['lastname'];
+
+        $addressData['email']      = $rawAddressData['email'];
+        $addressData['country_id'] = $rawAddressData['country_id'];
+        $addressData['region']     = $rawAddressData['region'];
+        $addressData['region_id']  = $this->order->getGlobalShippingWarehouseAddress()->getRegionId();
+        $addressData['city']       = $rawAddressData['city'];
+        $addressData['postcode']   = $rawAddressData['postcode'];
+        $addressData['telephone']  = $rawAddressData['telephone'];
+        $addressData['company']    = !empty($rawAddressData['company']) ? $rawAddressData['company'] : '';
+
+        // Adding reference id for global shipping into street array
+        // ----------------------------------------------
+        $streetParts = !empty($rawAddressData['street']) ? $rawAddressData['street'] : array();
+        $referenceId = 'Ref #'.$globalShippingDetails['warehouse_address']['reference_id'];
+
+        $addressData['street'] = array();
+        if (count($streetParts) >= 2) {
+            $addressData['street'] = array(
+                $referenceId,
+                implode(' ', $streetParts),
+            );
+        } else {
+            array_unshift($streetParts, $referenceId);
+            $addressData['street'] = $streetParts;
+        }
+        // ----------------------------------------------
+
+        $addressData['save_in_address_book'] = 0;
+
+        return $addressData;
+    }
+
+    public function getBillingAddressData()
+    {
+        if (!$this->order->isUseGlobalShippingProgram()) {
+            return parent::getBillingAddressData();
+        }
+
+        return parent::getAddressData();
+    }
+
     // ########################################
 
     public function getCurrency()
@@ -96,18 +158,20 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
 
     public function getPaymentTransactions()
     {
-        $transactions = array();
+        /** @var Ess_M2ePro_Model_Ebay_Order_ExternalTransaction[] $externalTransactions */
+        $externalTransactions = $this->order->getExternalTransactionsCollection()->getItems();
 
-        foreach ($this->order->getExternalTransactionsCollection() as $externalTransaction) {
-            $transactions[] = array(
-                'transaction_id'   => $externalTransaction->getData('transaction_id'),
-                'fee'              => $this->convertPrice((float)$externalTransaction->getData('fee')),
-                'sum'              => $this->convertPrice((float)$externalTransaction->getData('sum')),
-                'transaction_date' => $externalTransaction->getData('transaction_date')
+        $paymentTransactions = array();
+        foreach ($externalTransactions as $externalTransaction) {
+            $paymentTransactions[] = array(
+                'transaction_id'   => $externalTransaction->getTransactionId(),
+                'sum'              => $this->convertPrice($externalTransaction->getSum()),
+                'fee'              => $this->convertPrice($externalTransaction->getFee()),
+                'transaction_date' => $externalTransaction->getTransactionDate(),
             );
         }
 
-        return $transactions;
+        return $paymentTransactions;
     }
 
     // ########################################
@@ -115,7 +179,7 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
     public function getShippingData()
     {
         return array(
-            'shipping_method' => $this->order->getShippingMethod(),
+            'shipping_method' => $this->order->getShippingService(),
             'shipping_price'  => $this->getBaseShippingPrice(),
             'carrier_title'   => Mage::helper('M2ePro')->__('eBay Shipping')
         );
@@ -123,7 +187,12 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
 
     protected function getShippingPrice()
     {
-        $price = $this->order->getShippingPrice();
+        if ($this->order->isUseGlobalShippingProgram()) {
+            $globalShippingDetails = $this->order->getGlobalShippingDetails();
+            $price = $globalShippingDetails['service_details']['price'];
+        } else {
+            $price = $this->order->getShippingPrice();
+        }
 
         if ($this->isTaxModeNone() && !$this->isShippingPriceIncludesTax()) {
             $taxAmount = Mage::getSingleton('tax/calculation')
@@ -141,9 +210,13 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
     {
         $comments = array();
 
-        if ($this->order->getCheckoutBuyerMessage() != '') {
+        if ($this->order->isUseGlobalShippingProgram()) {
+            $comments[] = '<b>'.Mage::helper('M2ePro')->__('Global Shipping Program is used for this Order').'</b><br />';
+        }
+
+        if ($this->order->getBuyerMessage() != '') {
             $comment = '<b>' . Mage::helper('M2ePro')->__('Checkout Message From Buyer') . ': </b>';
-            $comment .= $this->order->getCheckoutBuyerMessage() . '<br />';
+            $comment .= $this->order->getBuyerMessage() . '<br />';
 
             $comments[] = $comment;
         }
@@ -180,6 +253,10 @@ class Ess_M2ePro_Model_Ebay_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
 
     public function isTaxModeNone()
     {
+        if ($this->order->isUseGlobalShippingProgram()) {
+            return true;
+        }
+
         return $this->order->getEbayAccount()->isMagentoOrdersTaxModeNone();
     }
 

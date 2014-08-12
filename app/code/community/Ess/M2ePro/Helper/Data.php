@@ -6,6 +6,15 @@
 
 class Ess_M2ePro_Helper_Data extends Mage_Core_Helper_Abstract
 {
+    const STATUS_ERROR      = 1;
+    const STATUS_WARNING    = 2;
+    const STATUS_SUCCESS    = 3;
+
+    const INITIATOR_UNKNOWN   = 0;
+    const INITIATOR_USER      = 1;
+    const INITIATOR_EXTENSION = 2;
+    const INITIATOR_DEVELOPER = 3;
+
     const CUSTOM_IDENTIFIER = 'm2epro_extension';
 
     // ########################################
@@ -299,38 +308,6 @@ class Ess_M2ePro_Helper_Data extends Mage_Core_Helper_Abstract
 
     // ########################################
 
-    public function parsePrice($price, $coefficient = false)
-    {
-        if (is_string($coefficient)) {
-            $coefficient = trim($coefficient);
-        }
-
-        if ($price <= 0) {
-            return 0;
-        }
-
-        if (!$coefficient) {
-            return round($price, 2);
-        }
-
-        if (strpos($coefficient, '%')) {
-            $coefficient = str_replace('%', '', $coefficient);
-
-            if (preg_match('/^[+-]/', $coefficient)) {
-                return round($price + $price * (float)$coefficient / 100, 2);
-            }
-            return round($price * (float)$coefficient / 100, 2);
-        }
-
-        if (preg_match('/^[+-]/', $coefficient)) {
-            return round($price + (float)$coefficient, 2);
-        }
-
-        return round($price * (float)$coefficient, 2);
-    }
-
-    // ########################################
-
     public function getClassConstantAsJson($class)
     {
         if (stripos($class,'Ess_M2ePro_') === false) {
@@ -384,14 +361,42 @@ class Ess_M2ePro_Helper_Data extends Mage_Core_Helper_Abstract
 
     // ########################################
 
+    public function parsePrice($price, $coefficient = false)
+    {
+        if (is_string($coefficient)) {
+            $coefficient = trim($coefficient);
+        }
+
+        if ($price <= 0) {
+            return 0;
+        }
+
+        if (!$coefficient) {
+            return round($price, 2);
+        }
+
+        if (strpos($coefficient, '%')) {
+            $coefficient = str_replace('%', '', $coefficient);
+
+            if (preg_match('/^[+-]/', $coefficient)) {
+                return round($price + $price * (float)$coefficient / 100, 2);
+            }
+            return round($price * (float)$coefficient / 100, 2);
+        }
+
+        if (preg_match('/^[+-]/', $coefficient)) {
+            return round($price + (float)$coefficient, 2);
+        }
+
+        return round($price * (float)$coefficient, 2);
+    }
+
     public function generateUniqueHash($strParam = NULL, $maxLength = NULL)
     {
         $hash = sha1(rand(1,1000000).microtime(true).(string)$strParam);
         (int)$maxLength > 0 && $hash = substr($hash,0,(int)$maxLength);
         return $hash;
     }
-
-    // ########################################
 
     public function theSameItemsInData($data, $keysToCheck)
     {
@@ -419,6 +424,105 @@ class Ess_M2ePro_Helper_Data extends Mage_Core_Helper_Abstract
         }
 
         return true;
+    }
+
+    public function getMainStatus($statuses)
+    {
+        foreach (array(self::STATUS_ERROR, self::STATUS_WARNING) as $status) {
+            if (in_array($status, $statuses)) {
+                return $status;
+            }
+        }
+
+        return self::STATUS_SUCCESS;
+    }
+
+    // ########################################
+
+    public function isISBN($string)
+    {
+        return $this->isISBN10($string) || $this->isISBN13($string);
+    }
+
+    //-----------------------------------------
+
+    public function isISBN10($string)
+    {
+        if (strlen($string) != 10) {
+            return false;
+        }
+
+        $a = 0;
+        for ($i = 0; $i < 10; $i++) {
+            if ($string[$i] == "X" || $string[$i] == "x") {
+                $a += 10 * intval(10 - $i);
+            } else if (is_numeric($string[$i])) {
+                $a += intval($string[$i]) * intval(10 - $i);
+            } else {
+                return false;
+            }
+        }
+        return ($a % 11 == 0);
+    }
+
+    public function isISBN13($string)
+    {
+        if (strlen($string) != 13) {
+            return false;
+        }
+
+        if (substr($string,0,3) != '978') {
+            return false;
+        }
+
+        $check = 0;
+        for ($i = 0; $i < 13; $i += 2) $check += (int)substr($string, $i, 1);
+        for ($i = 1; $i < 12; $i += 2) $check += 3 * substr($string, $i, 1);
+
+        return $check % 10 == 0;
+    }
+
+    //-----------------------------------------
+
+    public function isUPC($upc)
+    {
+        return $this->isWorldWideId($upc,'UPC');
+    }
+
+    public function isEAN($ean)
+    {
+        if (substr($ean,0,3) == '978') {
+            return false;
+        }
+
+        return $this->isWorldWideId($ean,'EAN');
+    }
+
+    //-----------------------------------------
+
+    private function isWorldWideId($worldWideId,$type)
+    {
+        $adapters = array(
+            'UPC' => array(
+                '12' => 'Upca'
+            ),
+            'EAN' => array(
+                '13' => 'Ean13'
+            )
+        );
+
+        $length = strlen($worldWideId);
+
+        if (!isset($adapters[$type],$adapters[$type][$length])) {
+            return false;
+        }
+
+        try {
+            $validator = new Zend_Validate_Barcode($adapters[$type][$length]);
+            return $validator->isValid($worldWideId);
+        } catch (Zend_Validate_Exception $e) {
+            return true;
+        }
     }
 
     // ########################################

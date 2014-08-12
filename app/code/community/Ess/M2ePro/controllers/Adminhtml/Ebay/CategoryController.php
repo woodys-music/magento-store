@@ -355,7 +355,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
     {
         $marketplaceId  = $this->getRequest()->getParam('marketplace_id');
         $accountId = $this->getRequest()->getParam('account_id');
-        $parentCategoryId  = $this->getRequest()->getParam('parent_id');
+        $parentCategoryId  = $this->getRequest()->getParam('parent_category_id');
         $categoryType = $this->getRequest()->getParam('category_type');
 
         $ebayCategoryTypes = Mage::helper('M2ePro/Component_Ebay_Category')->getEbayCategoryTypes();
@@ -696,7 +696,7 @@ class Ess_M2ePro_Adminhtml_Ebay_CategoryController extends Ess_M2ePro_Controller
 
                 $temp = Ess_M2ePro_Model_Ebay_Template_Category_Specific::VALUE_MODE_CUSTOM_ATTRIBUTE;
                 if ((int)$post['custom_item_specifics_value_mode_'.$i] == $temp) {
-                    $attributeTitle = $post['item_specifics_value_custom_attribute_'.$i];;
+                    $attributeTitle = $post['item_specifics_value_custom_attribute_'.$i];
                     $attributeValue = '';
                     $customAttribute = $post['item_specifics_value_custom_attribute_'.$i];
                 }

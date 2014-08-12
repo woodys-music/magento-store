@@ -21,6 +21,26 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
 
     // ########################################
 
+    public static function getTaxCategoriesInfo()
+    {
+        $marketplacesCollection = Mage::helper('M2ePro/Component_Ebay')->getModel('Marketplace')
+            ->getCollection()
+            ->addFieldToFilter('status',Ess_M2ePro_Model_Marketplace::STATUS_ENABLE)
+            ->setOrder('sorder','ASC');
+
+        $marketplacesCollection->getSelect()->limit(1);
+
+        $marketplaces = $marketplacesCollection->getItems();
+
+        if (count($marketplaces) == 0) {
+            return array();
+        }
+
+        return array_shift($marketplaces)->getChildObject()->getTaxCategoryInfo();
+    }
+
+    // ########################################
+
     public function deleteInstance()
     {
         if ($this->isLocked()) {
@@ -74,19 +94,39 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
         return array_shift($currency);
     }
 
+    public function isMultiCurrencyEnabled()
+    {
+        return (bool)(int)$this->getData('is_multi_currency');
+    }
+
     public function isMultivariationEnabled()
     {
         return (int)$this->getData('is_multivariation') == self::IS_MULTIVARIATION_YES;
     }
 
-    public function isTaxEnabled()
+    public function isTaxTableEnabled()
     {
-        return (bool)(int)$this->getData('is_tax');
+        return (bool)(int)$this->getData('is_tax_table');
     }
 
     public function isVatEnabled()
     {
         return (bool)(int)$this->getData('is_vat');
+    }
+
+    public function isStpEnabled()
+    {
+        return (bool)(int)$this->getData('is_stp');
+    }
+
+    public function isStpAdvancedEnabled()
+    {
+        return (bool)(int)$this->getData('is_stp_advanced');
+    }
+
+    public function isMapEnabled()
+    {
+        return (bool)(int)$this->getData('is_map');
     }
 
     public function isLocalShippingRateTableEnabled()
@@ -134,6 +174,11 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
         return (bool)(int)$this->getData('is_global_shipping_program');
     }
 
+    public function isCharityEnabled()
+    {
+        return (bool)(int)$this->getData('is_charity');
+    }
+
     // ########################################
 
     public function getCategory($categoryId)
@@ -161,7 +206,7 @@ class Ess_M2ePro_Model_Ebay_Marketplace extends Ess_M2ePro_Model_Component_Child
                              ->select()
                              ->from($tableCategories,array('category_id','title','is_leaf'))
                              ->where('`marketplace_id` = ?',(int)$this->getId())
-                             ->where('`parent_id` = ?',(int)$parentId)
+                             ->where('`parent_category_id` = ?',(int)$parentId)
                              ->order(array('title ASC'));
 
         $categories = Mage::getResourceModel('core/config')

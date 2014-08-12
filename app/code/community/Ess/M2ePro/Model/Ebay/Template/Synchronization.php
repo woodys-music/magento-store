@@ -43,8 +43,8 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
     const REVISE_UPDATE_SUB_TITLE_NONE = 0;
     const REVISE_UPDATE_SUB_TITLE_YES  = 1;
 
-    const REVISE_UPDATE_GALLERY_NONE = 0;
-    const REVISE_UPDATE_GALLERY_YES  = 1;
+    const REVISE_UPDATE_IMAGES_NONE = 0;
+    const REVISE_UPDATE_IMAGES_YES  = 1;
 
     const REVISE_CHANGE_PAYMENT_TEMPLATE_NONE = 0;
     const REVISE_CHANGE_PAYMENT_TEMPLATE_YES  = 1;
@@ -200,9 +200,9 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
         return $this->getData('revise_update_description') != self::REVISE_UPDATE_DESCRIPTION_NONE;
     }
 
-    public function isReviseWhenChangeGallery()
+    public function isReviseWhenChangeImages()
     {
-        return $this->getData('revise_update_gallery') != self::REVISE_UPDATE_GALLERY_NONE;
+        return $this->getData('revise_update_images') != self::REVISE_UPDATE_IMAGES_NONE;
     }
 
     //------------------------
@@ -375,7 +375,7 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
             return false;
         }
 
-        $todayDayOfWeek = getdate(Mage::helper('M2ePro')->getCurrentGmtDate(true));
+        $todayDayOfWeek = getdate(Mage::helper('M2ePro')->getCurrentTimezoneDate(true));
         $todayDayOfWeek = strtolower($todayDayOfWeek['weekday']);
 
         if (!isset($weekSettings[$todayDayOfWeek])) {
@@ -386,7 +386,7 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
             return false;
         }
 
-        $now = Mage::helper('M2ePro')->getCurrentGmtDate(true);
+        $now = Mage::helper('M2ePro')->getCurrentTimezoneDate(true);
 
         list($fromHour,$fromMinute,$fromSecond) = explode(':',$weekSettings[$todayDayOfWeek]['time_from']);
         $from = mktime($fromHour,$fromMinute,$fromSecond, date('m',$now),date('d',$now),date('Y',$now));
@@ -445,7 +445,7 @@ class Ess_M2ePro_Model_Ebay_Template_Synchronization extends Ess_M2ePro_Model_Co
             'revise_update_title'                      => self::REVISE_UPDATE_TITLE_YES,
             'revise_update_sub_title'                  => self::REVISE_UPDATE_SUB_TITLE_YES,
             'revise_update_description'                => self::REVISE_UPDATE_DESCRIPTION_YES,
-            'revise_update_gallery'                    => self::REVISE_UPDATE_GALLERY_YES,
+            'revise_update_images'                     => self::REVISE_UPDATE_IMAGES_YES,
 
             'revise_change_selling_format_template'    =>
                     Ess_M2ePro_Model_Template_Synchronization::REVISE_CHANGE_SELLING_FORMAT_TEMPLATE_YES,

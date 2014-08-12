@@ -124,8 +124,7 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Listing
         $listing = Mage::helper('M2ePro/Component_Ebay')->getCachedObject('Listing', $listingId);
         $storeId = (int)$listing->getStoreId();
 
-        $attributeSeparator = Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics::VALUE_SEPARATOR;
-        $attributeValue = implode($attributeSeparator, $epids);
+        $attributeValue = implode(',', $epids);
 
         $listingProductsCollection = Mage::getModel('M2ePro/Listing_Product')->getCollection();
         $listingProductsCollection->addFieldToFilter('id', array('in' => $listingProductIds));
@@ -157,7 +156,7 @@ class Ess_M2ePro_Model_Mysql4_Ebay_Listing
             $newAttributeValue = $attributeValue;
 
             if (!empty($currentAttributeValue)) {
-                $newAttributeValue = $currentAttributeValue . $attributeSeparator . $attributeValue;
+                $newAttributeValue = $currentAttributeValue . ',' . $attributeValue;
             }
 
             Mage::getSingleton('catalog/product_action')->updateAttributes(

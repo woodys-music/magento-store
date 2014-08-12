@@ -235,6 +235,41 @@ class Ess_M2ePro_Model_Amazon_Order_Proxy extends Ess_M2ePro_Model_Order_Proxy
             $comments[] = $comment;
         }
 
+        // Gift Wrapped Items
+        // ---------------------------------------------------
+        $itemsGiftPrices = array();
+
+        /** @var Ess_M2ePro_Model_Order_Item[] $items */
+        $items = $this->order->getParentObject()->getItemsCollection();
+        foreach ($items as $item) {
+            $giftPrice = $item->getChildObject()->getGiftPrice();
+            if (empty($giftPrice)) {
+                continue;
+            }
+
+            $itemsGiftPrices[] = array(
+                'name'  => $item->getMagentoProduct()->getName(),
+                'type'  => $item->getChildObject()->getGiftType(),
+                'price' => $giftPrice,
+            );
+        }
+
+        if (!empty($itemsGiftPrices)) {
+            $comment = '<u>'.Mage::helper('M2ePro')->__('The following items are purchased with gift wraps') . ':</u><br />';
+
+            foreach ($itemsGiftPrices as $productInfo) {
+                $formattedCurrency = Mage::getSingleton('M2ePro/Currency')->formatPrice(
+                    $this->getCurrency(), $productInfo['price']
+                );
+
+                $comment .= '<b>'.$productInfo['name'].'</b> -> '
+                    .$productInfo['type'].' ('.$formattedCurrency.')';
+            }
+
+            $comments[] = $comment;
+        }
+        // ---------------------------------------------------
+
         return $comments;
     }
 

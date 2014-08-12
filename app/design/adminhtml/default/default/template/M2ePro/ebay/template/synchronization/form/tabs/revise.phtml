@@ -49,7 +49,7 @@
 
                 <tr>
                     <td class="label">
-                        <label><?php echo Mage::helper('M2ePro')->__('Item Quantity'); ?>: <span class="required">*</span></label>
+                        <label><?php echo Mage::helper('M2ePro')->__('Quantity'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
                         <select id="revise_update_qty" name="synchronization[revise_update_qty]" class="required-entry">
@@ -99,7 +99,7 @@
                 <tr>
 
                     <td class="label">
-                        <label><?php echo Mage::helper('M2ePro')->__('Item Price'); ?>: <span class="required">*</span></label>
+                        <label><?php echo Mage::helper('M2ePro')->__('Price'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
                         <select id="revise_update_price" name="synchronization[revise_update_price]" class="required-entry">
@@ -114,7 +114,7 @@
 
                 <tr>
                     <td class="label">
-                        <label><?php echo Mage::helper('M2ePro')->__('Item Title'); ?>: <span class="required">*</span></label>
+                        <label><?php echo Mage::helper('M2ePro')->__('Title'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
                         <select id="revise_update_title" name="synchronization[revise_update_title]" class="required-entry">
@@ -129,7 +129,7 @@
 
                 <tr>
                     <td class="label">
-                        <label><?php echo Mage::helper('M2ePro')->__('Item Subtitle'); ?>: <span class="required">*</span></label>
+                        <label><?php echo Mage::helper('M2ePro')->__('Subtitle'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
                         <select id="revise_update_sub_title" name="synchronization[revise_update_sub_title]" class="required-entry">
@@ -144,7 +144,7 @@
 
                 <tr>
                     <td class="label">
-                        <label><?php echo Mage::helper('M2ePro')->__('Item Description'); ?>: <span class="required">*</span></label>
+                        <label><?php echo Mage::helper('M2ePro')->__('Description'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
                         <select id="revise_update_description" name="synchronization[revise_update_description]" class="required-entry">
@@ -159,12 +159,12 @@
 
                 <tr>
                     <td class="label">
-                        <label><?php echo Mage::helper('M2ePro')->__('Item Images'); ?>: <span class="required">*</span></label>
+                        <label><?php echo Mage::helper('M2ePro')->__('Images'); ?>: <span class="required">*</span></label>
                     </td>
                     <td class="value" style="width: auto;">
-                        <select id="revise_update_gallery" name="synchronization[revise_update_gallery]" class="required-entry">
-                            <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_GALLERY_NONE; ?>" <?php if ($formData['revise_update_gallery'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_GALLERY_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('No'); ?></option>
-                            <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_GALLERY_YES; ?>" <?php if ($formData['revise_update_gallery'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_GALLERY_YES): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
+                        <select id="revise_update_images" name="synchronization[revise_update_images]" class="required-entry">
+                            <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_IMAGES_NONE; ?>" <?php if ($formData['revise_update_images'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_IMAGES_NONE): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('No'); ?></option>
+                            <option value="<?php echo Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_IMAGES_YES; ?>" <?php if ($formData['revise_update_images'] == Ess_M2ePro_Model_Ebay_Template_Synchronization::REVISE_UPDATE_IMAGES_YES): echo ' selected="selected"'; endif; ?>><?php echo Mage::helper('M2ePro')->__('Yes'); ?></option>
                         </select>
                         <p class="note">
                             <span><?php echo Mage::helper('M2ePro')->__('Automatically revises the eBay item gallery if there is a change to the gallery (or attribute for gallery) in Magento.'); ?></span>

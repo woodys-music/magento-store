@@ -18,7 +18,7 @@ class Ess_M2ePro_Helper_Server extends Mage_Core_Helper_Abstract
         return $this->switchBaseUrl();
     }
 
-    // ########################################
+    // ----------------------------------------
 
     public function getAdminKey()
     {
@@ -31,6 +31,52 @@ class Ess_M2ePro_Helper_Server extends Mage_Core_Helper_Abstract
         return (string)Mage::helper('M2ePro/Primary')->getConfig()->getGroupValue(
             '/'.$moduleName.'/server/','application_key'
         );
+    }
+
+    // ########################################
+
+    public function sendRequest(array $postData,
+                                array $headers,
+                                $timeout = 300,
+                                $secondAttempt = false)
+    {
+        $curlObject = curl_init();
+
+        //set the server we are using
+        curl_setopt($curlObject, CURLOPT_URL, $this->getEndpoint());
+
+        // stop CURL from verifying the peer's certificate
+        curl_setopt($curlObject, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curlObject, CURLOPT_SSL_VERIFYHOST, false);
+
+        // disable http headers
+        curl_setopt($curlObject, CURLOPT_HEADER, false);
+
+        // set the headers using the array of headers
+        curl_setopt($curlObject, CURLOPT_HTTPHEADER, $headers);
+
+        // set the data body of the request
+        curl_setopt($curlObject, CURLOPT_POST, true);
+        curl_setopt($curlObject, CURLOPT_POSTFIELDS, http_build_query($postData,'','&'));
+
+        // set it to return the transfer as a string from curl_exec
+        curl_setopt($curlObject, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curlObject, CURLOPT_CONNECTTIMEOUT, 15);
+        curl_setopt($curlObject, CURLOPT_TIMEOUT, $timeout);
+
+        $response = curl_exec($curlObject);
+        curl_close($curlObject);
+
+        if ($response === false) {
+
+            if ($this->switchEndpoint() && !$secondAttempt) {
+                return $this->sendRequest($postData,$headers,$timeout,true);
+            }
+
+            throw new Exception('Server connection is failed. Please try again later.');
+        }
+
+        return $response;
     }
 
     // ########################################

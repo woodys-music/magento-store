@@ -109,6 +109,7 @@ class Dotsquares_Sitemap_Block_View extends Mage_Core_Block_Template{
 		$links['forget'] = array('title' => Mage::helper('sitemap')->__('Forget Password'), 'link' => Mage::getUrl('customer/account/forgotpassword/'));
 		
 		return $links;
-	}		
+	}	
+
 	
 } 

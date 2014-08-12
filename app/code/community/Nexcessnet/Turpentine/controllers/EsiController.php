@@ -31,6 +31,26 @@ class Nexcessnet_Turpentine_EsiController extends Mage_Core_Controller_Front_Act
     }
 
     /**
+     * Spit out the form key for this session
+     *
+     * @return null
+     */
+    public function getFormKeyAction() {
+        $resp = $this->getResponse();
+        $resp->setBody(
+            Mage::getSingleton( 'core/session' )->real_getFormKey() );
+        $resp->setHeader( 'X-Turpentine-Cache', '1' );
+        $resp->setHeader( 'X-Turpentine-Flush-Events',
+            implode( ',', Mage::helper( 'turpentine/esi' )
+                ->getDefaultCacheClearEvents() ) );
+        $resp->setHeader( 'X-Turpentine-Block', 'form_key' );
+        Mage::register( 'turpentine_nocache_flag', false, true );
+
+        Mage::helper( 'turpentine/debug' )->logDebug( 'Generated form_key: %s',
+            $resp->getBody() );
+    }
+
+    /**
      * Spit out the rendered block from the URL-encoded data
      *
      * @return null
@@ -69,7 +89,8 @@ class Nexcessnet_Turpentine_EsiController extends Mage_Core_Controller_Front_Act
                 Mage::app()->setCurrentStore(
                     Mage::app()->getStore( $esiData->getStoreId() ) );
                 $appShim = Mage::getModel( 'turpentine/shim_mage_core_app' );
-                if( $referer = Mage::helper( 'core/http' )->getHttpReferer() ) {
+                if( $referer = $this->_getRefererUrl() ) {
+                    $referer = htmlspecialchars_decode( $referer );
                     $dummyRequest = Mage::helper( 'turpentine/esi' )
                         ->getDummyRequest( $referer );
                 } else {
@@ -137,8 +158,16 @@ class Nexcessnet_Turpentine_EsiController extends Mage_Core_Controller_Front_Act
             Mage::register( $key, $value, true );
         }
         foreach( $esiData->getComplexRegistry() as $key => $data ) {
-            $value = Mage::getModel( $data['model'] )->load( $data['id'] );
-            Mage::register( $key, $value, true );
+            $value = Mage::getModel( $data['model'] );
+            if( !is_object( $value ) ) {
+                Mage::helper( 'turpentine/debug' )->logWarn(
+                    'Failed to register key/model: %s as %s(%s)',
+                    $key, $data['model'], $data['id'] );
+                continue;
+            } else {
+                $value->load( $data['id'] );
+                Mage::register( $key, $value, true );
+            }
         }
         $layout = Mage::getSingleton( 'core/layout' );
         Mage::getSingleton( 'core/design_package' )
@@ -156,6 +185,7 @@ class Nexcessnet_Turpentine_EsiController extends Mage_Core_Controller_Front_Act
             $esiData->getNameInLayout() ) ) );
         if( $blockNode instanceof Varien_Simplexml_Element ) {
             $nodesToGenerate = Mage::helper( 'turpentine/data' )
+                ->setLayout( $layout )
                 ->getChildBlockNames( $blockNode );
             Mage::getModel( 'turpentine/shim_mage_core_layout' )
                 ->shim_generateFullBlock( $blockNode );

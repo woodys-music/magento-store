@@ -632,21 +632,6 @@ HTML;
         }
         // ---------------------------------
 
-        $generalIdSearchStatus = $row->getData('general_id_search_status');
-
-        // ---------------------------------
-        if ($generalIdSearchStatus == Ess_M2ePro_Model_Buy_Listing_Product::GENERAL_ID_SEARCH_STATUS_PROCESSING) {
-
-            $tip = Mage::helper('M2ePro')->__('Automatic Rakuten SKU search in progress.');
-            $iconSrc = $iconPath.'processing.gif';
-
-            return <<<HTML
-&nbsp;
-<a href="javascript:;" title="{$tip}">
-    <img src="{$iconSrc}" alt="">
-</a>
-HTML;
-        }
         // ---------------------------------
         $generalIdSearchSuggestData = $row->getData('general_id_search_suggest_data');
 
@@ -903,13 +888,13 @@ HTML;
         $string = '';
 
         switch ((int)$actionRows['initiator']) {
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN:
+            case Ess_M2ePro_Helper_Data::INITIATOR_UNKNOWN:
                 $string = '';
                 break;
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER:
+            case Ess_M2ePro_Helper_Data::INITIATOR_USER:
                 $string = Mage::helper('M2ePro')->__('Manual');
                 break;
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION:
+            case Ess_M2ePro_Helper_Data::INITIATOR_EXTENSION:
                 $string = Mage::helper('M2ePro')->__('Automatic');
                 break;
         }

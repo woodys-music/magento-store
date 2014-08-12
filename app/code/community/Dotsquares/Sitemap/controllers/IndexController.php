@@ -30,33 +30,13 @@ class Dotsquares_Sitemap_IndexController extends Mage_Core_Controller_Front_Acti
  	 */
  	public function indexAction(){
 		
-	//	echo 'India <br>';
-		
-		//$customer = Mage::getModel('customer/address')->load(1);
-		
-		//echo get_class($customer).'<br>';
-		
-		//echo $customer->getFirstname();
-		//$customer->setTradeSyncId(200);
-		//$customer->save();
-		//setTradeSyncId()
-		
-		
-		//echo '<br>';
-		
-		//$custom = Mage::getModel('customer/address')->load(1);
-		//echo $custom->getTradeSyncId();
-		
-		
-		//die();
-		
-		
-		
 		$isEnable = Mage::getStoreConfig('site_map/sitemap/enable_sitemap');
 		if(!$isEnable) {
 			$this->_forward('defaultNoRoute');
 		} else {
 			$this->loadLayout();
+			$pageTille = Mage::helper('sitemap')->getTitle();
+			$this->getLayout()->getBlock('head')->setTitle($pageTille);
 			$this->renderLayout();
 		}	
 	}

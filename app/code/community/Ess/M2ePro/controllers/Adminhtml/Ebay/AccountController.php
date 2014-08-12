@@ -63,6 +63,51 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
              ->renderLayout();
     }
 
+    public function updateTitleAction()
+    {
+        if (is_null($id = $this->getRequest()->getParam('id'))) {
+            return $this->indexAction();
+        }
+
+        $response = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                        ->processVirtual('account','get','info',
+                                         array(),NULL,
+                                         NULL,$id,NULL);
+
+        if (!isset($response['info'])) {
+            return $this->getResponse()->setBody(json_encode(array('status' => 'error')));
+        }
+
+        $model = Mage::helper('M2ePro/Component_Ebay')->getObject('Account',$id);
+
+        $oldTitle = $model->getTitle();
+        if (($pos = strpos($oldTitle, ' (')) !== false) {
+            $oldTitle = substr($oldTitle, 0, $pos);
+        }
+
+        $title = empty($response['info']['UserID']) ? 'Unknown' : $response['info']['UserID'];
+
+        if ($title != $oldTitle) {
+            $title = $this->correctAccountTitle($title);
+        } else {
+            $title = $model->getTitle();
+        }
+
+        $model->addData(array('title' => $title))->save();
+
+        $url = '';
+        if (!empty($response['info']['UserID'])) {
+            $url = Mage::helper('M2ePro/Component_Ebay')->getMemberUrl($response['info']['UserID'],
+                                                                       $this->getRequest()->getParam('mode'));
+        }
+
+        return $this->getResponse()->setBody(json_encode(array(
+                                                'status' => 'success',
+                                                'title' => $title,
+                                                'url' => $url
+                                            )));
+    }
+
     //#############################################
 
     public function beforeGetTokenAction()
@@ -76,11 +121,11 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         // Get and save session id
         //-------------------------------
         $mode = $accountMode == Ess_M2ePro_Model_Ebay_Account::MODE_PRODUCTION ?
-                                Ess_M2ePro_Model_Connector_Server_Ebay_Abstract::MODE_PRODUCTION :
-                                Ess_M2ePro_Model_Connector_Server_Ebay_Abstract::MODE_SANDBOX;
+                                Ess_M2ePro_Model_Connector_Ebay_Abstract::MODE_PRODUCTION :
+                                Ess_M2ePro_Model_Connector_Ebay_Abstract::MODE_SANDBOX;
 
         try {
-            $response = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')->processVirtualAbstract(
+            $response = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')->processVirtual(
                 'account','get','authUrl',
                 array('back_url'=>$this->getUrl('*/*/afterGetToken',array('_current' => true))),
                 NULL,NULL,NULL,$mode
@@ -126,7 +171,15 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         if ($accountId == 0) {
             $this->_redirect('*/*/new',array('_current' => true));
         } else {
-            $this->_redirect('*/*/edit', array('id' => $accountId, '_current' => true));
+            $data = array();
+            $data['mode'] = Mage::helper('M2ePro/Data_Session')->getValue('get_token_account_mode');
+            $data['token_session'] = $sessionId;
+
+            $data = $this->sendDataToServer($accountId, $data);
+            $id = $this->updateAccount($accountId, $data);
+
+            $this->_getSession()->addSuccess(Mage::helper('M2ePro')->__('Token was successfully saved'));
+            $this->_redirect('*/*/edit', array('id' => $id, '_current' => true));
         }
         //-------------------------------
     }
@@ -436,96 +489,9 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         }
         //--------------------
 
-        // Get Model
-        $model = Mage::helper('M2ePro/Component_Ebay')->getModel('Account');
-        !is_null($id) && $model->load($id);
-        //--------------------
+        $data = $this->sendDataToServer($id, $data);
 
-        // Add or update server
-        //--------------------
-        $requestMode = $data['mode'] == Ess_M2ePro_Model_Ebay_Account::MODE_PRODUCTION ?
-                       Ess_M2ePro_Model_Connector_Server_Ebay_Abstract::MODE_PRODUCTION :
-                       Ess_M2ePro_Model_Connector_Server_Ebay_Abstract::MODE_SANDBOX;
-
-        if ((bool)$id) {
-
-            $requestTempParams = array(
-                'title' => $model->getTitle(),
-                'mode' => $requestMode,
-                'token_session' => $data['token_session']
-            );
-            $response = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-                        ->processVirtualAbstract('account','update','entity',
-                                                  $requestTempParams,NULL,
-                                                  NULL,$id,NULL);
-
-            $data['title'] = $model->getTitle();
-
-        } else {
-
-            $requestTempParams = array(
-                'mode' => $requestMode,
-                'token_session' => $data['token_session']
-            );
-
-            $response = $this->processAccountAddEntity($requestTempParams);
-
-            $data['title'] = $response['account_title'];
-        }
-
-        if (!isset($response['token_expired_date'])) {
-            throw new Exception('Account is not added or updated. Try again later.');
-        }
-
-        isset($response['hash']) && $data['server_hash'] = $response['hash'];
-
-        $data['ebay_info'] = json_encode($response['info']);
-        $data['token_expired_date'] = $response['token_expired_date'];
-        //--------------------
-
-        // Change token
-        //--------------------
-        $isChangeTokenSession = false;
-        if ((bool)$id) {
-            $oldTokenSession = Mage::helper('M2ePro/Component_Ebay')
-                                ->getCachedObject('Account',$id)
-                                ->getChildObject()
-                                ->getTokenSession();
-            $newTokenSession = $data['token_session'];
-            if ($newTokenSession != $oldTokenSession) {
-                $isChangeTokenSession = true;
-            }
-        } else {
-            $isChangeTokenSession = true;
-        }
-        //--------------------
-
-        // Add or update model
-        //--------------------
-        is_null($id) && $model->setData($data);
-        !is_null($id) && $model->addData($data);
-        $id = $model->save()->getId();
-        //--------------------
-
-        // Update eBay store
-        //--------------------
-        if ($isChangeTokenSession || (int)$this->getRequest()->getParam('update_ebay_store')) {
-            $ebayAccount = $model->getChildObject();
-            $ebayAccount->updateEbayStoreInfo();
-
-            if (Mage::helper('M2ePro/Component_Ebay_Category_Store')->isExistDeletedCategories()) {
-
-                $url = $this->getUrl('*/adminhtml_ebay_category/index', array('filter' => base64_encode('state=0')));
-
-                $this->_getSession()->addWarning(
-                    Mage::helper('M2ePro')->__(
-                        'Some eBay store categories were deleted from eBay. Click
-                        <a target="_blank" href="%s">here</a> to check.', $url
-                    )
-                );
-            }
-        }
-        //--------------------
+        $id = $this->updateAccount($id, $data);
 
         $this->_getSession()->addSuccess(Mage::helper('M2ePro')->__('Account was successfully saved'));
 
@@ -556,8 +522,8 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
 
                 try {
 
-                    Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-                        ->processVirtualAbstract('account','delete','entity',
+                    Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                        ->processVirtual('account','delete','entity',
                                                  array(), NULL,
                                                  NULL,$account->getId(),NULL);
 
@@ -586,6 +552,131 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
         $locked && $this->_getSession()->addError($tempString);
 
         $this->_redirect('*/*/index');
+    }
+
+    //--------------------------------------------
+
+    private function sendDataToServer($id, $data)
+    {
+        // Add or update server
+        //--------------------
+        $requestMode = $data['mode'] == Ess_M2ePro_Model_Ebay_Account::MODE_PRODUCTION ?
+            Ess_M2ePro_Model_Connector_Ebay_Abstract::MODE_PRODUCTION :
+            Ess_M2ePro_Model_Connector_Ebay_Abstract::MODE_SANDBOX;
+
+        if ((bool)$id) {
+            $model = Mage::helper('M2ePro/Component_Ebay')->getObject('Account',$id);
+
+            $requestTempParams = array(
+                'title' => $model->getTitle(),
+                'mode' => $requestMode,
+                'token_session' => $data['token_session']
+            );
+            $response = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                            ->processVirtual('account','update','entity',
+                                             $requestTempParams,NULL,
+                                             NULL,$id,NULL);
+
+            $title = empty($response['info']['UserID']) ? 'Unknown' : $response['info']['UserID'];
+
+            $oldTitle = $model->getTitle();
+            if (($pos = strpos($oldTitle, ' (')) !== false) {
+                $oldTitle = substr($oldTitle, 0, $pos);
+            }
+
+            if ($title != $oldTitle) {
+                $title = $this->correctAccountTitle($title);
+            } else {
+                $title = $model->getTitle();
+            }
+
+            $data['title'] = $title;
+
+        } else {
+
+            Mage::helper('M2ePro/Module_License')->setTrial(Ess_M2ePro_Helper_Component_Ebay::NICK);
+
+            $requestTempParams = array(
+                'mode' => $requestMode,
+                'token_session' => $data['token_session']
+            );
+
+            $response = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                            ->processVirtual('account','add','entity',
+                                             $requestTempParams,NULL,
+                                             NULL,NULL,$requestMode);
+
+            $title = empty($response['info']['UserID']) ? 'Unknown' : $response['info']['UserID'];
+            $data['title'] = $this->correctAccountTitle($title);
+        }
+
+        if (!isset($response['token_expired_date'])) {
+            throw new Exception('Account is not added or updated. Try again later.');
+        }
+
+        isset($response['hash']) && $data['server_hash'] = $response['hash'];
+
+        $data['ebay_info'] = json_encode($response['info']);
+        $data['token_expired_date'] = $response['token_expired_date'];
+        //--------------------
+
+        return $data;
+    }
+
+    private function updateAccount($id, $data)
+    {
+        // Change token
+        //--------------------
+        $isChangeTokenSession = false;
+        if ((bool)$id) {
+            $oldTokenSession = Mage::helper('M2ePro/Component_Ebay')
+                ->getCachedObject('Account',$id)
+                ->getChildObject()
+                ->getTokenSession();
+            $newTokenSession = $data['token_session'];
+            if ($newTokenSession != $oldTokenSession) {
+                $isChangeTokenSession = true;
+            }
+        } else {
+            $isChangeTokenSession = true;
+        }
+        //--------------------
+
+        // Add or update model
+        //--------------------
+        $model = Mage::helper('M2ePro/Component_Ebay')->getModel('Account');
+        if (is_null($id)) {
+            $model->setData($data);
+
+        } else {
+            $model->load($id);
+            $model->addData($data);
+        }
+        //--------------------
+
+        $id = $model->save()->getId();
+
+        // Update eBay store
+        //--------------------
+        if ($isChangeTokenSession || (int)$this->getRequest()->getParam('update_ebay_store')) {
+            $ebayAccount = $model->getChildObject();
+            $ebayAccount->updateEbayStoreInfo();
+
+            if (Mage::helper('M2ePro/Component_Ebay_Category_Store')->isExistDeletedCategories()) {
+
+                $url = $this->getUrl('*/adminhtml_ebay_category/index', array('filter' => base64_encode('state=0')));
+
+                $this->_getSession()->addWarning(
+                    Mage::helper('M2ePro')->__(
+                        'Some eBay store categories were deleted from eBay. Click
+                        <a target="_blank" href="%s">here</a> to check.', $url
+                    )
+                );
+            }
+        }
+        //--------------------
+
+        return $id;
     }
 
     //#############################################
@@ -652,14 +743,8 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
 
     //#############################################
 
-    private function processAccountAddEntity($requestParams)
+    private function correctAccountTitle($initialTitle)
     {
-        $response = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-                        ->processVirtualAbstract('account','add','entity',
-                                                  $requestParams,NULL,
-                                                  NULL,NULL,$requestParams['mode']);
-
-        $initialTitle = empty($response['info']['UserID']) ? 'Unknown' : $response['info']['UserID'];
         $accountTitle = $initialTitle;
 
         $i = 0;
@@ -680,9 +765,7 @@ class Ess_M2ePro_Adminhtml_Ebay_AccountController extends Ess_M2ePro_Controller_
             throw new Exception();
         }
 
-        $response['account_title'] = $accountTitle;
-
-        return $response;
+        return $accountTitle;
     }
 
     //#############################################

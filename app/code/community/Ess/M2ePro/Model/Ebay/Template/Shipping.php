@@ -16,18 +16,9 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
     const CASH_ON_DELIVERY_COST_MODE_CUSTOM_VALUE     = 1;
     const CASH_ON_DELIVERY_COST_MODE_CUSTOM_ATTRIBUTE = 2;
 
-    const EBAY_SHIPPING_TYPE_FLAT       = "flat";
-    const EBAY_SHIPPING_TYPE_CALCULATED = "calculated";
-    const EBAY_SHIPPING_TYPE_FREIGHT    = "freight";
-    const EBAY_SHIPPING_TYPE_LOCAL      = "local";
-
     const INTERNATIONAL_TRADE_NONE           = 0;
     const INTERNATIONAL_TRADE_NORTH_AMERICA  = 1;
     const INTERNATIONAL_TRADE_UNITED_KINGDOM = 2;
-
-    const TAX_CATEGORY_MODE_NONE      = 0;
-    const TAX_CATEGORY_MODE_VALUE     = 1;
-    const TAX_CATEGORY_MODE_ATTRIBUTE = 2;
 
     const DISPATCH_TIME_CUSTOM_VALUE     = 0;
     const DISPATCH_TIME_CUSTOM_ATTRIBUTE = 1;
@@ -185,19 +176,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
 
     // #######################################
 
-    public static function isTaxCategoryShow()
-    {
-        if (Mage::helper('M2ePro/View_Ebay')->isSimpleMode()) {
-            return false;
-        }
-
-        return Mage::helper('M2ePro/Module')->getConfig()->getGroupValue(
-            '/view/ebay/template/shipping/', 'show_tax_category'
-        );
-    }
-
-    // #######################################
-
     public function getServices($asObjects = false, array $filters = array(),
                                 array $sort = array('priority'=>Varien_Data_Collection::SORT_ORDER_ASC))
     {
@@ -264,11 +242,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
 
     //---------------------------------------
 
-    public function getVatPercent()
-    {
-        return (float)$this->getData('vat_percent');
-    }
-
     public function isGetItFastEnabled()
     {
         return (bool)$this->getData('get_it_fast');
@@ -280,11 +253,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
     }
 
     //---------------------------------------
-
-    public function isTaxTableEnabled()
-    {
-        return (bool)$this->getData('tax_table_mode');
-    }
 
     public function isLocalShippingRateTableEnabled()
     {
@@ -315,32 +283,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
             'mode'      => $this->getData('dispatch_time_mode'),
             'value'     => $this->getData('dispatch_time_value'),
             'attribute' => $this->getData('dispatch_time_attribute')
-        );
-    }
-
-    // #######################################
-
-    public function getTaxCategory()
-    {
-        $src = $this->getTaxCategorySource();
-
-        if ($src['mode'] == self::TAX_CATEGORY_MODE_NONE) {
-            return '';
-        }
-
-        if ($src['mode'] == self::TAX_CATEGORY_MODE_ATTRIBUTE) {
-            return $this->getMagentoProduct()->getAttributeValue($src['attribute']);
-        }
-
-        return $src['value'];
-    }
-
-    public function getTaxCategorySource()
-    {
-        return array(
-            'mode'      => $this->getData('tax_category_mode'),
-            'value'     => $this->getData('tax_category_value'),
-            'attribute' => $this->getData('tax_category_attribute')
         );
     }
 
@@ -617,13 +559,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
 
             'local_shipping_rate_table_mode' => 0,
             'international_shipping_rate_table_mode' => 0,
-            'tax_table_mode' => 0,
-
-            'tax_category_mode'      => 0,
-            'tax_category_value'     => '',
-            'tax_category_attribute' => '',
-
-            'vat_percent' => 0,
 
             'get_it_fast' => 0,
             'dispatch_time_mode' => self::DISPATCH_TIME_CUSTOM_VALUE,
@@ -633,7 +568,7 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
             'global_shipping_program' => 0,
             'local_shipping_mode' =>  self::SHIPPING_TYPE_FLAT,
             'local_shipping_discount_mode' => 0,
-            'local_shipping_combined_discount_profile_id' => '',
+            'local_shipping_combined_discount_profile_id' => json_encode(array()),
 
             'local_shipping_cash_on_delivery_cost_mode' => self::CASH_ON_DELIVERY_COST_MODE_NONE,
             'local_shipping_cash_on_delivery_cost_value' => '',
@@ -641,7 +576,7 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping extends Ess_M2ePro_Model_Component
 
             'international_shipping_mode' => self::SHIPPING_TYPE_NO_INTERNATIONAL,
             'international_shipping_discount_mode' => 0,
-            'international_shipping_combined_discount_profile_id' => '',
+            'international_shipping_combined_discount_profile_id' => json_encode(array()),
 
             // CALCULATED SHIPPING
             //----------------------------------

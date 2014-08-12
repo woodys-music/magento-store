@@ -1,5 +1,5 @@
 <?php $post = $this->getPost() ?>
-<div class="postBookmarks"><h4>Bookmark with:</h4>
+<div class="postBookmarks"><h4><?php echo Mage::helper('blog')->__('Bookmark with'); ?>:</h4>
     <a href="http://digg.com/submit?phase=2&amp;url=<?php echo $post->getAddress(); ?>&amp;title=<?php echo $post->getTitle(); ?>&amp;bodytext=<?php echo $post->getTitle(); ?>&amp;topic=" class="bm">
         <img src="<?php echo Mage::getDesign()->getSkinUrl('aw_blog/images/communityIcons'); ?>/http-digg-com.gif" width="16" height="16" alt = "" />&nbsp;<?php echo $this->__('Digg.com'); ?></a>&nbsp;
     <a href="http://www.stumbleupon.com/submit?url=<?php echo $post->getAddress(); ?>&amp;title=<?php echo $post->getTitle(); ?>&amp;newcomment=<?php echo $post->getTitle(); ?>" class="bm">

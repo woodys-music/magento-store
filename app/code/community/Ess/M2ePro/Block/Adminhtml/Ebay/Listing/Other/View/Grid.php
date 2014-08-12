@@ -141,6 +141,7 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
             'sortable' => false,
             'options' => array(
                 Ess_M2ePro_Model_Listing_Product::STATUS_LISTED   => Mage::helper('M2ePro')->__('Listed'),
+                Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN   => Mage::helper('M2ePro')->__('Listed (Hidden)'),
                 Ess_M2ePro_Model_Listing_Product::STATUS_SOLD     => Mage::helper('M2ePro')->__('Sold'),
                 Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED  => Mage::helper('M2ePro')->__('Stopped'),
                 Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED => Mage::helper('M2ePro')->__('Finished'),
@@ -187,31 +188,6 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
             'sortable'  => false,
             'getter'    => 'getId',
             'actions'   => array(
-                array(
-                    'caption'   => Mage::helper('M2ePro')->__('Remove Item'),
-                    'url'       => array(
-                        'base'=> '*/adminhtml_ebay_listing_other/delete/',
-                        'params' => array('_current' => true)
-                    ),
-                    'field'     => 'id',
-                    'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
-                ),
-                array(
-                    'caption'   => Mage::helper('M2ePro')->__('Unmap'),
-                    'url'       => array(
-                     'base'=>
-                      '*/adminhtml_listing_other_mapping/unmap'.
-                       '/componentMode/ebay'.
-                       '/redirect/'.base64_encode($this->getUrl(
-                          '*/adminhtml_ebay_listing_other/view',array(
-                              'account' => $this->getRequest()->getParam('account'),
-                              'marketplace' => $this->getRequest()->getParam('marketplace')
-                          )
-                      ))
-                    ),
-                    'field'     => 'id',
-                    'confirm'  => Mage::helper('M2ePro')->__('Are you sure?')
-                ),
                 array(
                     'caption'   => Mage::helper('M2ePro')->__('View Log'),
                     'url'       => array('base'=> '*/adminhtml_ebay_log/listingOther'),
@@ -266,6 +242,16 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
 
         $this->getMassactionBlock()->addItem('moving', array(
             'label'   => Mage::helper('M2ePro')->__('Move Item(s) to Listing'),
+            'url'     => '',
+            'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
+        $this->getMassactionBlock()->addItem('removing', array(
+            'label'   => Mage::helper('M2ePro')->__('Remove Item(s)'),
+            'url'     => '',
+            'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
+        $this->getMassactionBlock()->addItem('unmapping', array(
+            'label'   => Mage::helper('M2ePro')->__('Unmap Item(s)'),
             'url'     => '',
             'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
         ));
@@ -410,6 +396,10 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
 
             case Ess_M2ePro_Model_Listing_Product::STATUS_LISTED:
                 $value = '<span style="color: green;">' . $value . '</span>';
+                break;
+
+            case Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN:
+                $value = '<span style="color: red;">' . $value . '</span>';
                 break;
 
             case Ess_M2ePro_Model_Listing_Product::STATUS_SOLD:
@@ -577,13 +567,13 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Other_View_Grid extends Mage_Admin
         $string = '';
 
         switch ($actionRows['initiator']) {
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN:
+            case Ess_M2ePro_Helper_Data::INITIATOR_UNKNOWN:
                 $string = '';
                 break;
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER:
+            case Ess_M2ePro_Helper_Data::INITIATOR_USER:
                 $string = Mage::helper('M2ePro')->__('Manual');
                 break;
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION:
+            case Ess_M2ePro_Helper_Data::INITIATOR_EXTENSION:
                 $string = Mage::helper('M2ePro')->__('Automatic');
                 break;
         }

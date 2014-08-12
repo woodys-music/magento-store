@@ -7,11 +7,6 @@
 class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
 {
     /**
-     * @var Ess_M2ePro_Model_Marketplace|null
-     */
-    protected $marketplace = NULL;
-
-    /**
      * @var Ess_M2ePro_Model_Account|null
      */
     protected $account = NULL;
@@ -20,10 +15,8 @@ class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
 
     // ########################################
 
-    public function initialize(Ess_M2ePro_Model_Marketplace $marketplace = NULL,
-                               Ess_M2ePro_Model_Account $account = NULL)
+    public function initialize(Ess_M2ePro_Model_Account $account = NULL)
     {
-        $this->marketplace = $marketplace;
         $this->account = $account;
         $this->mappingSettings = NULL;
     }
@@ -53,24 +46,16 @@ class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
             return false;
         }
 
-        $accountsMarketplaces = array();
+        $sortedItems = array();
 
+        /** @var $otherListing Ess_M2ePro_Model_Listing_Other */
         foreach ($otherListingsFiltered as $otherListing) {
-
-            /** @var $otherListing Ess_M2ePro_Model_Listing_Other */
-
-            $identifier = $otherListing->getAccountId().'_'.$otherListing->getMarketplaceId();
-
-            if (!isset($accountsMarketplaces[$identifier])) {
-                $accountsMarketplaces[$identifier] = array();
-            }
-
-            $accountsMarketplaces[$identifier][] = $otherListing;
+            $sortedItems[$otherListing->getAccountId()][] = $otherListing;
         }
 
         $result = true;
 
-        foreach ($accountsMarketplaces as $otherListings) {
+        foreach ($sortedItems as $otherListings) {
             foreach ($otherListings as $otherListing) {
                 /** @var $otherListing Ess_M2ePro_Model_Listing_Other */
                 $temp = $this->autoMapOtherListingProduct($otherListing);
@@ -88,7 +73,6 @@ class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
         }
 
         $this->setAccountByOtherListingProduct($otherListing);
-        $this->setMarketplaceByOtherListingProduct($otherListing);
 
         if (!$this->getAccount()->getChildObject()->isOtherListingsMappingEnabled()) {
             return false;
@@ -119,7 +103,7 @@ class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
             $logModel = Mage::getModel('M2ePro/Listing_Other_Log');
             $logModel->setComponentMode(Ess_M2ePro_Helper_Component_Buy::NICK);
 
-            $otherListing->mapProduct($magentoProductId, Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION);
+            $otherListing->mapProduct($magentoProductId, Ess_M2ePro_Helper_Data::INITIATOR_EXTENSION);
 
             return true;
         }
@@ -288,14 +272,6 @@ class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
         return $this->account;
     }
 
-    /**
-     * @return Ess_M2ePro_Model_Marketplace
-     */
-    protected function getMarketplace()
-    {
-        return $this->marketplace;
-    }
-
     //-----------------------------------------
 
     protected function setAccountByOtherListingProduct(Ess_M2ePro_Model_Listing_Other $otherListing)
@@ -309,17 +285,6 @@ class Ess_M2ePro_Model_Buy_Listing_Other_Mapping
         );
 
         $this->mappingSettings = NULL;
-    }
-
-    protected function setMarketplaceByOtherListingProduct(Ess_M2ePro_Model_Listing_Other $otherListing)
-    {
-        if (!is_null($this->marketplace) && $this->marketplace->getId() == $otherListing->getMarketplaceId()) {
-            return;
-        }
-
-        $this->marketplace = Mage::helper('M2ePro/Component_Buy')->getCachedObject(
-            'Marketplace', $otherListing->getMarketplaceId()
-        );
     }
 
     // ########################################

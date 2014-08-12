@@ -1,6 +1,47 @@
 <?xml version="1.0"?>
 
 <config>
+    <menu>
+        <ranvi_feed>
+            <title>Product Feeds</title>
+            <action>ranvi_feed/adminhtml_items</action>
+            <sort_order>10</sort_order>
+        </ranvi_feed>
+    </menu>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <system>
+                        <children>
+                            <config>
+                                <children>
+                                    <ranvi_feedpro>
+                                        <title>Product Feeds</title>
+                                    </ranvi_feedpro>
+                                </children>
+                            </config>
+                        </children>
+                    </system>
+                </children>
+            </admin>
+        </resources>
+    </acl>
+    <acl>
+        <resources>
+            <admin>
+                <children>
+                    <catalog>
+                        <children>
+                            <ranvi_feed translate="title">
+                                <title>Product Feeds</title>
+                            </ranvi_feed>
+                        </children>
+                    </catalog>
+                </children>
+            </admin>
+        </resources>
+    </acl>
     <acl>
         <resources>
             <admin>

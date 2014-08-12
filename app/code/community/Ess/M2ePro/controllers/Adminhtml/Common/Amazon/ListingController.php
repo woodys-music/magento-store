@@ -161,7 +161,7 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_ListingController
         $tempLog->setComponentMode($listing->getComponentMode());
         $tempLog->addListingMessage(
             $listing->getId(),
-            Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER,
+            Ess_M2ePro_Helper_Data::INITIATOR_USER,
             NULL,
             Ess_M2ePro_Model_Listing_Log::ACTION_ADD_LISTING,
             // Parser hack -> Mage::helper('M2ePro')->__('Listing was successfully added');
@@ -1135,7 +1135,7 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_ListingController
 
         $listingsProductsIds = explode(',', $listingsProductsIds);
 
-        $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Amazon_Product_Dispatcher');
+        $dispatcherObject = Mage::getModel('M2ePro/Connector_Amazon_Product_Dispatcher');
         $result = (int)$dispatcherObject->process($action, $listingsProductsIds, $params);
         $actionId = (int)$dispatcherObject->getLogsActionId();
 
@@ -1149,19 +1149,19 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_ListingController
                 ->isLockedObject('products_in_action');
         }
 
-        if ($result == Ess_M2ePro_Model_Connector_Server_Amazon_Product_Requester::STATUS_ERROR) {
+        if ($result == Ess_M2ePro_Helper_Data::STATUS_ERROR) {
             return json_encode(
                 array('result'=>'error','action_id'=>$actionId,'is_processing_items'=>$isProcessingItems)
             );
         }
 
-        if ($result == Ess_M2ePro_Model_Connector_Server_Amazon_Product_Requester::STATUS_WARNING) {
+        if ($result == Ess_M2ePro_Helper_Data::STATUS_WARNING) {
             return json_encode(
                 array('result'=>'warning','action_id'=>$actionId,'is_processing_items'=>$isProcessingItems)
             );
         }
 
-        if ($result == Ess_M2ePro_Model_Connector_Server_Amazon_Product_Requester::STATUS_SUCCESS) {
+        if ($result == Ess_M2ePro_Helper_Data::STATUS_SUCCESS) {
             return json_encode(
                 array('result'=>'success','action_id'=>$actionId,'is_processing_items'=>$isProcessingItems)
             );
@@ -1177,42 +1177,42 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_ListingController
     public function runListProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Amazon_Product_Dispatcher::ACTION_LIST)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_LIST)
         );
     }
 
     public function runReviseProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Amazon_Product_Dispatcher::ACTION_REVISE)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_REVISE)
         );
     }
 
     public function runRelistProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Amazon_Product_Dispatcher::ACTION_RELIST)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_RELIST)
         );
     }
 
     public function runStopProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Amazon_Product_Dispatcher::ACTION_STOP)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_STOP)
         );
     }
 
     public function runStopAndRemoveProductsAction()
     {
         return $this->getResponse()->setBody($this->processConnector(
-            Ess_M2ePro_Model_Connector_Server_Amazon_Product_Dispatcher::ACTION_STOP, array('remove' => true)
+            Ess_M2ePro_Model_Listing_Product::ACTION_STOP, array('remove' => true)
         ));
     }
 
     public function runDeleteAndRemoveProductsAction()
     {
         return $this->getResponse()->setBody($this->processConnector(
-            Ess_M2ePro_Model_Connector_Server_Amazon_Product_Dispatcher::ACTION_DELETE, array('remove' => true)
+            Ess_M2ePro_Model_Listing_Product::ACTION_DELETE, array('remove' => true)
         ));
     }
 
@@ -1291,11 +1291,10 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_ListingController
             $listingProduct->getData('general_id_search_status') == $temp) {
 
             $marketplaceObj = $listingProduct->getListing()->getMarketplace();
-            $accountObj = $listingProduct->getListing()->getAccount();
 
             /** @var $dispatcher Ess_M2ePro_Model_Amazon_Search_Dispatcher */
             $dispatcher = Mage::getModel('M2ePro/Amazon_Search_Dispatcher');
-            $result = $dispatcher->runManual($listingProduct,$query,$marketplaceObj,$accountObj);
+            $result = $dispatcher->runManual($listingProduct,$query);
 
             $message = Mage::helper('M2ePro')->__('Server is currently unavailable. Please try again later.');
             if ($result === false) {
@@ -1369,8 +1368,10 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_ListingController
         $generalId = $this->getRequest()->getParam('general_id');
 
         if (empty($productId) || empty($generalId) ||
-            (!Mage::helper('M2ePro/Component_Amazon_Validation')->isASIN($generalId) &&
-                !Mage::helper('M2ePro/Component_Amazon_Validation')->isISBN($generalId))) {
+            (
+                !Mage::helper('M2ePro/Component_Amazon')->isASIN($generalId) &&
+                !Mage::helper('M2ePro')->isISBN($generalId)
+            )) {
             return $this->getResponse()->setBody('You should provide correct parameters.');
         }
 

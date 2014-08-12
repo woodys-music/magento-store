@@ -114,7 +114,8 @@ class AW_Blog_Manage_BlogController extends Mage_Adminhtml_Controller_Action
                     $originalTags = array();
                 }
 
-                $tags = preg_split("/[,    ]+\s*/i", $data['tags'], -1, PREG_SPLIT_NO_EMPTY);
+                $tags = explode(',', $data['tags']);
+                array_walk($tags, 'trim');
 
                 foreach ($tags as $key => $tag) {
                     $tags[$key] = Mage::helper('blog')->convertSlashes($tag, 'forward');

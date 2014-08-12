@@ -19,7 +19,7 @@ class AW_Blog_Block_Manage_Blog_Edit_Tab_Form extends Mage_Adminhtml_Block_Widge
             )
         );
 
-        $noticeMessage = Mage::helper('blog')->__('e.g. domain.com/blog/identifier');
+        $noticeMessage = Mage::helper('blog')->__('e.g. domain.com/blog/<b>identifier</b>');
 
         $validationErrorMessage = addslashes(
             Mage::helper('blog')->__(
@@ -148,7 +148,7 @@ class AW_Blog_Block_Manage_Blog_Edit_Tab_Form extends Mage_Adminhtml_Block_Widge
                  'label'              => Mage::helper('blog')->__('Tags'),
                  'title'              => Mage::helper('blog')->__('tags'),
                  'style'              => 'width:700px;',
-                 'after_element_html' => Mage::helper('blog')->__('Use space or comma as separators'),
+                 'after_element_html' => Mage::helper('blog')->__('Use comma as separator'),
             )
         );
 

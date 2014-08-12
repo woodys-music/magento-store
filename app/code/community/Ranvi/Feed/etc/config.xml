@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
-
 <config>
     <modules>
         <Ranvi_Feed>
             <version>2.2.8</version>
         </Ranvi_Feed>
     </modules>
-	<frontend>
+    <frontend>
         <routers>
             <ranvi_feed>
                 <use>standard</use>
@@ -19,58 +18,17 @@
     </frontend>
     <admin>
         <routers>
-			<ranvi_feed>
-				<use>admin</use>
-				<args>
-					<module>Ranvi_Feed</module>
-					<frontName>ranvi_feed</frontName>
-				</args>
-			</ranvi_feed>
+            <ranvi_feed>
+                <use>admin</use>
+                <args>
+                    <module>Ranvi_Feed</module>
+                    <frontName>ranvi_feed</frontName>
+                </args>
+            </ranvi_feed>
         </routers>
     </admin>
     <adminhtml>
-        <menu>
-            <ranvi_feed>
-				<title>Product Feeds</title>
-				<action>ranvi_feed/adminhtml_items</action>
-				<sort_order>10</sort_order>
-            </ranvi_feed>
-        </menu>
-        <acl>
-            <resources>
-                <admin>
-                    <children>
-                        <system>
-                            <children>
-                                <config>
-                                    <children>
-                                        <ranvi_feedpro>
-                                            <title>Product Feeds</title>
-                                        </ranvi_feedpro>
-                                    </children>
-                                </config>
-                            </children>
-                        </system>
-                    </children>
-                </admin>
-            </resources>
-        </acl>        
-        
-        <acl>
-        	<resources>
-        		<admin>
-        			<children>
-        				<catalog>
-        					<children>
-        						<ranvi_feed translate="title">
-									<title>Product Feeds</title>
-				                </ranvi_feed>
-        					</children>
-        				</catalog>
-        			</children>
-        		</admin>
-        	</resources>
-        </acl>
+
         <layout>
             <updates>
                 <ranvi_feed>
@@ -78,23 +36,23 @@
                 </ranvi_feed>
             </updates>
         </layout>
-	</adminhtml>
-	<global>
-		<models>
-		    <ranvi_feed>
-		        <class>Ranvi_Feed_Model</class>
-		        <resourceModel>ranvi_feed_mysql4</resourceModel>
-		    </ranvi_feed>
-		    <ranvi_feed_mysql4>
-		        <class>Ranvi_Feed_Model_Mysql4</class>
-		        <entities>
-		            <item>
+    </adminhtml>
+    <global>
+        <models>
+            <ranvi_feed>
+                <class>Ranvi_Feed_Model</class>
+                <resourceModel>ranvi_feed_mysql4</resourceModel>
+            </ranvi_feed>
+            <ranvi_feed_mysql4>
+                <class>Ranvi_Feed_Model_Mysql4</class>
+                <entities>
+                    <item>
                         <table>ranvi_feed_entity</table>
-		            </item>
-		        </entities>
-		    </ranvi_feed_mysql4>
-		</models>
-		<blocks>
+                    </item>
+                </entities>
+            </ranvi_feed_mysql4>
+        </models>
+        <blocks>
             <ranvi_feed>
                 <class>Ranvi_Feed_Block</class>
             </ranvi_feed>
@@ -120,15 +78,21 @@
             </ranvi_feed_read>
         </resources>
         <helpers>
-			<ranvi_feed><class>Ranvi_Feed_Helper</class></ranvi_feed>
-		</helpers>
-	</global>
-	<crontab>
+            <ranvi_feed>
+                <class>Ranvi_Feed_Helper</class>
+            </ranvi_feed>
+        </helpers>
+    </global>
+    <crontab>
         <jobs>
-        	<ranvi_feed_generate_all>
-                <schedule><cron_expr>* * * * *</cron_expr></schedule>
-                <run><model>ranvi_feed/observer::proccessFeeds</model></run>
-			</ranvi_feed_generate_all>
+            <ranvi_feed_generate_all>
+                <schedule>
+                    <cron_expr>* * * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>ranvi_feed/observer::proccessFeeds</model>
+                </run>
+            </ranvi_feed_generate_all>
         </jobs>
     </crontab>
 </config>

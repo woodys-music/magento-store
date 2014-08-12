@@ -20,7 +20,7 @@
 <config>
 	<modules>
 		<Dotsquares_Sitemap>
-			<version>1.0.0</version>
+			<version>1.1.0</version>
 		</Dotsquares_Sitemap>
 	</modules>
 	<global>
@@ -61,6 +61,8 @@
 			<sitemap>
 				<enable_sitemap>1</enable_sitemap>
 				<show_cms>1</show_cms>
+				<site_title>Site Map</site_title>
+				<page_title>Site Map</page_title>
 				<show_dependent>0</show_dependent>
 				<show_products>1</show_products>
 				<show_category>1</show_category>

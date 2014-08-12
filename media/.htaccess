@@ -11,7 +11,7 @@ Options -ExecCGI
 ############################################
 ## enable rewrites
 
-    Options +SymLinksIfOwnerMatch
+    Options +SymLinksifOwnerMatch
     RewriteEngine on
 
 ############################################

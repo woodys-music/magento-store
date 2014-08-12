@@ -40,9 +40,9 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Integration extends Mage
                 $dbSelect = $connRead->select()->from($moduleTable,new Zend_Db_Expr('COUNT(*)'));
 
                 $tablesInfo[$category][$table]['count'] = $connRead->fetchOne($dbSelect);
-                $tablesInfo[$category][$table]['url'] = $url = $this->getUrl(
+                $tablesInfo[$category][$table]['url'] = $this->getUrl(
                     '*/adminhtml_development_database/manageTable',
-                    array('table'=>$table)
+                    array('table' => $table)
                 );
             }
         }

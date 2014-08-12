@@ -13,11 +13,6 @@ class Ess_M2ePro_Model_Ebay_Template_Category_Builder
         $categoryTemplateData['category_main_id']        = $data['category_main_id'];
         $categoryTemplateData['category_main_attribute'] = $data['category_main_attribute'];
         $categoryTemplateData['marketplace_id']          = (int)$data['marketplace_id'];
-        $categoryTemplateData['variation_enabled']       = $this->isVariationEnabled(
-            $categoryTemplateData['category_main_mode'],
-            $categoryTemplateData['category_main_id'],
-            $categoryTemplateData['marketplace_id'])
-        ;
 
         if (!empty($data['category_main_path'])) {
             $categoryTemplateData['category_main_path'] = $data['category_main_path'];
@@ -80,25 +75,6 @@ class Ess_M2ePro_Model_Ebay_Template_Category_Builder
         //------------------------------
 
         return $categoryTemplate;
-    }
-
-    private function isVariationEnabled($categoryMainMode, $categoryMainId, $marketplaceId)
-    {
-        $marketplace = Mage::helper('M2ePro/Component_Ebay')->getCachedObject('Marketplace', $marketplaceId);
-
-        if (!$marketplace->getChildObject()->isMultivariationEnabled()) {
-            return 0;
-        }
-
-        if ($categoryMainMode != Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_EBAY) {
-            return 1;
-        }
-
-        return (int)Mage::helper('M2ePro/Component_Ebay_Category_Ebay')
-            ->isVariationEnabled(
-                $categoryMainId,
-                $marketplaceId
-            );
     }
 
     // ########################################

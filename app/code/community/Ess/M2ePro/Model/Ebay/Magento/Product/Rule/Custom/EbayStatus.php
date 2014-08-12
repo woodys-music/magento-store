@@ -46,6 +46,10 @@ class Ess_M2ePro_Model_Ebay_Magento_Product_Rule_Custom_EbayStatus
                 'label' => Mage::helper('M2ePro')->__('Listed'),
             ),
             array(
+                'value' => Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN,
+                'label' => Mage::helper('M2ePro')->__('Listed (Hidden)'),
+            ),
+            array(
                 'value' => Ess_M2ePro_Model_Listing_Product::STATUS_SOLD,
                 'label' => Mage::helper('M2ePro')->__('Sold'),
             ),

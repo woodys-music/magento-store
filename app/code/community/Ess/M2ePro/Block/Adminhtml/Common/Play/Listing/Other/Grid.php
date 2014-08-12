@@ -153,36 +153,6 @@ class Ess_M2ePro_Block_Adminhtml_Common_Play_Listing_Other_Grid extends Mage_Adm
             'getter'    => 'getId',
             'actions'   => array(
                 array(
-                    'caption'   => Mage::helper('M2ePro')->__('Remove Item'),
-                    'url'       => array(
-                        'base'=> '*/adminhtml_common_listing_other/delete',
-                        'params' => array(
-                            'component' => Ess_M2ePro_Helper_Component_Play::NICK,
-                        )
-                    ),
-                    'field'   => 'id',
-                    'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
-                ),
-                array(
-                    'caption' => Mage::helper('M2ePro')->__('Unmap'),
-                    'confirm' => Mage::helper('M2ePro')->__('Are you sure?'),
-                    'field'   => 'id',
-                    'url'     => array(
-                        'base'   => '*/adminhtml_listing_other_mapping/unmap',
-                        'params' => array(
-                            'componentMode' => Ess_M2ePro_Helper_Component_Play::NICK,
-                            'redirect'      => base64_encode(
-                                $this->getUrl(
-                                    '*/adminhtml_common_listing_other/index',
-                                    array(
-                                        'tab' => Ess_M2ePro_Block_Adminhtml_Common_Component_Abstract::TAB_ID_PLAY
-                                    )
-                                )
-                            )
-                        )
-                    ),
-                ),
-                array(
                     'caption' => Mage::helper('M2ePro')->__('View Log'),
                     'field'   => 'id',
                     'url'     => array(
@@ -226,6 +196,16 @@ class Ess_M2ePro_Block_Adminhtml_Common_Play_Listing_Other_Grid extends Mage_Adm
         ));
         $this->getMassactionBlock()->addItem('moving', array(
             'label'   => Mage::helper('M2ePro')->__('Move Item(s) To Listing'),
+            'url'     => '',
+            'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
+        $this->getMassactionBlock()->addItem('removing', array(
+            'label'   => Mage::helper('M2ePro')->__('Remove Item(s)'),
+            'url'     => '',
+            'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
+        ));
+        $this->getMassactionBlock()->addItem('unmapping', array(
+            'label'   => Mage::helper('M2ePro')->__('Unmap Item(s)'),
             'url'     => '',
             'confirm' => Mage::helper('M2ePro')->__('Are you sure?')
         ));
@@ -488,13 +468,13 @@ class Ess_M2ePro_Block_Adminhtml_Common_Play_Listing_Other_Grid extends Mage_Adm
         $string = '';
 
         switch ($actionRows['initiator']) {
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN:
+            case Ess_M2ePro_Helper_Data::INITIATOR_UNKNOWN:
                 $string = '';
                 break;
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER:
+            case Ess_M2ePro_Helper_Data::INITIATOR_USER:
                 $string = Mage::helper('M2ePro')->__('Manual');
                 break;
-            case Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION:
+            case Ess_M2ePro_Helper_Data::INITIATOR_EXTENSION:
                 $string = Mage::helper('M2ePro')->__('Automatic');
                 break;
         }

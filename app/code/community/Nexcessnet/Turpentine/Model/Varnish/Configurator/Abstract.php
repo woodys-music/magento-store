@@ -211,19 +211,23 @@ abstract class Nexcessnet_Turpentine_Model_Varnish_Configurator_Abstract {
     }
 
     /**
-     * Get the path part of each store's base URL
+     * Get the path part of each store's base URL and static file URLs
      *
      * @return array
      */
     protected function _getBaseUrlPaths() {
         $paths = array();
-        foreach( Mage::app()->getStores() as $storeId => $store ) {
-            $paths[] = parse_url( $store->getBaseUrl(
-                    Mage_Core_Model_Store::URL_TYPE_LINK, false ),
-                PHP_URL_PATH );
-            $paths[] = parse_url( $store->getBaseUrl(
-                    Mage_Core_Model_Store::URL_TYPE_LINK, true ),
-                PHP_URL_PATH );
+        $linkTypes = array( Mage_Core_Model_Store::URL_TYPE_LINK,
+                            Mage_Core_Model_Store::URL_TYPE_JS,
+                            Mage_Core_Model_Store::URL_TYPE_SKIN,
+                            Mage_Core_Model_Store::URL_TYPE_MEDIA );
+        foreach( Mage::app()->getStores() as $store ) {
+            foreach( $linkTypes as $linkType ) {
+                $paths[] = parse_url( $store->getBaseUrl( $linkType , false ),
+                    PHP_URL_PATH );
+                $paths[] = parse_url( $store->getBaseUrl( $linkType , true ),
+                    PHP_URL_PATH );
+            }
         }
         $paths = array_unique( $paths );
         usort( $paths, create_function( '$a, $b',
@@ -549,10 +553,10 @@ if (req.http.User-Agent ~ "iP(?:hone|ad|od)|BlackBerry|Palm|Googlebot-Mobile|Mob
         set req.http.X-Normalized-User-Agent = "msie";
     } else if (req.http.User-Agent ~ "Firefox") {
         set req.http.X-Normalized-User-Agent = "firefox";
-    } else if (req.http.User-Agent ~ "Safari") {
-        set req.http.X-Normalized-User-Agent = "safari";
     } else if (req.http.User-Agent ~ "Chrome") {
         set req.http.X-Normalized-User-Agent = "chrome";
+    } else if (req.http.User-Agent ~ "Safari") {
+        set req.http.X-Normalized-User-Agent = "safari";
     } else if (req.http.User-Agent ~ "Opera") {
         set req.http.X-Normalized-User-Agent = "opera";
     } else {

@@ -186,7 +186,7 @@ var showCategoriesSummary = function()
         hideEffect: Element.hide,
         showEffect: Element.show,
         onClose: function() {
-            var url = '<?php echo $this->getUrl('*/*/getTreeInfo'); ?>';
+            var url = '<?php echo $this->getUrl('*/*/getTreeInfo', array('_current' => true)); ?>';
             new Ajax.Request(url, {
                 method: 'get',
                 onSuccess: function(transport) {

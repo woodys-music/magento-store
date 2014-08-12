@@ -47,9 +47,12 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
 
         foreach ($responseData['items'] as $receivedItem) {
 
-            $existObject = Mage::getModel('M2ePro/Ebay_Listing_Other')
-                                        ->load($receivedItem['id'], 'item_id');
+            /** @var $collection Mage_Core_Model_Mysql4_Collection_Abstract */
+            $collection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Listing_Other')
+                ->addFieldToFilter('item_id', $receivedItem['id'])
+                ->addFieldToFilter('account_id', $this->getAccount()->getId());
 
+            $existObject = $collection->getFirstItem();
             $existsId = $existObject->getId();
 
             $newData = array(
@@ -64,12 +67,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
             );
 
             if (isset($receivedItem['sku'])) {
-
-                if ($receivedItem['sku'] == '') {
-                    $newData['sku'] = new Zend_Db_Expr("''");
-                } else {
-                    $newData['sku'] = (string)$receivedItem['sku'];
-                }
+                $newData['sku'] = (string)$receivedItem['sku'];
             }
 
             if ($existsId) {
@@ -84,7 +82,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
                     ->getId();
             }
 
-            $tempListingType = Ess_M2ePro_Model_Ebay_Template_SellingFormat::EBAY_LISTING_TYPE_AUCTION;
+            $tempListingType = Ess_M2ePro_Model_Ebay_Listing_Product_Action_Request_Selling::LISTING_TYPE_AUCTION;
             if ($receivedItem['listingType'] == $tempListingType) {
                 $newData['online_qty'] = 1;
             }
@@ -109,7 +107,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
             }
 
             if ($existsId) {
-                if ($newData['status'] != $existObject->getParentObject()->getStatus('status')) {
+                if ($newData['status'] != $existObject->getStatus()) {
 
                     $newData['status_changer'] = Ess_M2ePro_Model_Listing_Product::STATUS_CHANGER_COMPONENT;
 
@@ -135,7 +133,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
 
                     $logModel->addProductMessage(
                         (int)$newData['id'],
-                        Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION,
+                        Ess_M2ePro_Helper_Data::INITIATOR_EXTENSION,
                         $this->getLogActionId(),
                         Ess_M2ePro_Model_Listing_Other_Log::ACTION_CHANGE_STATUS_ON_CHANNEL,
                         $tempLogMessage,
@@ -153,7 +151,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
             if (!$existsId) {
 
                 $logModel->addProductMessage($listingOtherModel->getId(),
-                     Ess_M2ePro_Model_Log_Abstract::INITIATOR_EXTENSION,
+                     Ess_M2ePro_Helper_Data::INITIATOR_EXTENSION,
                      NULL,
                      Ess_M2ePro_Model_Listing_Other_Log::ACTION_ADD_LISTING,
                      // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully added');
@@ -207,44 +205,35 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
         /** @var $connWrite Varien_Db_Adapter_Pdo_Mysql */
         $connWrite = Mage::getSingleton('core/resource')->getConnection('core_write');
 
-        $resultItems = array();
+        /** @var $collection Mage_Core_Model_Mysql4_Collection_Abstract */
+        $collection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Listing_Product');
+        $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns(array());
 
-        foreach (array_chunk($receivedItems,500) as $partReceivedItems) {
+        $listingTable = Mage::getResourceModel('M2ePro/Listing')->getMainTable();
+        $ebayItemTable = Mage::getResourceModel('M2ePro/Ebay_Item')->getMainTable();
 
-            if (count($partReceivedItems) <= 0) {
-                continue;
-            }
+        $collection->getSelect()->join(array('l' => $listingTable), 'main_table.listing_id = l.id', array());
+        $collection->getSelect()->where('l.account_id = ?', (int)$this->getAccount()->getId());
 
-            /** @var $collection Mage_Core_Model_Mysql4_Collection_Abstract */
-            $collection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Listing_Product');
-            $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns(array());
+        $collection->getSelect()->join(
+            array('eit' => $ebayItemTable),
+            'main_table.product_id = eit.product_id AND eit.account_id = '.(int)$this->getAccount()->getId(),
+            array('item_id')
+        );
 
-            $listingTable = Mage::getResourceModel('M2ePro/Listing')->getMainTable();
-            $ebayItemTable = Mage::getResourceModel('M2ePro/Ebay_Item')->getMainTable();
+        /** @var $stmtTemp Zend_Db_Statement_Pdo */
+        $stmtTemp = $connWrite->query($collection->getSelect()->__toString());
 
-            $collection->getSelect()->join(array('l' => $listingTable), 'main_table.listing_id = l.id', array());
-            $collection->getSelect()->where('l.account_id = ?', (int)$this->getAccount()->getId());
-
-            $collection->getSelect()->join(array(
-                'i' => $ebayItemTable), 'second_table.ebay_item_id = i.id', array('item_id')
-            );
-
-            /** @var $stmtTemp Zend_Db_Statement_Pdo */
-            $stmtTemp = $connWrite->query($collection->getSelect()->__toString());
-
-            $partReceivedItemsByItemId = array();
-            foreach ($partReceivedItems as $partReceivedItem) {
-                $partReceivedItemsByItemId[(string)$partReceivedItem['id']] = $partReceivedItem;
-            }
-
-            while ($existItem = $stmtTemp->fetch()) {
-                unset($partReceivedItemsByItemId[(string)$existItem['item_id']]);
-            }
-
-            $resultItems = array_merge($resultItems, $partReceivedItemsByItemId);
+        $receivedItemsByItemId = array();
+        foreach ($receivedItems as $receivedItem) {
+            $receivedItemsByItemId[(string)$receivedItem['id']] = $receivedItem;
         }
 
-        return array_values($resultItems);
+        while ($existItemId = $stmtTemp->fetchColumn()) {
+            unset($receivedItemsByItemId[$existItemId]);
+        }
+
+        return array_values($receivedItemsByItemId);
     }
 
     protected function filterReceivedOnlyCurrentOtherListings(array $receivedItems)
@@ -261,8 +250,10 @@ class Ess_M2ePro_Model_Ebay_Listing_Other_Updating
             }
 
             /** @var $collection Mage_Core_Model_Mysql4_Collection_Abstract */
-            $collection = Mage::getModel('M2ePro/Ebay_Listing_Other')->getCollection();
-            $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns(array('old_items'));
+            $collection = Mage::helper('M2ePro/Component_Ebay')->getCollection('Listing_Other')
+                ->addFieldToFilter('account_id', $this->getAccount()->getId());
+
+            $collection->getSelect()->reset(Zend_Db_Select::COLUMNS)->columns(array('second_table.old_items'));
 
             $method = 'where';
             $partReceivedItemsByItemId = array();

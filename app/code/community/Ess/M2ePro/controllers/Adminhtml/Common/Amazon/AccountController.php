@@ -367,9 +367,11 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_AccountController
 
             if (!$accountObj->isLockedObject('server_synchronize')) {
 
-                $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Amazon_Dispatcher');
+                $dispatcherObject = Mage::getModel('M2ePro/Connector_Amazon_Dispatcher');
 
                 if (!$isEdit) {
+
+                    Mage::helper('M2ePro/Module_License')->setTrial(Ess_M2ePro_Helper_Component_Amazon::NICK);
 
                     $params = array(
                         'title' => $post['title'],
@@ -378,7 +380,7 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_AccountController
                         'related_store_id' => (int)$post['related_store_id']
                     );
 
-                    $dispatcherObject->processConnector('account', 'add' ,'entity', $params, NULL, $id);
+                    $dispatcherObject->processConnector('account', 'add' ,'entity', $params, $id);
 
                 } else {
 
@@ -392,7 +394,7 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_AccountController
                     $params = array_diff_assoc($newData, $oldData);
 
                     if (!empty($params)) {
-                        $dispatcherObject->processConnector('account', 'update' ,'entity', $params, NULL, $id);
+                        $dispatcherObject->processConnector('account', 'update' ,'entity', $params, $id);
                     }
                 }
             }
@@ -456,9 +458,8 @@ class Ess_M2ePro_Adminhtml_Common_Amazon_AccountController
 
             try {
 
-                $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Amazon_Dispatcher');
-                $response = $dispatcherObject->processVirtualAbstract('account','check','access',
-                                                                      $params,NULL,NULL,NULL);
+                $dispatcherObject = Mage::getModel('M2ePro/Connector_Amazon_Dispatcher');
+                $response = $dispatcherObject->processVirtual('account','check','access',$params);
 
                 $result['result'] = isset($response['status']) ? $response['status'] : null;
                 if (isset($response['reason'])) {

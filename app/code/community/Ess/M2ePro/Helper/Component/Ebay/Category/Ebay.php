@@ -6,21 +6,7 @@
 
 class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Abstract
 {
-    // ########################################
-
-    public function exists($categoryId, $marketplaceId)
-    {
-        /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */
-        $connRead = Mage::getSingleton('core/resource')->getConnection('core_read');
-        $tableDictCategories = Mage::getSingleton('core/resource')->getTableName('m2epro_ebay_dictionary_category');
-
-        $dbSelect = $connRead->select()
-            ->from($tableDictCategories, 'COUNT(*)')
-            ->where('`marketplace_id` = ?', (int)$marketplaceId)
-            ->where('`category_id` = ?', (int)$categoryId);
-
-        return $dbSelect->query()->fetchColumn() == 1;
-    }
+    const CACHE_TAG = '_ebay_dictionary_data_';
 
     // ########################################
 
@@ -94,6 +80,13 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
 
     protected function getFeatures($categoryId, $marketplaceId)
     {
+        $cacheHelper = Mage::helper('M2ePro/Data_Cache');
+        $cacheKey = '_ebay_categories_features_'.$categoryId.'_'.$marketplaceId;
+
+        if (($cacheValue = $cacheHelper->getValue($cacheKey)) !== false) {
+            return $cacheValue;
+        }
+
         /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */
         $connRead = Mage::getSingleton('core/resource')->getConnection('core_read');
         $tableDictCategories = Mage::getSingleton('core/resource')->getTableName('m2epro_ebay_dictionary_category');
@@ -101,6 +94,7 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
         $pathCategoriesIds = $this->getPathData($categoryId, $marketplaceId, 'category_id');
 
         if (empty($pathCategoriesIds)) {
+            $cacheHelper->setValue($cacheKey,array(),array(self::CACHE_TAG));
             return array();
         }
 
@@ -127,11 +121,20 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
             $features = array_merge($features, (array)json_decode($rowFeatures['features'], true));
         }
 
+        $cacheHelper->setValue($cacheKey,$features,array(self::CACHE_TAG));
+
         return $features;
     }
 
     protected function getMarketplaceDefaultFeatures($marketplaceId)
     {
+        $cacheHelper = Mage::helper('M2ePro/Data_Cache');
+        $cacheKey = '_ebay_marketplaces_features_'.$marketplaceId;
+
+        if (($cacheValue = $cacheHelper->getValue($cacheKey)) !== false) {
+            return $cacheValue;
+        }
+
         /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */
         $connRead = Mage::getSingleton('core/resource')->getConnection('core_read');
         $tableDictMarketplaces = Mage::getSingleton('core/resource')->getTableName('m2epro_ebay_dictionary_marketplace');
@@ -141,7 +144,10 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
             ->where('`marketplace_id` = ?',(int)$marketplaceId);
         $featuresDefaults = $connRead->fetchRow($dbSelect);
 
-        return json_decode($featuresDefaults['categories_features_defaults'], true);
+        $features = json_decode($featuresDefaults['categories_features_defaults'], true);
+        $cacheHelper->setValue($cacheKey,$features,array(self::CACHE_TAG));
+
+        return $features;
     }
 
     // ----------------------------------------
@@ -163,18 +169,27 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
 
             $pathData[] = $category[$dataField];
 
-            if (!$category['parent_id']) {
+            if (!$category['parent_category_id']) {
                 break;
             }
 
-            $categoryId = (int)$category['parent_id'];
+            $categoryId = (int)$category['parent_category_id'];
         }
 
         return array_reverse($pathData);
     }
 
-    protected function getSpecifics($categoryId, $marketplaceId, $categoryFeatures = null)
+    public function getSpecifics($categoryId, $marketplaceId, $categoryFeatures = null)
     {
+        $categoryFeaturesArg = $categoryFeatures;
+
+        $cacheHelper = Mage::helper('M2ePro/Data_Cache');
+        $cacheKey = '_ebay_category_marketplace_specifics_'.$categoryId.'_'.$marketplaceId;
+
+        if ( $categoryFeaturesArg === null && ($cacheValue = $cacheHelper->getValue($cacheKey)) !== false) {
+            return $cacheValue;
+        }
+
         /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */
         $connRead = Mage::getSingleton('core/resource')->getConnection('core_read');
         $tableDictCategories = Mage::getSingleton('core/resource')->getTableName('m2epro_ebay_dictionary_category');
@@ -199,8 +214,8 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
         if (!is_null($categoryRow['item_specifics'])) {
             $specifics['specifics'] = json_decode($categoryRow['item_specifics'],true);
         } else {
-            $specifics['specifics'] = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-                ->processVirtualAbstract(
+            $specifics['specifics'] = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                ->processVirtual(
                     'marketplace','get','categorySpecifics',
                     array('category_id'=>$categoryRow['category_id']),'specifics',
                     $categoryRow['marketplace_id'],NULL,NULL
@@ -208,15 +223,13 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
 
             if (!is_null($specifics)) {
 
-                $tempData = array(
-                    'marketplace_id' => (int)$categoryRow['marketplace_id'],
-                    'category_id' => (int)$categoryRow['category_id'],
-                    'item_specifics' => json_encode($specifics['specifics'])
-                );
-
                 /** @var $connWrite Varien_Db_Adapter_Pdo_Mysql */
                 $connWrite = Mage::getSingleton('core/resource')->getConnection('core_write');
-                $connWrite->insertOnDuplicate($tableDictCategories, $tempData);
+                $connWrite->update($tableDictCategories,
+                                   array('item_specifics' => json_encode($specifics['specifics'])),
+                                   array('marketplace_id = ?' => (int)$categoryRow['marketplace_id'],
+                                         'category_id = ?' => (int)$categoryRow['category_id'])
+                                  );
 
             } else {
                 $specifics['specifics'] = array();
@@ -228,14 +241,17 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
             if (!is_array($categoryFeatures)) {
                 $defaultFeatures = $this->getMarketplaceDefaultFeatures($marketplaceId);
                 $features = $this->getFeatures($categoryId, $marketplaceId);
-
                 $categoryFeatures = array_merge($defaultFeatures, $features);
             }
 
             if (!isset($categoryFeatures['attribute_conversion_enabled'])
                 || !(bool)$categoryFeatures['attribute_conversion_enabled']) {
 
-                return array();
+                $specifics = array();
+                if($categoryFeaturesArg === null) {
+                    $cacheHelper->setValue($cacheKey,$specifics,array(self::CACHE_TAG));
+                }
+                return $specifics;
             }
 
             $specifics = array(
@@ -246,8 +262,8 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
             if (!is_null($categoryRow['attribute_set'])) {
                 $specifics['specifics'] = json_decode($categoryRow['attribute_set'],true);
             } else {
-                $specifics['specifics'] = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-                    ->processVirtualAbstract(
+                $specifics['specifics'] = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                    ->processVirtual(
                         'marketplace','get','attributesCS',
                         array('attribute_set_id'=>(int)$categoryRow['attribute_set_id']),'specifics',
                         $categoryRow['marketplace_id'],NULL,NULL
@@ -255,22 +271,22 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
 
                 if (!is_null($specifics['specifics'])) {
 
-                    $tempData = array(
-                        'marketplace_id' => (int)$categoryRow['marketplace_id'],
-                        'category_id' => (int)$categoryRow['category_id'],
-                        'attribute_set' => json_encode($specifics['specifics'])
-                    );
-
                     /** @var $connWrite Varien_Db_Adapter_Pdo_Mysql */
                     $connWrite = Mage::getSingleton('core/resource')->getConnection('core_write');
-                    $connWrite->insertOnDuplicate($tableDictCategories, $tempData);
+                    $connWrite->update($tableDictCategories,
+                                       array('attribute_set' => json_encode($specifics['specifics'])),
+                                       array('marketplace_id = ?' => (int)$categoryRow['marketplace_id'],
+                                             'category_id = ?' => (int)$categoryRow['category_id'])
+                                       );
 
                 } else {
                     $specifics['specifics'] = array();
                 }
             }
         }
-
+        if($categoryFeaturesArg === null) {
+            $cacheHelper->setValue($cacheKey,$specifics,array(self::CACHE_TAG));
+        }
         return $specifics;
     }
 
@@ -284,7 +300,19 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Ebay extends Mage_Core_Helper_Ab
         );
     }
 
-    // ########################################
+    public function exists($categoryId, $marketplaceId)
+    {
+        /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */
+        $connRead = Mage::getSingleton('core/resource')->getConnection('core_read');
+        $tableDictCategories = Mage::getSingleton('core/resource')->getTableName('m2epro_ebay_dictionary_category');
+
+        $dbSelect = $connRead->select()
+            ->from($tableDictCategories, 'COUNT(*)')
+            ->where('`marketplace_id` = ?', (int)$marketplaceId)
+            ->where('`category_id` = ?', (int)$categoryId);
+
+        return $dbSelect->query()->fetchColumn() == 1;
+    }
 
     public function isExistDeletedCategories()
     {

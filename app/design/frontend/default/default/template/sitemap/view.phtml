@@ -26,10 +26,15 @@ echo $this->getMessagesBlock()->getGroupedHtml();
 $sitemapHelper = Mage::helper('sitemap');
 $externalLinks = $this->getExternalUrl();
 $userLinks = $this->getUserLinks();
+$pageTitle = Mage::getstoreConfig('site_map/sitemap/page_title');
+
+if(trim($pageTitle) == '') $pageTitle = 'Site Map';
+
 ?>
 <link rel="stylesheet" type="text/css" href="<?php echo $this->getSkinUrl('css/sitemap-style.css'); ?>" media="all" />
+
 <div class="page-title">
-<h1><?php echo $this->__('Site Map'); ?></h1>
+<h1><?php echo $pageTitle; ?></h1>
 </div>
 <div class="sitemap-view">
 

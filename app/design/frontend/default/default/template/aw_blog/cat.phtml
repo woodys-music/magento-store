@@ -12,7 +12,7 @@
             <div class="tags"><?php echo Mage::getBlockSingleton('blog/blog')->getTagsHtml($post) ?></div>
             <div class="postDetails">
                 <?php if ($this->getCommentsEnabled()): ?>
-                    <?php echo $post->getCommentCount(); ?> <a href="<?php echo $post->getAddress(); ?>#commentBox" >Comments</a> |
+                    <?php echo $post->getCommentCount(); ?> <a href="<?php echo $post->getAddress(); ?>#commentBox" ><?php echo Mage::helper('blog')->__('Comments'); ?></a> |
                 <?php endif; ?>
                 <?php $postCats = $post->getCats(); ?>
                 <?php if (!empty($postCats)): ?>

@@ -54,7 +54,8 @@ class Ess_M2ePro_Block_Adminhtml_Listing_View_Grid_Column_Renderer_DeveloperActi
             );
         }
 
-        if ($row->getData('status') == Ess_M2ePro_Model_Listing_Product::STATUS_LISTED) {
+        if ($row->getData('status') == Ess_M2ePro_Model_Listing_Product::STATUS_LISTED ||
+            $row->getData('status') == Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN) {
             $actions[] = array(
                 'title' => Mage::helper('M2ePro')->__('Revise'),
                 'handler' => $this->getColumn()->getData('js_handler').'.actionHandler.reviseAction();'
@@ -62,14 +63,16 @@ class Ess_M2ePro_Block_Adminhtml_Listing_View_Grid_Column_Renderer_DeveloperActi
         }
 
         if ($row->getData('status') != Ess_M2ePro_Model_Listing_Product::STATUS_NOT_LISTED &&
-            $row->getData('status') != Ess_M2ePro_Model_Listing_Product::STATUS_LISTED) {
+            $row->getData('status') != Ess_M2ePro_Model_Listing_Product::STATUS_LISTED &&
+            $row->getData('status') != Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN) {
             $actions[] = array(
                 'title' => Mage::helper('M2ePro')->__('Relist'),
                 'handler' => $this->getColumn()->getData('js_handler').'.actionHandler.relistAction();'
             );
         }
 
-        if ($row->getData('status') == Ess_M2ePro_Model_Listing_Product::STATUS_LISTED) {
+        if ($row->getData('status') == Ess_M2ePro_Model_Listing_Product::STATUS_LISTED ||
+            $row->getData('status') != Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN) {
             $actions[] = array(
                 'title' => Mage::helper('M2ePro')->__('Stop'),
                 'handler' => $this->getColumn()->getData('js_handler').'.actionHandler.stopAction();'

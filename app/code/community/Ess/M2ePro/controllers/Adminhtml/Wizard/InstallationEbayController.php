@@ -227,7 +227,7 @@ class Ess_M2ePro_Adminhtml_Wizard_InstallationEbayController
 
         if (!Mage::helper('M2ePro/Module_License')->getKey()) {
 
-            $licenseResult = Mage::helper('M2ePro/Module_License')->obtainFreeRecord(
+            $licenseResult = Mage::helper('M2ePro/Module_License')->obtainRecord(
                 $post['email'],$post['firstname'],$post['lastname'],
                 $post['country'],$post['city'],$post['postal_code']
             );
@@ -242,7 +242,7 @@ class Ess_M2ePro_Adminhtml_Wizard_InstallationEbayController
         $accountMode = $this->getRequest()->getParam('account_mode');
 
         try {
-            $response = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')->processVirtualAbstract(
+            $response = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')->processVirtual(
                     'account','get','authUrl',
                     array('back_url'=>$this->getUrl('*/*/afterToken', array('mode' => $accountMode))),
                     NULL,NULL,NULL,$accountMode
@@ -277,14 +277,16 @@ class Ess_M2ePro_Adminhtml_Wizard_InstallationEbayController
             return $this->_redirect('*/*/installation');
         }
 
+        Mage::helper('M2ePro/Module_License')->setTrial(Ess_M2ePro_Helper_Component_Ebay::NICK);
+
         $accountMode = $this->getRequest()->getParam('mode');
 
         $requestParams = array(
             'mode' => $accountMode,
             'token_session' => $tokenSessionId
         );
-        $response = array_filter(Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-            ->processVirtualAbstract('account','add','entity',
+        $response = array_filter(Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+            ->processVirtual('account','add','entity',
                              $requestParams,NULL,
                              NULL,NULL,$accountMode));
 
@@ -293,7 +295,7 @@ class Ess_M2ePro_Adminhtml_Wizard_InstallationEbayController
             return $this->_redirect('*/*/installation');
         }
 
-        if ($accountMode == Ess_M2ePro_Model_Connector_Server_Ebay_Abstract::MODE_SANDBOX) {
+        if ($accountMode == Ess_M2ePro_Model_Connector_Ebay_Abstract::MODE_SANDBOX) {
             $accountMode = Ess_M2ePro_Model_Ebay_Account::MODE_SANDBOX;
         } else {
             $accountMode = Ess_M2ePro_Model_Ebay_Account::MODE_PRODUCTION;

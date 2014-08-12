@@ -6,6 +6,9 @@
 
 class Ess_M2ePro_Helper_Magento_Attribute extends Ess_M2ePro_Helper_Magento_Abstract
 {
+    const PRICE_CODE = 'price';
+    const SPECIAL_PRICE_CODE = 'special_price';
+
     // ################################
 
     public function getAll()
@@ -164,85 +167,49 @@ class Ess_M2ePro_Helper_Magento_Attribute extends Ess_M2ePro_Helper_Magento_Abst
 
     public function getConfigurableByAttributeSets(array $attributeSets)
     {
-        $attributes = NULL;
-
-        foreach ($attributeSets as $attributeSetId) {
-
-            $attributesTemp = $this->getConfigurable($attributeSetId);
-
-            if (is_null($attributes)) {
-                $attributes = $attributesTemp;
-                continue;
-            }
-
-            $intersectAttributes = array();
-            foreach ($attributesTemp as $attributeTemp) {
-                $findValue = false;
-                foreach ($attributes as $attribute) {
-                    if ($attributeTemp['code'] == $attribute['code'] &&
-                        $attributeTemp['label'] == $attribute['label']) {
-                        $findValue = true;
-                        break;
-                    }
-                }
-                if ($findValue) {
-                    $intersectAttributes[] = $attributeTemp;
-                }
-            }
-
-            $attributes = $intersectAttributes;
-        }
-
-        if (is_null($attributes)) {
+        if (empty($attributeSets)) {
             return array();
         }
 
-        return $attributes;
+        return $this->getConfigurable($attributeSets);
     }
 
     public function getAllConfigurable()
     {
-        $attributes = array();
-
-        $attributeSets = Mage::helper('M2ePro/Magento_AttributeSet')->getAll();
-        foreach ($attributeSets as $attributeSet) {
-
-            $attributesTemp = $this->getConfigurable($attributeSet['attribute_set_id']);
-
-            foreach ($attributesTemp as $attributeTemp) {
-                $attributes[$attributeTemp['code']] = $attributeTemp;
-            }
-        }
-
-        return array_values($attributes);
+        return $this->getConfigurable();
     }
 
     // -------------------------------------------
 
-    private function getConfigurable($attributeSetId = NULL)
+    private function getConfigurable(array $attributeSetIds = array())
     {
-        $product = Mage::getModel('catalog/product');
-        $product->setTypeId('configurable');
-        $product->setData('_edit_mode', true);
+        /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */
+        $connRead = Mage::getSingleton('core/resource')->getConnection('core_read');
 
-        if (!is_null($attributeSetId)) {
-            $product->setAttributeSetId((int)$attributeSetId);
+        $cpTable  = Mage::getSingleton('core/resource')->getTableName('catalog/product');
+        $saTable  = Mage::getSingleton('core/resource')->getTableName('catalog/product_super_attribute');
+        $aTable   = Mage::getSingleton('core/resource')->getTableName('eav_attribute');
+
+        $select = $connRead->select()
+            ->distinct(true)
+            ->from(array('p' => $cpTable), null)
+            ->join(
+                array('sa' => $saTable),
+                'p.entity_id = sa.product_id',
+                null
+            )
+            ->join(
+                array('a' => $aTable),
+                'sa.attribute_id = a.attribute_id',
+                array('label' => 'frontend_label', 'code' => 'attribute_code')
+            )
+            ->where('p.type_id = ?', Mage_Catalog_Model_Product_Type::TYPE_CONFIGURABLE);
+
+        if (!empty($attributeSetIds)) {
+            $select->where('e.attribute_set_id IN ?', $attributeSetIds);
         }
 
-        $typeInstance = $product->getTypeInstance()->setStoreFilter(Mage_Core_Model_App::ADMIN_STORE_ID);
-        $attributes = $typeInstance->getSetAttributes($product);
-
-        $result = array();
-        foreach ($attributes as $attribute) {
-            if ($typeInstance->canUseAttribute($attribute, $product)) {
-                $result[] = array(
-                    'code' => $attribute->getAttributeCode(),
-                    'label' => $attribute->getFrontend()->getLabel()
-                );
-            }
-        }
-
-        return $result;
+        return $connRead->fetchAll($select);
     }
 
     // ################################

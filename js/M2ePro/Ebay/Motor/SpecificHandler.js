@@ -42,7 +42,7 @@ EbayMotorSpecificHandler.prototype = Object.extend(new CommonHandler(), {
                 callOriginal();
 
                 $('attribute_content').value = grid.massaction.getCheckedValues()
-                    .replace(/,/g, M2ePro.php.constant('Ess_M2ePro_Helper_Component_Ebay_MotorsSpecifics::VALUE_SEPARATOR'));
+                    .replace(/,/g, ',');
 
                 $('attribute_content').value == ''
                     ? $('generate_attribute_content_container').hide() : $('generate_attribute_content_container').show();

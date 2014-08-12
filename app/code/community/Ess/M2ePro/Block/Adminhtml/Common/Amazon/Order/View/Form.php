@@ -59,7 +59,6 @@ class Ess_M2ePro_Block_Adminhtml_Common_Amazon_Order_View_Form extends Mage_Admi
         // ---------------
 
         $this->setChild('item', $this->getLayout()->createBlock('M2ePro/adminhtml_common_amazon_order_view_item'));
-        // todo
         $this->setChild('item_edit', $this->getLayout()->createBlock('M2ePro/adminhtml_order_item_edit'));
         $this->setChild('log', $this->getLayout()->createBlock('M2ePro/adminhtml_order_view_log_grid'));
 

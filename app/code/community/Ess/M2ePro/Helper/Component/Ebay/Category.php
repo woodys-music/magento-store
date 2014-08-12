@@ -111,7 +111,46 @@ class Ess_M2ePro_Helper_Component_Ebay_Category extends Mage_Core_Helper_Abstrac
 
     // ########################################
 
-    public function fillCategoriesPaths(array &$data,Ess_M2ePro_Model_Listing $listing)
+    public function getSameTemplatesData($ids, $table, $modes)
+    {
+        $fields = array();
+
+        foreach ($modes as $mode) {
+            $fields[] = $mode.'_id';
+            $fields[] = $mode.'_path';
+            $fields[] = $mode.'_mode';
+            $fields[] = $mode.'_attribute';
+        }
+
+        $select = Mage::getSingleton('core/resource')->getConnection('core_read')->select();
+        $select->from($table, $fields);
+        $select->where('id IN (?)', $ids);
+
+        $templatesData = $select->query()->fetchAll(PDO::FETCH_ASSOC);
+
+        $resultData = reset($templatesData);
+
+        if (!$resultData) {
+            return array();
+        }
+
+        foreach ($modes as $i => $mode) {
+
+            if (!Mage::helper('M2ePro')->theSameItemsInData($templatesData, array_slice($fields,$i*4,4))) {
+                $resultData[$mode.'_id'] = 0;
+                $resultData[$mode.'_path'] = NULL;
+                $resultData[$mode.'_mode'] = Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_NONE;
+                $resultData[$mode.'_attribute'] = NULL;
+                $resultData[$mode.'_message'] = $this->__(
+                    'Please, specify a value suitable for all chosen products.'
+                );
+            }
+        }
+
+        return $resultData;
+    }
+
+    public function fillCategoriesPaths(array &$data, Ess_M2ePro_Model_Listing $listing)
     {
         $ebayCategoryHelper = Mage::helper('M2ePro/Component_Ebay_Category_Ebay');
         $ebayStoreCategoryHelper = Mage::helper('M2ePro/Component_Ebay_Category_Store');
@@ -144,47 +183,6 @@ class Ess_M2ePro_Helper_Component_Ebay_Category extends Mage_Core_Helper_Abstrac
                 $data[$key.'_path'] = 'Magento Attribute' . ' -> ' . $attributeLabel;
             }
         }
-    }
-
-    // ########################################
-
-    public function getSameTemplatesData($ids, $table, $modes)
-    {
-        $fields = array();
-
-        foreach ($modes as $mode) {
-            $fields[] = $mode.'_id';
-            $fields[] = $mode.'_path';
-            $fields[] = $mode.'_mode';
-            $fields[] = $mode.'_attribute';
-        }
-
-        $select = Mage::getSingleton('core/resource')->getConnection('core_read')->select();
-        $select->from($table, $fields);
-        $select->where('id IN (?)', $ids);
-
-        $templatesData = $select->query()->fetchAll(PDO::FETCH_ASSOC);
-
-        $resultData = reset($templatesData);
-
-        if (!$resultData) {
-            return array();
-        }
-
-        foreach ($modes as $i => $mode) {
-
-            if (!Mage::helper('M2ePro')->theSameItemsInData($templatesData, array_slice($fields,$i*4,4))) {
-                $resultData[$mode.'_id'] = 0;
-                $resultData[$mode.'_path'] = NULL;
-                $resultData[$mode.'_mode'] = Ess_M2ePro_Model_Ebay_Template_Category::CATEGORY_MODE_NONE;
-                $resultData[$mode.'_attribute'] = NULL;
-                $resultData[$mode.'_message'] = Mage::helper('M2ePro')->__(
-                    'Please, specify a value suitable for all chosen products.'
-                );
-            }
-        }
-
-        return $resultData;
     }
 
     // ########################################

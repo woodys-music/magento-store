@@ -281,6 +281,7 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Search_Grid extends Mage_Adminhtml
                     Ess_M2ePro_Model_Listing_Product::STATUS_UNKNOWN    => Mage::helper('M2ePro')->__('Unknown'),
                     Ess_M2ePro_Model_Listing_Product::STATUS_NOT_LISTED => Mage::helper('M2ePro')->__('Not Listed'),
                     Ess_M2ePro_Model_Listing_Product::STATUS_LISTED     => Mage::helper('M2ePro')->__('Listed'),
+                    Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN     => Mage::helper('M2ePro')->__('Listed (Hidden)'),
                     Ess_M2ePro_Model_Listing_Product::STATUS_SOLD       => Mage::helper('M2ePro')->__('Sold'),
                     Ess_M2ePro_Model_Listing_Product::STATUS_STOPPED    => Mage::helper('M2ePro')->__('Stopped'),
                     Ess_M2ePro_Model_Listing_Product::STATUS_FINISHED   => Mage::helper('M2ePro')->__('Finished'),
@@ -473,7 +474,15 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Search_Grid extends Mage_Adminhtml
             return '<span style="color: #f00;">0</span>';
         }
 
-        return Mage::app()->getLocale()->currency($row->getData('currency'))->toCurrency($value);
+        $currency = $row->getCurrency();
+
+        if (strpos($currency, ',') !== false) {
+            $currency = Mage::helper('M2ePro/Component_Ebay')
+                        ->getCachedObject('Marketplace',$row->getMarketplaceId())
+                        ->getChildObject()->getCurrency();
+        }
+
+        return Mage::app()->getLocale()->currency($currency)->toCurrency($value);
     }
 
     public function callbackColumnStatus($value, $row, $column, $isExport)
@@ -487,6 +496,10 @@ class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Search_Grid extends Mage_Adminhtml
 
             case Ess_M2ePro_Model_Listing_Product::STATUS_LISTED:
                 $value = '<span style="color: green;">'.$value.'</span>';
+                break;
+
+            case Ess_M2ePro_Model_Listing_Product::STATUS_HIDDEN:
+                $value = '<span style="color: red;">'.$value.'</span>';
                 break;
 
             case Ess_M2ePro_Model_Listing_Product::STATUS_SOLD:

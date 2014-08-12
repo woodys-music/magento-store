@@ -40,10 +40,10 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Module extends Mage_Admi
                 $dbSelect = $connRead->select()->from($moduleTable,new Zend_Db_Expr('COUNT(*)'));
 
                 $tablesInfo[$category][$table]['count'] = $connRead->fetchOne($dbSelect);
-                $tablesInfo[$category][$table]['url'] = $url = $this->getUrl(
-                                                        '*/adminhtml_development_database/manageTable',
-                                                        array('table'=>$table)
-                                                        );
+                $tablesInfo[$category][$table]['url'] = $this->getUrl(
+                    '*/adminhtml_development_database/manageTable',
+                    array('table' => $table)
+                );
             }
         }
 
@@ -79,8 +79,8 @@ class Ess_M2ePro_Block_Adminhtml_Development_Info_Mysql_Module extends Mage_Admi
     {
         return array(
             'Additional' => array(
-            'm2epro_processing_request',
-            'm2epro_synchronization_run'
+                'm2epro_processing_request',
+                'm2epro_operation_history'
             )
         );
     }

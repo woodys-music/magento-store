@@ -119,6 +119,15 @@ class Nexcessnet_Turpentine_Helper_Esi extends Mage_Core_Helper_Abstract {
         return self::ESI_HMAC_PARAM;
     }
 
+	/**
+	 * Get referrer param
+	 *
+	 * @return string
+	 */
+	public function getEsiReferrerParam() {
+		return Mage_Core_Controller_Varien_Action::PARAM_NAME_BASE64_URL;
+	}
+
     /**
      * Get whether ESI debugging is enabled or not
      *
@@ -307,6 +316,48 @@ class Nexcessnet_Turpentine_Helper_Esi extends Mage_Core_Helper_Abstract {
                 $design->getTheme( 'layout' ),
                 Mage::app()->getStore()->getId(),
             ) );
+    }
+
+    /**
+     * Generate an ESI tag to be replaced by the content from the given URL
+     *
+     * Generated tag looks like:
+     *     <esi:include src="$url" />
+     *
+     * @param  string $url url to pull content from
+     * @return string
+     */
+    public function buildEsiIncludeFragment( $url ) {
+        return sprintf( '<esi:include src="%s" />', $url );
+    }
+
+    /**
+     * Generate an ESI tag with content that is removed when ESI processed, and
+     * visible when not
+     *
+     * Generated tag looks like:
+     *     <esi:remove>$content</esi>
+     *
+     * @param  string $content content to be removed
+     * @return string
+     */
+    public function buildEsiRemoveFragment( $content ) {
+        return sprintf( '<esi:remove>%s</esi>', $content );
+    }
+
+    /**
+     * Get URL for grabbing form key via ESI
+     *
+     * @return string
+     */
+    public function getFormKeyEsiUrl() {
+        $urlOptions = array(
+            $this->getEsiTtlParam()         => $this->getDefaultEsiTtl(),
+            $this->getEsiMethodParam()      => 'esi',
+            $this->getEsiScopeParam()       => 'global',
+            $this->getEsiCacheTypeParam()   => 'private',
+        );
+        return Mage::getUrl( 'turpentine/esi/getFormKey', $urlOptions );
     }
 
     /**

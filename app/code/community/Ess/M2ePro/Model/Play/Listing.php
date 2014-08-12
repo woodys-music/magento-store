@@ -557,18 +557,26 @@ class Ess_M2ePro_Model_Play_Listing extends Ess_M2ePro_Model_Component_Child_Pla
         );
     }
 
-    public function addProductFromOther(Ess_M2ePro_Model_Listing_Other $listingOtherProduct)
+    public function addProductFromOther(Ess_M2ePro_Model_Listing_Other $listingOtherProduct,
+                                        $checkingMode = false,
+                                        $checkHasProduct = true)
     {
         if (!$listingOtherProduct->getProductId()) {
             return false;
         }
 
         $productId = $listingOtherProduct->getProductId();
-        $listingProduct = $this->getParentObject()->addProduct($productId);
+        $result = $this->getParentObject()->addProduct($productId, $checkingMode, $checkHasProduct);
 
-        if (!($listingProduct instanceof Ess_M2ePro_Model_Listing_Product)) {
+        if ($checkingMode) {
+            return $result;
+        }
+
+        if (!($result instanceof Ess_M2ePro_Model_Listing_Product)) {
             return false;
         }
+
+        $listingProduct = $result;
 
         $listingProduct->getChildObject()
                        ->getPlayItem()

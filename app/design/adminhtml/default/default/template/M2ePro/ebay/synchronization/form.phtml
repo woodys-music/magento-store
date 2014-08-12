@@ -122,7 +122,7 @@ $translations = json_encode($translations);
             <div class="hor-scroll">
 
                 <div id="block_notice_ebay_synchronization_stock_level" class="block_notices_module" title="" subtitle="" collapseable="no" hideblock="no" always_show="yes">
-                    <?php $inspectorMode = ($this->inspectorMode == 1)?'<span style="color: green"> (enabled) </span>':''; ?>
+                    <?php $inspectorMode = ($this->inspectorMode == 1) ? '<span style="color: green"> ('. Mage::helper('M2ePro')->__('enabled') .') </span>' : ''; ?>
                     <?php echo Mage::helper('M2ePro')->__('If catalog updates in your magento performed using import/export tools, custom scripts or direct changes in database,
                     then, you can use <a target="_blank" href="%s#magento_block_configuration_settings_advanced">"Track Direct Database Changes"</a> %s functionality to detect changes in products\' price and quantity.', Mage::helper('M2ePro/View_Configuration')->getSettingsUrl(), $inspectorMode) ?>
                 </div>

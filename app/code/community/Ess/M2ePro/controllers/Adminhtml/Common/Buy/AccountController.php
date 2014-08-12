@@ -337,9 +337,12 @@ class Ess_M2ePro_Adminhtml_Common_Buy_AccountController
             /** @var $accountObj Ess_M2ePro_Model_Account */
             $accountObj = $model;
             if (!$accountObj->isLockedObject('server_synchronize')) {
-                $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Buy_Dispatcher');
+                $dispatcherObject = Mage::getModel('M2ePro/Connector_Buy_Dispatcher');
 
                 if (!$isEdit) {
+
+                    Mage::helper('M2ePro/Module_License')->setTrial(Ess_M2ePro_Helper_Component_Buy::NICK);
+
                     $params = array(
                         'title' => $post['title'],
                         'web_login' => $post['web_login'],
@@ -350,7 +353,7 @@ class Ess_M2ePro_Adminhtml_Common_Buy_AccountController
                         'ftp_inventory_access' => $post['ftp_inventory_access'],
                         'ftp_orders_access' => $post['ftp_orders_access']
                     );
-                    $dispatcherObject->processConnector('account', 'add' ,'entity', $params, NULL, $id);
+                    $dispatcherObject->processConnector('account', 'add' ,'entity', $params, $id);
                 } else {
                     $newData = array(
                         'title' => $post['title'],
@@ -372,7 +375,7 @@ class Ess_M2ePro_Adminhtml_Common_Buy_AccountController
                     $params = array_diff_assoc($newData, $oldData);
 
                     if (!empty($params)) {
-                        $dispatcherObject->processConnector('account', 'update' ,'entity', $params, NULL, $id);
+                        $dispatcherObject->processConnector('account', 'update' ,'entity', $params, $id);
                     }
                 }
             }
@@ -437,9 +440,8 @@ class Ess_M2ePro_Adminhtml_Common_Buy_AccountController
 
             try {
 
-                $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Buy_Dispatcher');
-                $status = $dispatcherObject->processVirtualAbstract('account','check',$commandName,
-                    $params,'status',NULL,NULL);
+                $dispatcherObject = Mage::getModel('M2ePro/Connector_Buy_Dispatcher');
+                $status = $dispatcherObject->processVirtual('account','check',$commandName,$params,'status');
 
                 $result['result'] = $status;
 

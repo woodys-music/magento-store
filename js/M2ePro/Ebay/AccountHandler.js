@@ -115,6 +115,34 @@ EbayAccountHandler.prototype = Object.extend(new CommonHandler(), {
 
     //----------------------------------
 
+    update_account_title: function()
+    {
+        new Ajax.Request(M2ePro.url.get('adminhtml_ebay_account/update_account_title'),
+            {
+                method: 'post',
+                parameters : {
+                    id : M2ePro.formData.id,
+                    mode : $('mode').value
+                },
+                onSuccess: function (transport)
+                {
+                    var response = transport.responseText.evalJSON();
+
+                    if (response['status'] == 'success') {
+                        var title;
+                        if (response['url'] != '') {
+                            title = '<a target="_blank" href="' + response['url'] + '">' + response['title'] + '</a>';
+                        } else {
+                            title = response['title'];
+                        }
+                        $('account_title').update(title);
+                    }
+                }
+            });
+    },
+
+    //----------------------------------
+
     get_token: function()
     {
         if ($('token_session').value == '') {

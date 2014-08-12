@@ -114,5 +114,10 @@ class Dotsquares_Sitemap_Helper_Data extends Mage_Core_Helper_Abstract{
     {
         return $this->_getUrl('sitemap');
     }
+	
+	public function getTitle() {
+		$sitetitle = (string) Mage::getStoreConfig('site_map/sitemap/site_title');
+		return $sitetitle;
+	}	
 
 }

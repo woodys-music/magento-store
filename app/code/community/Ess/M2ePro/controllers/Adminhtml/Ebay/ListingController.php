@@ -103,35 +103,18 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
         $accountId = $this->getRequest()->getParam('account_id');
         $marketplaceId = $this->getRequest()->getParam('marketplace_id');
 
-        if (is_null($itemId)) {
+        if (is_null($itemId) || is_null($accountId) || is_null($marketplaceId)) {
             $this->_getSession()->addError(Mage::helper('M2ePro')->__('Requested eBay Item ID is not found.'));
             $this->_redirect('*/*/index');
             return;
         }
 
-        if (is_null($accountId) && is_null($marketplaceId)) {
-            /** @var $listingProduct Ess_M2ePro_Model_Listing_Product */
-            $listingProduct = Mage::getModel('M2ePro/Ebay_Listing_Product')->getParentInstanceByEbayItem($itemId);
-
-            if (is_null($listingProduct)) {
-                $this->_getSession()->addError(Mage::helper('M2ePro')->__('Requested eBay Item ID is not found.'));
-                $this->_redirect('*/*/index');
-                return;
-            }
-
-            $accountMode = $listingProduct->getListing()->getAccount()->getChildObject()->getMode();
-            $marketplaceId = $listingProduct->getListing()->getMarketplaceId();
-        } else {
-            $accountMode = Mage::helper('M2ePro/Component_Ebay')
-                ->getObject('Account', $accountId)
-                ->getChildObject()
-                ->getMode();
-        }
+        $accountMode = Mage::helper('M2ePro/Component_Ebay')->getObject('Account', $accountId)
+            ->getChildObject()
+            ->getMode();
 
         $url = Mage::helper('M2ePro/Component_Ebay')->getItemUrl(
-            $itemId,
-            $accountMode,
-            $marketplaceId
+            $itemId, $accountMode, $marketplaceId
         );
 
         $this->_redirectUrl($url);
@@ -347,7 +330,7 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
 
         foreach ($listingProductCollection as $product) {
             $fees = array();
-            $connector = new Ess_M2ePro_Model_Connector_Server_Ebay_Item_List_Verify(array(), $product);
+            $connector = new Ess_M2ePro_Model_Connector_Ebay_Item_List_Verify(array(), $product);
 
             try {
                 $fees = $connector->process();
@@ -653,19 +636,19 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
 
         $listingsProductsIds = explode(',', $listingsProductsIds);
 
-        $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Ebay_Item_Dispatcher');
+        $dispatcherObject = Mage::getModel('M2ePro/Connector_Ebay_Item_Dispatcher');
         $result = (int)$dispatcherObject->process($action, $listingsProductsIds, $params);
         $actionId = (int)$dispatcherObject->getLogsActionId();
 
-        if ($result == Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract::STATUS_ERROR) {
+        if ($result == Ess_M2ePro_Helper_Data::STATUS_ERROR) {
             return json_encode(array('result'=>'error','action_id'=>$actionId));
         }
 
-        if ($result == Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract::STATUS_WARNING) {
+        if ($result == Ess_M2ePro_Helper_Data::STATUS_WARNING) {
             return json_encode(array('result'=>'warning','action_id'=>$actionId));
         }
 
-        if ($result == Ess_M2ePro_Model_Connector_Server_Ebay_Item_Abstract::STATUS_SUCCESS) {
+        if ($result == Ess_M2ePro_Helper_Data::STATUS_SUCCESS) {
             return json_encode(array('result'=>'success','action_id'=>$actionId));
         }
 
@@ -677,35 +660,35 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
     public function runListProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_LIST)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_LIST)
         );
     }
 
     public function runReviseProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_REVISE)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_REVISE)
         );
     }
 
     public function runRelistProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_RELIST)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_RELIST)
         );
     }
 
     public function runStopProductsAction()
     {
         return $this->getResponse()->setBody(
-            $this->processConnector(Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_STOP)
+            $this->processConnector(Ess_M2ePro_Model_Listing_Product::ACTION_STOP)
         );
     }
 
     public function runStopAndRemoveProductsAction()
     {
         return $this->getResponse()->setBody($this->processConnector(
-            Ess_M2ePro_Model_Connector_Server_Ebay_Item_Dispatcher::ACTION_STOP, array('remove' => true)
+            Ess_M2ePro_Model_Listing_Product::ACTION_STOP, array('remove' => true)
         ));
     }
 
@@ -755,9 +738,13 @@ class Ess_M2ePro_Adminhtml_Ebay_ListingController extends Ess_M2ePro_Controller_
             return $this->_redirect('*/*/view', array('id' => $listingId));
         }
 
+        $data = array(
+            'products_count'=>count($ids)
+        );
+
         $this->_initAction()
              ->_title(Mage::helper('M2ePro')->__('Listing Review'))
-             ->_addContent($this->getLayout()->createBlock('M2ePro/adminhtml_ebay_listing_product_review'))
+             ->_addContent($this->getLayout()->createBlock('M2ePro/adminhtml_ebay_listing_product_review', '', $data))
              ->renderLayout();
     }
 

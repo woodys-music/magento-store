@@ -90,7 +90,7 @@ class Ess_M2ePro_Model_Magento_Quote
      */
     private function initializeQuote()
     {
-        $this->quote = Mage::getModel('sales/quote');
+        $this->quote = Mage::getSingleton('adminhtml/session_quote')->getQuote();
 
         $this->quote->setCheckoutMethod($this->proxyOrder->getCheckoutMethod());
         $this->quote->setStore($this->proxyOrder->getStore());
@@ -204,6 +204,9 @@ class Ess_M2ePro_Model_Magento_Quote
     private function initializeQuoteItems()
     {
         foreach ($this->proxyOrder->getItems() as $item) {
+
+            $this->clearQuoteItemsCache();
+
             /** @var $quoteItemBuilder Ess_M2ePro_Model_Magento_Quote_Item */
             $quoteItemBuilder = Mage::getModel('M2ePro/Magento_Quote_Item');
             $quoteItemBuilder->init($this->quote, $item);
@@ -211,12 +214,19 @@ class Ess_M2ePro_Model_Magento_Quote
             $product = $quoteItemBuilder->getProduct();
             $request = $quoteItemBuilder->getRequest();
 
+            // ----------------------------
+            $productOriginalPrice = $product->getPrice();
+
+            $price = $item->getBasePrice();
+            $product->setPrice($price);
+            $product->setSpecialPrice($price);
+            // ----------------------------
+
             // see Mage_Sales_Model_Observer::substractQtyFromQuotes
             $this->quote->setItemsCount($this->quote->getItemsCount() + 1);
             $this->quote->setItemsQty((float)$this->quote->getItemsQty() + $request->getQty());
 
             $result = $this->quote->addProduct($product, $request);
-
             if (is_string($result)) {
                 throw new Exception($result);
             }
@@ -224,11 +234,37 @@ class Ess_M2ePro_Model_Magento_Quote
             $quoteItem = $this->quote->getItemByProduct($product);
 
             if ($quoteItem !== false) {
+                $weight = $product->getTypeInstance()->getWeight();
+                if ($product->isConfigurable()) {
+                    // hack: for child product weight was not load
+                    $simpleProductId = $product->getCustomOption('simple_product')->getProductId();
+                    $weight = Mage::getResourceModel('catalog/product')->getAttributeRawValue(
+                        $simpleProductId, 'weight', 0
+                    );
+                }
+
                 $quoteItem->setOriginalCustomPrice($item->getPrice());
-                $quoteItem->setNoDiscount(1);
+                $quoteItem->setOriginalPrice($productOriginalPrice);
+                $quoteItem->setWeight($weight);
                 $quoteItem->setGiftMessageId($quoteItemBuilder->getGiftMessageId());
                 $quoteItem->setAdditionalData($quoteItemBuilder->getAdditionalData($quoteItem));
             }
+        }
+    }
+
+    /**
+     * Mage_Sales_Model_Quote_Address caches items after each collectTotals call. Some extensions calls collectTotals
+     * after adding new item to quote in observers. So we need clear this cache before adding new item to quote.
+     */
+    private function clearQuoteItemsCache()
+    {
+        foreach ($this->quote->getAllAddresses() as $address) {
+
+            /** @var $address Mage_Sales_Model_Quote_Address */
+
+            $address->unsetData('cached_items_all');
+            $address->unsetData('cached_items_nominal');
+            $address->unsetData('cached_items_nonominal');
         }
     }
 

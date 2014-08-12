@@ -350,16 +350,19 @@ class Ess_M2ePro_Adminhtml_Common_Play_AccountController
             /** @var $accountObj Ess_M2ePro_Model_Account */
             $accountObj = $model;
             if (!$accountObj->isLockedObject('server_synchronize')) {
-                $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Play_Dispatcher');
+                $dispatcherObject = Mage::getModel('M2ePro/Connector_Play_Dispatcher');
 
                 if (!$isEdit) {
+
+                    Mage::helper('M2ePro/Module_License')->setTrial(Ess_M2ePro_Helper_Component_Play::NICK);
+
                     $params = array(
                         'title' => $post['title'],
                         'login' => $post['login'],
                         'password' => $post['password'],
                         'panel_mode' => $post['panel_mode']
                     );
-                    $dispatcherObject->processConnector('account', 'add' ,'entity', $params, NULL, $id);
+                    $dispatcherObject->processConnector('account', 'add' ,'entity', $params, $id);
                 } else {
                     $newData = array(
                         'title' => $post['title'],
@@ -374,7 +377,7 @@ class Ess_M2ePro_Adminhtml_Common_Play_AccountController
                     $params = array_diff_assoc($newData, $oldData);
 
                     if (!empty($params)) {
-                        $dispatcherObject->processConnector('account', 'update' ,'entity', $params, NULL, $id);
+                        $dispatcherObject->processConnector('account', 'update' ,'entity', $params, $id);
                     }
                 }
             }
@@ -438,8 +441,8 @@ class Ess_M2ePro_Adminhtml_Common_Play_AccountController
 
             try {
 
-                $dispatcherObject = Mage::getModel('M2ePro/Connector_Server_Play_Dispatcher');
-                $status = $dispatcherObject->processVirtualAbstract('account','check','access',
+                $dispatcherObject = Mage::getModel('M2ePro/Connector_Play_Dispatcher');
+                $status = $dispatcherObject->processVirtual('account','check','access',
                     $params,'status',NULL,NULL);
 
                 $result['result'] = $status;

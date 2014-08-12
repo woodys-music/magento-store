@@ -2,17 +2,17 @@
 
 class Ranvi_Feed_Model_Product_Collection extends Mage_Catalog_Model_Resource_Eav_Mysql4_Product_Collection
 {
-    
+
     protected $_feed_categories = array();
     protected $_prepared_feed_categories = array(
-    										'inclusion' => array(),
-											'exclusion' => array());
-    
+        'inclusion' => array(),
+        'exclusion' => array());
+
     public function isEnabledFlat()
-    {        
+    {
         return false;
     }
-    
+
     protected function _productLimitationJoinPrice()
     {
         $filters = $this->_productLimitationFilters;
@@ -36,12 +36,11 @@ class Ranvi_Feed_Model_Product_Collection extends Mage_Catalog_Model_Resource_Ea
             $this->getSelect()->joinLeft(
                 array('price_index' => $this->getTable('catalog/product_index_price')),
                 $joinCond,
-                array('price', 'tax_class_id', 'final_price', 'minimal_price'=>$minimalExpr , 'min_price', 'max_price', 'tier_price')
+                array('price', 'tax_class_id', 'final_price', 'minimal_price' => $minimalExpr, 'min_price', 'max_price', 'tier_price')
             );
 
             // Set additional field filters
-            if (isset($this->_priceDataFieldFilters) && is_array($this->_priceDataFieldFilters))
-            {
+            if (isset($this->_priceDataFieldFilters) && is_array($this->_priceDataFieldFilters)) {
                 foreach ($this->_priceDataFieldFilters as $filterData) {
                     $this->getSelect()->where(call_user_func_array('sprintf', $filterData));
                 }
@@ -53,7 +52,7 @@ class Ranvi_Feed_Model_Product_Collection extends Mage_Catalog_Model_Resource_Ea
 
         return $this;
     }
-    
+
     protected function _applyProductLimitations()
     {
         $this->_prepareProductLimitationFilters();
@@ -73,17 +72,16 @@ class Ranvi_Feed_Model_Product_Collection extends Mage_Catalog_Model_Resource_Ea
             $conditions[] = $this->getConnection()
                 ->quoteInto('cat_index.visibility IN(?)', $filters['visibility']);
         }
-        
-        if (count($this->_feed_categories)){
+
+        if (count($this->_feed_categories)) {
             $conditions[] = $this->getConnection()
                 ->quoteInto('cat_index.category_id IN(?)', $this->_feed_categories);
-            $this->getSelect()->distinct();    
-        }    
-        else
+            $this->getSelect()->distinct();
+        } else
             $conditions[] = $this->getConnection()
                 ->quoteInto('cat_index.category_id=?', $filters['category_id']);
 
-            
+
         if (isset($filters['category_is_anchor'])) {
             $conditions[] = $this->getConnection()
                 ->quoteInto('cat_index.is_parent=?', $filters['category_is_anchor']);
@@ -94,87 +92,87 @@ class Ranvi_Feed_Model_Product_Collection extends Mage_Catalog_Model_Resource_Ea
         if (isset($fromPart['cat_index'])) {
             $fromPart['cat_index']['joinCondition'] = $joinCond;
             $this->getSelect()->setPart(Zend_Db_Select::FROM, $fromPart);
-        }
-        else {
+        } else {
             $this->getSelect()->join(
                 array('cat_index' => $this->getTable('catalog/category_product_index')),
                 $joinCond,
                 array('cat_index_position' => 0)
             );
         }
-        
+
         if (method_exists($this, '_productLimitationJoinStore'))
             $this->_productLimitationJoinStore();
 
         Mage::dispatchEvent('catalog_product_collection_apply_limitations_after', array(
-            'collection'    => $this
+            'collection' => $this
         ));
 
         return $this;
     }
-    
-    public function prepareFeedCategoryFilter($condition, $value){
-        
+
+    public function prepareFeedCategoryFilter($condition, $value)
+    {
+
         $categories = Mage::getResourceModel('catalog/category_collection')
-                        ->addIsActiveFilter();
+            ->addIsActiveFilter();
 
         $exclusion = in_array($condition, array('neq', 'nlike', 'nin'));
-        if ($exclusion){
-        	switch($condition){
-        		case 'neq':
-        			$condition = 'eq';
-        		break;
-        		case 'nlike':
-        			$condition = 'like';
-        		break;
-        		case 'nin':
-        			$condition = 'in';
-        		break;	
-        	}
-        }                
-        if ($condition == 'like' || $condition == 'nlike'){
+        if ($exclusion) {
+            switch ($condition) {
+                case 'neq':
+                    $condition = 'eq';
+                    break;
+                case 'nlike':
+                    $condition = 'like';
+                    break;
+                case 'nin':
+                    $condition = 'in';
+                    break;
+            }
+        }
+        if ($condition == 'like' || $condition == 'nlike') {
             $category = Mage::getModel('catalog/category')->load($value);
-            $categories->addFieldToFilter('name', array($condition=>'%'.$category->getName().'%'));
-        }    
-        else{ 
-            $categories->addFieldToFilter('entity_id', array($condition=>$value));
-        }    
-                        
-        foreach ($categories as $_cat){
-        	if ($exclusion){        		
-        		$this->_prepared_feed_categories['exclusion'][] = intval($_cat->getId());
-        	}else{
-        		$this->_prepared_feed_categories['inclusion'][] = intval($_cat->getId());
-        	} 
+            $categories->addFieldToFilter('name', array($condition => '%' . $category->getName() . '%'));
+        } else {
+            $categories->addFieldToFilter('entity_id', array($condition => $value));
+        }
+
+        foreach ($categories as $_cat) {
+            if ($exclusion) {
+                $this->_prepared_feed_categories['exclusion'][] = intval($_cat->getId());
+            } else {
+                $this->_prepared_feed_categories['inclusion'][] = intval($_cat->getId());
+            }
         }
 
         return $this;
     }
-    
-    public function addFeedCategoryFilter(){
-    	
-    	$categories = Mage::getResourceModel('catalog/category_collection')
-                        ->addIsActiveFilter();
-                        
+
+    public function addFeedCategoryFilter()
+    {
+
+        $categories = Mage::getResourceModel('catalog/category_collection')
+            ->addIsActiveFilter();
+
         $all_categories_ids = array();
 
-    	foreach ($categories as $_cat){
-        	$all_categories_ids[] = intval($_cat->getId());
+        foreach ($categories as $_cat) {
+            $all_categories_ids[] = intval($_cat->getId());
         }
-        
-    	if (count($this->_prepared_feed_categories['exclusion'])){
-			$all_categories_ids = array_diff($all_categories_ids, $this->_prepared_feed_categories['exclusion']);
-		}
-		if (count($this->_prepared_feed_categories['inclusion'])){
-			$all_categories_ids = array_intersect($all_categories_ids, $this->_prepared_feed_categories['inclusion']);
-		}
-		
-		$this->_feed_categories = $all_categories_ids;  
-        
+
+        if (count($this->_prepared_feed_categories['exclusion'])) {
+            $all_categories_ids = array_diff($all_categories_ids, $this->_prepared_feed_categories['exclusion']);
+        }
+        if (count($this->_prepared_feed_categories['inclusion'])) {
+            $all_categories_ids = array_intersect($all_categories_ids, $this->_prepared_feed_categories['inclusion']);
+        }
+
+        $this->_feed_categories = $all_categories_ids;
+
         $this->_applyProductLimitations();
-    	
-    	return $this;
+
+        return $this;
     }
-    
+
 
 }

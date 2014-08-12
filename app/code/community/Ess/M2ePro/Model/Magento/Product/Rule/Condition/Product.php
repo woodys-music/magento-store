@@ -54,12 +54,6 @@ class Ess_M2ePro_Model_Magento_Product_Rule_Condition_Product
             return $this->validateAttribute($product->getAvailableInCategories());
         }
 
-        if (is_null($product->getData($attrCode))
-            && !Mage::getModel('catalog/product')->load($product->getId())->hasData($attrCode)) {
-
-            return false;
-        }
-
         if (! isset($this->_entityAttributeValues[$product->getId()])) {
             if (!$product->getResource()) {
                 return false;
@@ -218,6 +212,7 @@ class Ess_M2ePro_Model_Magento_Product_Rule_Condition_Product
         }
 
         $this->_addSpecialAttributes($attributes);
+        natcasesort($attributes);
         $this->setAttributeOption($attributes);
 
         return $this;

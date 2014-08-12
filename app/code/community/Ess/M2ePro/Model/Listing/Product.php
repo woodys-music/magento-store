@@ -6,6 +6,12 @@
 
 class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent_Abstract
 {
+    const ACTION_LIST    = 1;
+    const ACTION_RELIST  = 2;
+    const ACTION_REVISE  = 3;
+    const ACTION_STOP    = 4;
+    const ACTION_DELETE  = 5;
+
     const STATUS_NOT_LISTED = 0;
     const STATUS_SOLD = 1;
     const STATUS_LISTED = 2;
@@ -13,6 +19,7 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
     const STATUS_FINISHED = 4;
     const STATUS_UNKNOWN = 5;
     const STATUS_BLOCKED = 6;
+    const STATUS_HIDDEN = 7;
 
     const STATUS_CHANGER_UNKNOWN = 0;
     const STATUS_CHANGER_SYNCH = 1;
@@ -79,7 +86,7 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
         $tempLog->addProductMessage($this->getListingId(),
                                     $this->getProductId(),
                                     $this->getId(),
-                                    Ess_M2ePro_Model_Log_Abstract::INITIATOR_UNKNOWN,
+                                    Ess_M2ePro_Helper_Data::INITIATOR_UNKNOWN,
                                     NULL,
                                     Ess_M2ePro_Model_Listing_Log::ACTION_DELETE_PRODUCT_FROM_LISTING,
                                     // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully deleted');
@@ -252,119 +259,6 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     // ########################################
 
-    public function _getOnlyVariationProductQty()
-    {
-        $qty = 0;
-
-        if ($this->getMagentoProduct()->isBundleType()) {
-            $qty = $this->_getBundleProductQty();
-        }
-        if ($this->getMagentoProduct()->isGroupedType()) {
-            $qty = $this->_getGroupedProductQty();
-        }
-        if ($this->getMagentoProduct()->isConfigurableType()) {
-            $qty = $this->_getConfigurableProductQty();
-        }
-
-        $qty < 0 && $qty = 0;
-
-        return $qty;
-    }
-
-    //-----------------------------------------
-
-    protected function _getConfigurableProductQty()
-    {
-        $totalQty = 0;
-        $product = $this->getMagentoProduct()->getProduct();
-
-        foreach ($product->getTypeInstance()->getUsedProducts() as $childProduct) {
-
-            $stockItem = Mage::getModel('cataloginventory/stock_item')->loadByProduct($childProduct);
-
-            $qty = $stockItem->getQty();
-
-            if ($stockItem->getIsInStock() != 1 || $qty <= 0) {
-                continue;
-            }
-
-            $totalQty += $qty;
-        }
-
-        $totalQty < 0 && $totalQty = 0;
-
-        return (int)floor($totalQty);
-    }
-
-    protected function _getGroupedProductQty()
-    {
-        $totalQty = 0;
-        $product = $this->getMagentoProduct()->getProduct();
-
-        foreach ($product->getTypeInstance()->getAssociatedProducts() as $childProduct) {
-
-            $stockItem = Mage::getModel('cataloginventory/stock_item')->loadByProduct($childProduct);
-
-            $qty = $stockItem->getQty();
-
-            if ($stockItem->getIsInStock() != 1 || $qty <= 0) {
-                continue;
-            }
-
-            $totalQty += $qty;
-        }
-
-        $totalQty < 0 && $totalQty = 0;
-
-        return (int)floor($totalQty);
-    }
-
-    protected function _getBundleProductQty()
-    {
-        $product = $this->getMagentoProduct()->getProduct();
-
-        // Prepare bundle options format usable for search
-        $productInstance = $product->getTypeInstance();
-        $optionCollection = $productInstance->getOptionsCollection($product);
-        $optionsData = $optionCollection->getData();
-
-        foreach ($optionsData as $singleOption) {
-            // Save QTY, before calculate = 0
-            $bundleOptionsArray[$singleOption['option_id']] = 0;
-        }
-
-        $selectionsCollection = $productInstance->getSelectionsCollection($optionCollection->getAllIds(), $product);
-        $_items = $selectionsCollection->getItems();
-
-        foreach ($_items as $_item) {
-            $itemInfoAsArray = $_item->toArray();
-            if (isset($bundleOptionsArray[$itemInfoAsArray['option_id']])) {
-                // For each option item inc total QTY
-                if ($itemInfoAsArray['stock_item']['is_in_stock'] != 1) {
-                    // Skip get qty for options product that not in stock
-                    continue;
-                }
-                $addQty = $itemInfoAsArray['stock_item']['qty'];
-                // Only positive
-                $bundleOptionsArray[$itemInfoAsArray['option_id']] += (($addQty < 0) ? 0 : $addQty);
-            }
-        }
-
-        // Get min of qty product for all options
-        $minQty = -1;
-        foreach ($bundleOptionsArray as $singleBundle) {
-            if ($singleBundle < $minQty || $minQty == -1) {
-                $minQty = $singleBundle;
-            }
-        }
-
-        $minQty < 0 && $minQty = 0;
-
-        return (int)floor($minQty);
-    }
-
-    // ########################################
-
     public function isNotListed()
     {
         return $this->getStatus() == self::STATUS_NOT_LISTED;
@@ -385,6 +279,11 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
     public function isListed()
     {
         return $this->getStatus() == self::STATUS_LISTED;
+    }
+
+    public function isHidden()
+    {
+        return $this->getStatus() == self::STATUS_HIDDEN;
     }
 
     public function isSold()
@@ -421,13 +320,13 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     public function isRevisable()
     {
-        return ($this->isListed() || $this->isUnknown()) &&
+        return ($this->isListed() || $this->isHidden() || $this->isUnknown()) &&
                 !$this->isBlocked();
     }
 
     public function isStoppable()
     {
-        return ($this->isListed() || $this->isUnknown()) &&
+        return ($this->isListed() || $this->isHidden() || $this->isUnknown()) &&
                 !$this->isBlocked();
     }
 
@@ -456,6 +355,23 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
     public function deleteAction(array $params = array())
     {
         return $this->getChildObject()->deleteAction($params);
+    }
+
+    // ----------------------------------------
+
+    public static function getActionTitle($action)
+    {
+        $title = Mage::helper('M2ePro')->__('Unknown');
+
+        switch ($action) {
+            case self::ACTION_LIST:   $title = Mage::helper('M2ePro')->__('Listing'); break;
+            case self::ACTION_RELIST: $title = Mage::helper('M2ePro')->__('Relisting'); break;
+            case self::ACTION_REVISE: $title = Mage::helper('M2ePro')->__('Revising'); break;
+            case self::ACTION_STOP:   $title = Mage::helper('M2ePro')->__('Stopping'); break;
+            case self::ACTION_DELETE:   $title = Mage::helper('M2ePro')->__('Deleting'); break;
+        }
+
+        return $title;
     }
 
     // ########################################
@@ -615,35 +531,6 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     // ########################################
 
-    public function getTrackingAttributes()
-    {
-        return $this->getChildObject()->getTrackingAttributes();
-    }
-
-    // ########################################
-
-    public function clearCache()
-    {
-        $this->getMagentoProduct()->clearCache();
-        return $this;
-    }
-
-    public function enableCache()
-    {
-        $this->isCacheEnabled = true;
-        $this->getMagentoProduct()->enableCache();
-        return $this;
-    }
-
-    public function disableCache()
-    {
-        $this->isCacheEnabled = false;
-        $this->getMagentoProduct()->disableCache();
-        return $this;
-    }
-
-    // ########################################
-
     public function duplicate()
     {
         $duplicatedListingProduct = $this->getListing()->addProduct($this->getProductId(),false,false);
@@ -653,8 +540,7 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
             return $duplicatedListingProduct;
         }
 
-        if (!$this->getChildObject()->isVariationProduct() ||
-            !$this->getChildObject()->isVariationMatched()) {
+        if (!$this->getChildObject()->isVariationsReady()) {
             return $duplicatedListingProduct;
         }
 
@@ -664,6 +550,11 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
         $duplicatedListingProduct->getChildObject()->setMatchedVariation($variation->getOptions());
 
         return $duplicatedListingProduct;
+    }
+
+    public function getTrackingAttributes()
+    {
+        return $this->getChildObject()->getTrackingAttributes();
     }
 
     // ########################################
@@ -699,14 +590,6 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     public function getVariationsStatuses($productsIdsForEachVariation = NULL)
     {
-        if (is_null($productsIdsForEachVariation)) {
-            $productsIdsForEachVariation = $this->getProductsIdsForEachVariation();
-        }
-
-        if (count($productsIdsForEachVariation) <= 0) {
-            return array();
-        }
-
         $ids = array();
         foreach ($productsIdsForEachVariation as $productsIds) {
             foreach ($productsIds as $id) {
@@ -736,14 +619,6 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     public function getVariationsStockAvailabilities($productsIdsForEachVariation = NULL)
     {
-        if (is_null($productsIdsForEachVariation)) {
-            $productsIdsForEachVariation = $this->getProductsIdsForEachVariation();
-        }
-
-        if (count($productsIdsForEachVariation) <= 0) {
-            return array();
-        }
-
         $ids = array();
         foreach ($productsIdsForEachVariation as $productsIds) {
             foreach ($productsIds as $id) {
@@ -756,17 +631,29 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
         $dbSelect = Mage::getResourceModel('core/config')->getReadConnection()
                              ->select()
-                             ->from(array('cisi' => $catalogInventoryTable),array('product_id','is_in_stock'))
+                             ->from(array('cisi' => $catalogInventoryTable),
+                                    array('product_id','is_in_stock', 'manage_stock', 'use_config_manage_stock'))
                              ->where('cisi.product_id IN ('.implode(',',$ids).')');
 
         $stocks = Mage::getResourceModel('core/config')
                                             ->getReadConnection()
-                                            ->fetchPairs($dbSelect);
+                                            ->fetchall($dbSelect);
 
         $productsStocksForEachVariation = array();
         foreach ($productsIdsForEachVariation as $key => $productsIds) {
             foreach ($productsIds as $id) {
-                $productsStocksForEachVariation[$key][] = $stocks[$id];
+                $count = count($stocks);
+                for($i = 0; $i < $count; $i++){
+                    if($stocks[$i]['product_id'] == $id) {
+                        $stockAvailability = Ess_M2ePro_Model_Magento_Product::calculateStockAvailability(
+                            $stocks[$i]['is_in_stock'],
+                            $stocks[$i]['manage_stock'],
+                            $stocks[$i]['use_config_manage_stock']
+                        );
+                        $productsStocksForEachVariation[$key][] = $stockAvailability;
+                        break;
+                    }
+                }
             }
         }
 
@@ -780,23 +667,24 @@ class Ess_M2ePro_Model_Listing_Product extends Ess_M2ePro_Model_Component_Parent
 
     // ########################################
 
-    public function addAdditionalWarningMessage($message)
+    public function clearCache()
     {
-        $messages = $this->getData('__additional_warning_messages__');
-        empty($messages) && $messages = array();
-        $messages[] = $message;
-        $this->setData('__additional_warning_messages__',$messages);
+        $this->getMagentoProduct()->clearCache();
+        return $this;
     }
 
-    public function getAdditionalWarningMessages()
+    public function enableCache()
     {
-        $messages = $this->getData('__additional_warning_messages__');
-        return empty($messages) ? array() : $messages;
+        $this->isCacheEnabled = true;
+        $this->getMagentoProduct()->enableCache();
+        return $this;
     }
 
-    public function clearAdditionalWarningMessages()
+    public function disableCache()
     {
-        $this->setData('__additional_warning_messages__',array());
+        $this->isCacheEnabled = false;
+        $this->getMagentoProduct()->disableCache();
+        return $this;
     }
 
     // ########################################

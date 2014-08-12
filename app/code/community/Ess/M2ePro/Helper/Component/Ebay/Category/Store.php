@@ -60,8 +60,6 @@ class Ess_M2ePro_Helper_Component_Ebay_Category_Store extends Mage_Core_Helper_A
         );
     }
 
-    // ########################################
-
     public function isExistDeletedCategories()
     {
         /** @var $connRead Varien_Db_Adapter_Pdo_Mysql */

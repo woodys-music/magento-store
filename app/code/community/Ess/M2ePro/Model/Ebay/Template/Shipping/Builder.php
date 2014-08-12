@@ -91,16 +91,11 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping_Builder
             'country',
             'postal_code',
             'address',
-            'vat_percent',
             'dispatch_time_mode',
             'dispatch_time_value',
             'dispatch_time_attribute',
             'global_shipping_program',
             'get_it_fast',
-            'tax_table_mode',
-            'tax_category_mode',
-            'tax_category_value',
-            'tax_category_attribute',
             'local_shipping_rate_table_mode',
             'international_shipping_rate_table_mode',
             'local_shipping_mode',
@@ -115,12 +110,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping_Builder
 
         foreach ($keys as $key) {
             $prepared[$key] = isset($data[$key]) ? $data[$key] : '';
-        }
-
-        if ($prepared['vat_percent'] !== '') {
-            $prepared['vat_percent'] = (float)str_replace(',', '.', $prepared['vat_percent']);
-        } else {
-            $prepared['vat_percent'] = 0;
         }
 
         if (isset($data['local_shipping_combined_discount_profile_id'])) {
@@ -144,8 +133,6 @@ class Ess_M2ePro_Model_Ebay_Template_Shipping_Builder
 
         $modes = array(
             'get_it_fast',
-            'tax_table_mode',
-            'tax_category_mode',
             'local_shipping_rate_table_mode',
             'international_shipping_rate_table_mode',
             'local_shipping_mode',

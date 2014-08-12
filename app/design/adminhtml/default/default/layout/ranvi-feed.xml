@@ -23,7 +23,6 @@
     </ranvi_feed_adminhtml_attributes_new>    
     <ranvi_feed_adminhtml_items_edit>
         <reference name="head">
-    		<action method="addJs"><script>ranvi/feed-admin.js</script></action>
     		<action method="addJs"><script>lib/flex.js</script></action>
     		<action method="addJs"><script>lib/FABridge.js</script></action>
     		<action method="addJs"><script>mage/adminhtml/flexuploader.js</script></action>
@@ -32,7 +31,6 @@
     </ranvi_feed_adminhtml_items_edit>
     <ranvi_feed_adminhtml_items_new>
         <reference name="head">
-    		<action method="addJs"><script>ranvi/feed-admin.js</script></action>
     		<action method="addJs"><script>lib/flex.js</script></action>
     		<action method="addJs"><script>lib/FABridge.js</script></action>
     		<action method="addJs"><script>mage/adminhtml/flexuploader.js</script></action>

@@ -54,7 +54,7 @@ abstract class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Product_Grid
 
         // Get collection
         //----------------------------
-        /* @var $collection Mage_Catalog_Model_Resource_Product_Collection */
+        /* @var $collection Mage_Core_Model_Mysql4_Collection_Abstract */
         $collection = Mage::getModel('catalog/product')->getCollection()
             ->addAttributeToSelect('sku')
             ->addAttributeToSelect('name')
@@ -107,21 +107,36 @@ abstract class Ess_M2ePro_Block_Adminhtml_Ebay_Listing_Product_Grid
         // Hide products others listings
         //----------------------------
         $prefix = Mage::helper('M2ePro/Data_Global')->getValue('hide_products_others_listings_prefix');
-        $hideParam = Mage::helper('M2ePro/Data_Session')->getValue($prefix);
-        is_null($hideParam) && $hideParam = true;
+        is_null($hideParam = Mage::helper('M2ePro/Data_Session')->getValue($prefix)) && $hideParam = true;
 
-        if ($hideParam) {
-            $excludeProductsSelect->join(
-                array('l' => Mage::getResourceModel('M2ePro/Listing')->getMainTable()), '`l`.`id` = `listing_id`', NULL
-            );
-            $excludeProductsSelect->where('`l`.`account_id` = ?', $listing['account_id']);
-            $excludeProductsSelect->where('`l`.`marketplace_id` = ?', $listing['marketplace_id']);
-            $excludeProductsSelect->where('`l`.`component_mode` = ?', Ess_M2ePro_Helper_Component_Ebay::NICK);
-        } else {
-            $excludeProductsSelect->where('`listing_id` = ?',(int)$listing['id']);
+        if ($hideParam || isset($listing['id'])) {
+
+            $dbExcludeSelect = Mage::getResourceModel('core/config')->getReadConnection()
+                ->select()
+                ->from(Mage::getResourceModel('M2ePro/Listing_Product')->getMainTable(),
+                    new Zend_Db_Expr('DISTINCT `product_id`'));
+
+            if ($hideParam) {
+
+                $dbExcludeSelect->join(
+                    array('l' => Mage::getResourceModel('M2ePro/Listing')->getMainTable()),
+                    '`l`.`id` = `listing_id`', NULL
+                );
+
+                $dbExcludeSelect->where('`l`.`account_id` = ?', $listing['account_id']);
+                $dbExcludeSelect->where('`l`.`marketplace_id` = ?', $listing['marketplace_id']);
+                $dbExcludeSelect->where('`l`.`component_mode` = ?',Ess_M2ePro_Helper_Component_Ebay::NICK);
+
+            } else {
+                $dbExcludeSelect->where('`listing_id` = ?',(int)$listing['id']);
+            }
+
+            $collection->getSelect()
+                ->joinLeft(array('sq' => $dbExcludeSelect), 'sq.product_id = e.entity_id', array())
+                ->where('sq.product_id IS NULL');
         }
 
-        $collection->getSelect()->where('`e`.`entity_id` NOT IN ('.$excludeProductsSelect->__toString().')');
+//        $collection->getSelect()->where('`e`.`entity_id` NOT IN ('.$excludeProductsSelect->__toString().')');
         //----------------------------
 
         $collection->addFieldToFilter(

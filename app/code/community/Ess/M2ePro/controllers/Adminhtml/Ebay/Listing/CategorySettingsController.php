@@ -270,7 +270,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
             $this->getListingFromRequest()->getAddedListingProductsIds()
         );
 
-        if (empty($categoriesIds)) {
+        if (empty($categoriesIds) && !$this->getRequest()->isAjax()) {
             $this->_getSession()->addError(Mage::helper('M2ePro')->__(
                 'Magento Categories are not specified on products you are adding.')
             );
@@ -440,7 +440,7 @@ class Ess_M2ePro_Adminhtml_Ebay_Listing_CategorySettingsController
             }
 
             try {
-                $suggestions = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
+                $suggestions = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
                     ->processConnector(
                         'category',
                         'get',

@@ -7,16 +7,13 @@
 class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Updater
     extends Ess_M2ePro_Model_Listing_Product_Variation_Updater
 {
+    const VALIDATE_MESSAGE_DATA_KEY = '_validate_limits_conditions_message_';
+
     // ########################################
 
     public function updateVariations(Ess_M2ePro_Model_Listing_Product $listingProduct)
     {
-        if (!$listingProduct->getChildObject()->isListingTypeFixed() ||
-            !$listingProduct->getChildObject()->isVariationMode()) {
-            return;
-        }
-
-        if ($listingProduct->getMagentoProduct()->isProductWithoutVariations()) {
+        if (!$listingProduct->getMagentoProduct()->isProductWithVariations()) {
             return;
         }
 
@@ -35,37 +32,32 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Updater
         $this->saveVariationsSets($listingProduct,$rawMagentoVariations);
     }
 
-    public function isAddedNewVariationsAttributes(Ess_M2ePro_Model_Listing_Product $listingProduct)
-    {
-        if (!$listingProduct->getChildObject()->isListingTypeFixed() ||
-            !$listingProduct->getChildObject()->isVariationMode()) {
-            return false;
-        }
-
-        if ($listingProduct->getMagentoProduct()->isProductWithoutVariations()) {
-            return false;
-        }
-
-        $rawMagentoVariations = $listingProduct->getMagentoProduct()->getProductVariations();
-        $rawMagentoVariations = $this->validateLimitsConditions($rawMagentoVariations,NULL);
-
-        $magentoVariations = $this->prepareMagentoVariations($rawMagentoVariations);
-        $currentVariations = $this->prepareCurrentVariations($listingProduct->getVariations(true));
-
-        if (!isset($magentoVariations[0]) && !isset($currentVariations[0])) {
-            return false;
-        }
-
-        if (!isset($magentoVariations[0]) || !isset($currentVariations[0])) {
-            return true;
-        }
-
-        if (count($magentoVariations[0]['options']) != count($currentVariations[0]['options'])) {
-            return true;
-        }
-
-        return false;
-    }
+//    public function isAddedNewVariationsAttributes(Ess_M2ePro_Model_Listing_Product $listingProduct)
+//    {
+//        if (!$listingProduct->getChildObject()->isVariationsMode()) {
+//            return false;
+//        }
+//
+//        $rawMagentoVariations = $listingProduct->getMagentoProduct()->getProductVariations();
+//        $rawMagentoVariations = $this->validateLimitsConditions($rawMagentoVariations,NULL);
+//
+//        $magentoVariations = $this->prepareMagentoVariations($rawMagentoVariations);
+//        $currentVariations = $this->prepareCurrentVariations($listingProduct->getVariations(true));
+//
+//        if (!isset($magentoVariations[0]) && !isset($currentVariations[0])) {
+//            return false;
+//        }
+//
+//        if (!isset($magentoVariations[0]) || !isset($currentVariations[0])) {
+//            return true;
+//        }
+//
+//        if (count($magentoVariations[0]['options']) != count($currentVariations[0]['options'])) {
+//            return true;
+//        }
+//
+//        return false;
+//    }
 
     // ########################################
 
@@ -82,13 +74,13 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Updater
 
         foreach ($set as $singleSet) {
 
-            if (count($singleSet) > 30) {
+            if (count($singleSet) > 60) {
 
-                // Maximum 30 options by one attribute:
+                // Maximum 60 options by one attribute:
                 // Color: Red, Blue, Green, ...
 
                 if (!is_null($listingProduct)) {
-                    $listingProduct->addAdditionalWarningMessage(
+                    $listingProduct->setData(self::VALIDATE_MESSAGE_DATA_KEY,
                     'The product was listed as a simple product as it has limitation for multi-variation items. '.
                     'Reason: number of values for each option more than 30.'
                     );
@@ -106,7 +98,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Updater
                 // Color: Blue, Size: XL, ...
 
                 if (!is_null($listingProduct)) {
-                    $listingProduct->addAdditionalWarningMessage(
+                    $listingProduct->setData(self::VALIDATE_MESSAGE_DATA_KEY,
                     'The product was listed as a simple product as it has limitation for multi-variation items. '.
                     'Reason: number of options more than 5.'
                     );
@@ -121,7 +113,7 @@ class Ess_M2ePro_Model_Ebay_Listing_Product_Variation_Updater
             // Not more that 250 possible variations
 
             if (!is_null($listingProduct)) {
-                $listingProduct->addAdditionalWarningMessage(
+                $listingProduct->setData(self::VALIDATE_MESSAGE_DATA_KEY,
                 'The product was listed as a simple product as it has limitation for multi-variation items. '.
                 'Reason: sum of quantities of all possible products options more than 250.'
                 );

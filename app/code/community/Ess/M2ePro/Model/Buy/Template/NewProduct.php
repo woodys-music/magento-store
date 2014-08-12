@@ -147,11 +147,11 @@ class Ess_M2ePro_Model_Buy_Template_NewProduct extends Ess_M2ePro_Model_Componen
     public function getSource(Ess_M2ePro_Model_Buy_Listing_Product $listingProduct)
     {
         return Mage::getModel(
-                              'M2ePro/Buy_Template_NewProduct_Source',
-                              array(
-                                    $listingProduct,
-                                    $this
-                              )
+            'M2ePro/Buy_Template_NewProduct_Source',
+            array(
+                $listingProduct,
+                $this
+            )
         );
     }
 
@@ -181,10 +181,8 @@ class Ess_M2ePro_Model_Buy_Template_NewProduct extends Ess_M2ePro_Model_Componen
                     ->getObject('Listing_Product',$listingProductId);
 
             $generalId = $listingProductInstance->getChildObject()->getData('general_id');
-            $generalIdSearchStatus = $listingProductInstance->getChildObject()->getData('general_id_search_status');
 
-            if (!is_null($generalId) ||
-                $generalIdSearchStatus == Ess_M2ePro_Model_Buy_Listing_Product::GENERAL_ID_SEARCH_STATUS_PROCESSING){
+            if (!is_null($generalId)){
                 continue;
             }
 

@@ -594,22 +594,33 @@ class Ess_M2ePro_Model_Ebay_Listing extends Ess_M2ePro_Model_Component_Child_Eba
         );
     }
 
-    public function addProductFromOther(Ess_M2ePro_Model_Listing_Other $listingOtherProduct)
+    public function addProductFromOther(Ess_M2ePro_Model_Listing_Other $listingOtherProduct,
+                                        $checkingMode = false,
+                                        $checkHasProduct = true)
     {
         if (!$listingOtherProduct->getProductId()) {
             return false;
         }
 
         $productId = $listingOtherProduct->getProductId();
-        $listingProduct = $this->getParentObject()->addProduct($productId);
+        $result = $this->getParentObject()->addProduct($productId, $checkingMode, true);
 
-        if (!($listingProduct instanceof Ess_M2ePro_Model_Listing_Product)) {
+        if ($checkingMode) {
+            return $result;
+        }
+
+        if (!($result instanceof Ess_M2ePro_Model_Listing_Product)) {
             return false;
         }
 
-        $ebayItem = Mage::getModel('M2ePro/Ebay_Item')->loadInstance(
-            $listingOtherProduct->getChildObject()->getItemId(),'item_id'
-        );
+        $listingProduct = $result;
+
+        /** @var $collection Mage_Core_Model_Mysql4_Collection_Abstract */
+        $collection = Mage::getModel('M2ePro/Ebay_Item')->getCollection()
+            ->addFieldToFilter('account_id', $listingOtherProduct->getAccount()->getId())
+            ->addFieldToFilter('item_id', $listingOtherProduct->getChildObject()->getItemId());
+
+        $ebayItem = $collection->getFirstItem();
 
         $ebayItem->setData('store_id',$this->getParentObject()->getStoreId())
                  ->save();
@@ -625,8 +636,7 @@ class Ess_M2ePro_Model_Ebay_Listing extends Ess_M2ePro_Model_Component_Child_Eba
             'online_start_date' => $listingOtherProduct->getChildObject()->getStartDate(),
             'online_end_date' => $listingOtherProduct->getChildObject()->getEndDate(),
             'status' => $listingOtherProduct->getStatus(),
-            'status_changer' => $listingOtherProduct->getStatusChanger(),
-            'is_m2epro_listed_item' => 0
+            'status_changer' => $listingOtherProduct->getStatusChanger()
         );
 
         $listingProduct->addData($dataForUpdate)->save();

@@ -163,11 +163,12 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
                 $componentMode,'Listing_Other',$selectedProduct
             );
 
-            if (!$listingInstance->addProduct($otherListingProductInstance->getProductId(),true) &&
-                in_array($otherListingProductInstance->getProductId(),$failedProducts) === false) {
+            if (!$listingInstance->getChildObject()->addProductFromOther($otherListingProductInstance,true,false)) {
                 $failedProducts[] = $otherListingProductInstance->getProductId();
             }
         }
+
+        $failedProducts = array_values(array_unique($failedProducts));
 
         if (count($failedProducts) == 0) {
             return $this->getResponse()->setBody(json_encode(array(
@@ -208,13 +209,13 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
 
             $listingProductInstance = $listingInstance
                 ->getChildObject()
-                ->addProductFromOther($otherListingProductInstance);
+                ->addProductFromOther($otherListingProductInstance,false,false);
 
             if (!($listingProductInstance instanceof Ess_M2ePro_Model_Listing_Product)) {
 
                 $otherLogModel->addProductMessage(
                     $otherListingProductInstance->getId(),
-                    Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER,
+                    Ess_M2ePro_Helper_Data::INITIATOR_USER,
                     NULL,
                     Ess_M2ePro_Model_Listing_Other_Log::ACTION_MOVE_LISTING,
                     // Parser hack -> Mage::helper('M2ePro')->__('Product already exists in M2E listing(s).');
@@ -229,7 +230,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
 
             $otherLogModel->addProductMessage(
                 $otherListingProductInstance->getId(),
-                Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER,
+                Ess_M2ePro_Helper_Data::INITIATOR_USER,
                 NULL,
                 Ess_M2ePro_Model_Listing_Other_Log::ACTION_MOVE_LISTING,
                 // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully moved');
@@ -242,7 +243,7 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
                 $listingId,
                 $otherListingProductInstance->getProductId(),
                 $listingProductInstance->getId(),
-                Ess_M2ePro_Model_Log_Abstract::INITIATOR_USER,
+                Ess_M2ePro_Helper_Data::INITIATOR_USER,
                 NULL,
                 Ess_M2ePro_Model_Listing_Log::ACTION_MOVE_FROM_OTHER_LISTING,
                 // Parser hack -> Mage::helper('M2ePro')->__('Item was successfully moved');
@@ -293,12 +294,11 @@ class Ess_M2ePro_Adminhtml_Listing_Other_MovingController
         $account = Mage::helper('M2ePro/Component')->getCachedComponentObject(
             $componentMode,'Account',$accountId
         );
-        $marketplace = Mage::helper('M2ePro/Component')->getCachedComponentObject(
-            $componentMode,'Marketplace',$marketplaceId
-        );
+
+        // not for eBay
 
         $movingModel = Mage::getModel('M2ePro/'.$componentMode.'_Listing_Other_Moving');
-        $movingModel->initialize($marketplace,$account);
+        $movingModel->initialize($account);
         $movingModel->getDefaultListing($otherListingInstance);
     }
 

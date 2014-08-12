@@ -46,20 +46,6 @@ import std;
 
 ## Custom Subroutines
 
-sub remove_cache_headers {
-    # remove cache headers so we can set our own
-    unset beresp.http.Cache-Control;
-    unset beresp.http.Expires;
-    unset beresp.http.Pragma;
-    unset beresp.http.Cache;
-    unset beresp.http.Age;
-}
-
-sub remove_double_slashes {
-    # remove double slashes from the URL, for higher cache hit rate
-    set req.url = regsub(req.url, "(.*)//+(.*)", "\1/\2");
-}
-
 sub generate_session {
     # generate a UUID and add `frontend=$UUID` to the Cookie header, or use SID
     # from SID URL param
@@ -129,7 +115,8 @@ sub vcl_recv {
         return (pipe);
     }
 
-    call remove_double_slashes;
+    # remove double slashes from the URL, for higher cache hit rate
+    set req.url = regsuball(req.url, "(.*)//+(.*)", "\1/\2");
 
     {{normalize_encoding}}
     {{normalize_user_agent}}
@@ -153,7 +140,7 @@ sub vcl_recv {
                 req.http.Cookie, ".*\bstore=([^;]*).*", "\1");
         }
         # looks like an ESI request, add some extra vars for further processing
-        if (req.url ~ "/turpentine/esi/getBlock/") {
+        if (req.url ~ "/turpentine/esi/get(?:Block|FormKey)/") {
             set req.http.X-Varnish-Esi-Method = regsub(
                 req.url, ".*/{{esi_method_param}}/(\w+)/.*", "\1");
             set req.http.X-Varnish-Esi-Access = regsub(
@@ -269,6 +256,10 @@ sub vcl_fetch {
     # set the grace period
     set req.grace = {{grace_period}}s;
 
+    # Store the URL in the response object, to be able to do lurker friendly bans later
+    set beresp.http.X-Varnish-Host = req.http.host;
+    set beresp.http.X-Varnish-URL = req.url;
+
     # if it's part of magento...
     if (req.url ~ "{{url_base_regex}}") {
         # we handle the Vary stuff ourselves for now, we'll want to actually
@@ -290,7 +281,11 @@ sub vcl_fetch {
                 unset beresp.http.Set-Cookie;
             }
             # we'll set our own cache headers if we need them
-            call remove_cache_headers;
+            unset beresp.http.Cache-Control;
+            unset beresp.http.Expires;
+            unset beresp.http.Pragma;
+            unset beresp.http.Cache;
+            unset beresp.http.Age;
 
             if (beresp.http.X-Turpentine-Esi == "1") {
                 set beresp.do_esi = true;
@@ -351,6 +346,9 @@ sub vcl_deliver {
         set resp.http.Set-Cookie = resp.http.Set-Cookie + "; httponly";
         unset resp.http.X-Varnish-Cookie-Expires;
     }
+    if (req.http.X-Varnish-Esi-Method == "ajax" && req.http.X-Varnish-Esi-Access == "private") {
+        set resp.http.Cache-Control = "no-cache";
+    }
     if ({{debug_headers}} || client.ip ~ debug_acl) {
         # debugging is on, give some extra info
         set resp.http.X-Varnish-Hits = obj.hits;
@@ -369,6 +367,8 @@ sub vcl_deliver {
         unset resp.http.X-Turpentine-Flush-Events;
         unset resp.http.X-Turpentine-Block;
         unset resp.http.X-Varnish-Session;
+        unset resp.http.X-Varnish-Host;
+        unset resp.http.X-Varnish-URL;
         # this header indicates the session that originally generated a cached
         # page. it *must* not be sent to a client in production with lax
         # session validation or that session can be hijacked

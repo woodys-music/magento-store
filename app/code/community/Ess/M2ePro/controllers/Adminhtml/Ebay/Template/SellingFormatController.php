@@ -33,8 +33,8 @@ class Ess_M2ePro_Adminhtml_Ebay_Template_SellingFormatController
         );
 
         try {
-            $responseData = Mage::getModel('M2ePro/Connector_Server_Ebay_Dispatcher')
-                ->processVirtualAbstract('marketplace', 'get', 'charity',
+            $responseData = Mage::getModel('M2ePro/Connector_Ebay_Dispatcher')
+                ->processVirtual('marketplace', 'get', 'charity',
                     $params, NULL,
                     $marketplaceId);
         } catch (Exception $e) {
